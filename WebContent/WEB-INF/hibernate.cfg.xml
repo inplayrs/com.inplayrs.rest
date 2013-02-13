@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+  "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+  "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+   
+<hibernate-configuration>
+	<session-factory>
+		<!-- We're using MySQL database so the dialect needs to MySQL as well-->
+		<property name="hibernate.dialect">org.hibernate.dialect.MySQL5InnoDBDialect</property>
+		
+		<!-- Enable this to see the SQL statements in the logs-->
+		<property name="show_sql">false</property>
+		
+		<property name="hibernate.connection.username">restapi</property>  
+		<property name="hibernate.connection.password">jbW#32Hsq@@P</property>  
+		
+		
+		 <property name="hibernate.c3p0.driverClass">${app.jdbc.driverClassName}</property>
+		    <property name="hibernate.c3p0.jdbcUrl">${app.jdbc.url}</property>
+		    <property name="hibernate.c3p0.user">${app.jdbc.username}</property>
+		    <property name="hibernate.c3p0.password">${app.jdbc.password}</property>
+		    <property name="hibernate.c3p0.acquireIncrement">5</property>
+		    <property name="hibernate.c3p0.idleConnectionTestPeriod">60</property>
+		    <property name="hibernate.c3p0.maxPoolSize">100</property>
+		    <property name="hibernate.c3p0.maxStatements">50</property>
+		    <property name="hibernate.c3p0.minPoolSize">10</property>
+		    
+		    
+			
+	</session-factory>
+</hibernate-configuration>
