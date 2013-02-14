@@ -8,6 +8,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -16,8 +18,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Table(name = "period_option")
 public class PeriodOption {
 	
-	
-	// Period variables
 	@Id
 	@Column(name = "period_option_id")
 	@GeneratedValue
@@ -31,8 +31,9 @@ public class PeriodOption {
 	@Column(name = "event")
 	private int event_id;
 	
-	@Column(name = "question_option")
-	private int question_option_id;
+	@OneToOne
+    @PrimaryKeyJoinColumn
+	private QuestionOption questionOption;
 	
 	@Column(nullable=true, name = "odds")
 	private String odds;
@@ -77,12 +78,12 @@ public class PeriodOption {
 		this.event_id = event_id;
 	}
 
-	public int getQuestion_option_id() {
-		return question_option_id;
+	public QuestionOption getQuestionOption() {
+		return questionOption;
 	}
 
-	public void setQuestion_option_id(int question_option_id) {
-		this.question_option_id = question_option_id;
+	public void setQuestionOption(QuestionOption questionOption) {
+		this.questionOption = questionOption;
 	}
 
 	public String getOdds() {
