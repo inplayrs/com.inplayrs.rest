@@ -8,8 +8,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -31,8 +29,8 @@ public class PeriodOption {
 	@Column(name = "event")
 	private int event_id;
 	
-	@OneToOne
-    @PrimaryKeyJoinColumn
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "question_option", nullable = false)
 	private QuestionOption questionOption;
 	
 	@Column(nullable=true, name = "odds")
