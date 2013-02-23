@@ -21,7 +21,7 @@ public class QuestionOption {
 	
 	@Column(name = "template_question")
 	@JsonIgnore
-	private int template_question;
+	private int template_question_id;
 	
 	@Column(name = "name")
 	private String name;
@@ -40,20 +40,20 @@ public class QuestionOption {
 		this.question_option_id = question_option_id;
 	}
 
-	public int getTemplate_question() {
-		return template_question;
-	}
-
-	public void setTemplate_question(int template_question) {
-		this.template_question = template_question;
-	}
-
 	public String getName() {
 		return name;
 	}
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public int getTemplate_question_id() {
+		return template_question_id;
+	}
+
+	public void setTemplate_question_id(int template_question_id) {
+		this.template_question_id = template_question_id;
 	}
 	
 	

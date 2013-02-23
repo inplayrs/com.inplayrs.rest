@@ -7,8 +7,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.inplayrs.rest.ds.GameEntry;
 import com.inplayrs.rest.ds.Period;
-import com.inplayrs.rest.service.PeriodService;
+import com.inplayrs.rest.ds.PeriodEntry;
+import com.inplayrs.rest.service.GameService;
 
 import java.util.List;
 
@@ -32,23 +34,41 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class GameController {
 
 	@Autowired
-	@Resource(name="periodService")
-	private PeriodService periodService;
+	@Resource(name="gameService")
+	private GameService gameService;
 	
 	
 	@RequestMapping(value = "/periods/{game_id}", method = RequestMethod.GET, headers="Accept=application/json")
     public @ResponseBody List<Period> getPeriodsForGame(@PathVariable int game_id) {
     	
 		// Retrieve all persons by delegating the call to PersonService
-		List<Period> periods = periodService.getPeriodsForGame(game_id);
+		List<Period> periods = gameService.getPeriodsForGame(game_id);
 		 
 		return periods;
     }
 	
 	
 	
-	//@RequestMapping(value = "/period/entry/{game_id}", method = RequestMethod.POST, headers="Accept=application/json")
+	@RequestMapping(value = "/game_entry", method = RequestMethod.POST, headers="Accept=application/json")
+	public String addGameEntry(GameEntry gameEntry) {
+		// Call PersonService to do the actual adding
+		gameService.addGameEntry(gameEntry);
+		 	
+		return "success";
+		
+	}
 	
+	
+    @RequestMapping(value = "/period_entry", method = RequestMethod.POST, headers="Accept=application/json")
+    public String addPeriodEntry(PeriodEntry periodEntry) {
+   
+		// Call PersonService to do the actual adding
+		gameService.addPeriodEntry(periodEntry);
+		 	
+		return "success";
+	}
+	    
+    
 	
 	
 	

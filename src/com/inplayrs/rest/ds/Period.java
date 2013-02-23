@@ -1,7 +1,7 @@
 package com.inplayrs.rest.ds;
 
 
-import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,7 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
+ 
 
 @Entity
 @Table(name = "period")
@@ -42,7 +42,7 @@ public class Period {
 	private Integer state;
 	
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "period")
-	private List <PeriodOption> periodOptions;
+	private Set <PeriodOption> periodOptions;
 	
 	/*
 	 * Default constructor - required by Hibernate
@@ -93,11 +93,11 @@ public class Period {
 		this.state = state;
 	}
 	
-	public List<PeriodOption> getPeriodOptions() {
+	public Set<PeriodOption> getPeriodOptions() {
 		return this.periodOptions;
 	}
 	
-	public void setPeriodOptions(List<PeriodOption> periodOptions) {
+	public void setPeriodOptions(Set<PeriodOption> periodOptions) {
 		this.periodOptions = periodOptions;
 	}
 	

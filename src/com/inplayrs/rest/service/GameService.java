@@ -1,8 +1,11 @@
 package com.inplayrs.rest.service;
 
 
+import com.inplayrs.rest.ds.GameEntry;
 import com.inplayrs.rest.ds.Period;
+import com.inplayrs.rest.ds.PeriodEntry;
 
+import java.util.HashSet;
 import java.util.List;
 import javax.annotation.Resource;
 //import org.apache.log4j.Logger;
@@ -18,9 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 /*
  * Service for processing Periods
  */
-@Service("periodService")
+@Service("gameService")
 @Transactional
-public class PeriodService {
+public class GameService {
 
 	@Resource(name="sessionFactory")
 	private SessionFactory sessionFactory;
@@ -55,20 +58,31 @@ public class PeriodService {
 		   
 		// Retrieve all
 		return  query.list();
+		
 	 }
 	
 	
 	
-	
-	/**
-	  * Adds a new period
-	  */
-	public void add(Period period) {
+	 public void addGameEntry(GameEntry gameEntry) {
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 		   
 		// Save
-		session.save(period);
+		session.save(gameEntry);
+	 }
+	 
+	 
+	 
+	
+	/**
+	  * Adds a new period entry
+	  */
+	public void addPeriodEntry(PeriodEntry periodEntry) {
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+		   
+		// Save
+		session.save(periodEntry);
 	}
 	 
 	

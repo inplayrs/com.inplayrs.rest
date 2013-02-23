@@ -11,6 +11,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 @Entity
 @Table(name = "period_option")
@@ -21,17 +22,17 @@ public class PeriodOption {
 	@GeneratedValue
 	private int period_option_id;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "period", nullable = false)
+	@Column(name = "period", insertable=false, updatable=false)
 	@JsonIgnore
-	private Period period;
+	private int period_id;
 	
 	@Column(name = "event")
+	@JsonIgnore
 	private int event_id;
 	
-	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "question_option", nullable = false)
-	private QuestionOption questionOption;
+	@Column(name = "question_option", insertable=false, updatable=false)
+	@JsonIgnore
+	private int question_option_id;
 	
 	@Column(nullable=true, name = "odds")
 	private String odds;
@@ -41,6 +42,17 @@ public class PeriodOption {
 	
 	@Column(nullable=true, name = "status")
 	private Integer status;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "period", nullable = false)
+	@JsonIgnore
+	private Period period;
+	
+	@JsonUnwrapped
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "question_option", nullable = false)
+	private QuestionOption questionOption;
+	
 	
 	/*
 	 * Default constructor - required by Hibernate
@@ -106,6 +118,26 @@ public class PeriodOption {
 
 	public void setStatus(Integer status) {
 		this.status = status;
+	}
+
+
+	public int getPeriod_id() {
+		return period_id;
+	}
+
+
+	public void setPeriod_id(int period_id) {
+		this.period_id = period_id;
+	}
+
+
+	public int getQuestion_option_id() {
+		return question_option_id;
+	}
+
+
+	public void setQuestion_option_id(int question_option_id) {
+		this.question_option_id = question_option_id;
 	}
 	
 	
