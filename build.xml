@@ -11,6 +11,7 @@
     <path id="master-classpath">
         <fileset dir="${web.dir}/WEB-INF/lib">
             <include name="*.jar"/>
+        	<exclude name="servlet-api.jar"/>	<!-- Don't include as it's already included in tomcat lib -->
         </fileset>
         <!-- We need the servlet API classes: -->
         <!--  * for Tomcat 5/6 use servlet-api.jar -->

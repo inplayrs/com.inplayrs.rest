@@ -3,13 +3,17 @@ package com.inplayrs.rest.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.http.HttpStatus;
 
 import com.inplayrs.rest.ds.GameEntry;
 import com.inplayrs.rest.ds.Period;
 import com.inplayrs.rest.ds.PeriodEntry;
+import com.inplayrs.rest.ds.TestTable;
 import com.inplayrs.rest.service.GameService;
 
 import java.util.List;
@@ -38,42 +42,64 @@ public class GameController {
 	private GameService gameService;
 	
 	
-	@RequestMapping(value = "/periods/{game_id}", method = RequestMethod.GET, headers="Accept=application/json")
-    public @ResponseBody List<Period> getPeriodsForGame(@PathVariable int game_id) {
+	@RequestMapping(value = "/periods", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+    public @ResponseBody List<Period> getPeriodsForGame(@RequestParam(value="game_id", required=true) int game_id) {
     	
-		// Retrieve all persons by delegating the call to PersonService
 		List<Period> periods = gameService.getPeriodsForGame(game_id);
 		 
 		return periods;
     }
 	
 	
-	
 	@RequestMapping(value = "/game_entry", method = RequestMethod.POST, headers="Accept=application/json")
-	public String addGameEntry(GameEntry gameEntry) {
-		// Call PersonService to do the actual adding
-		gameService.addGameEntry(gameEntry);
+	@ResponseStatus( HttpStatus.CREATED )
+	public @ResponseBody Integer addGameEntry(@RequestBody GameEntry gameEntry) {
+
+		return gameService.addGameEntry(gameEntry);
 		 	
-		return "success";
-		
 	}
 	
 	
     @RequestMapping(value = "/period_entry", method = RequestMethod.POST, headers="Accept=application/json")
-    public String addPeriodEntry(PeriodEntry periodEntry) {
+    @ResponseStatus( HttpStatus.CREATED )
+    public @ResponseBody Integer addPeriodEntry(@RequestBody PeriodEntry periodEntry) {
    
-		// Call PersonService to do the actual adding
-		gameService.addPeriodEntry(periodEntry);
+		return gameService.addPeriodEntry(periodEntry); 
 		 	
-		return "success";
+	}
+    
+    
+    @RequestMapping(value = "/test_table", method = RequestMethod.POST, headers="Accept=application/json")
+    @ResponseStatus( HttpStatus.CREATED )
+    public @ResponseBody Integer addTestTable(@RequestBody TestTable testTable) {
+   
+    	System.out.println("Entering test table POST");
+		return gameService.addTestTable(testTable); 
+		 	
 	}
 	    
     
+	@RequestMapping(value = "/test_tables", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+    public @ResponseBody List<TestTable> getTestTables() {
+    	
+		System.out.println("Entering GET test table list");
+		List<TestTable> testTables = gameService.getTestTables();
+		 
+		return testTables;
+    }
 	
 	
-	
-	
-	
+	@RequestMapping(value = "/test_table", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+    public @ResponseBody TestTable getTestTable(@RequestParam(value="id", required=true) int id) {
+    	
+		System.out.println("Entering GET test table by ID");
+		TestTable testTable = gameService.getTestTable(id);
+		 
+		return testTable;
+    }
 	
 	
 }

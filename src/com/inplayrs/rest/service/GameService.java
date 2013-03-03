@@ -4,6 +4,7 @@ package com.inplayrs.rest.service;
 import com.inplayrs.rest.ds.GameEntry;
 import com.inplayrs.rest.ds.Period;
 import com.inplayrs.rest.ds.PeriodEntry;
+import com.inplayrs.rest.ds.TestTable;
 
 import java.util.HashSet;
 import java.util.List;
@@ -19,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 /*
- * Service for processing Periods
+ * Service for processing game data
  */
 @Service("gameService")
 @Transactional
@@ -32,7 +33,7 @@ public class GameService {
 	/**
 	  * Retrieves a single period by the period_id
 	  */
-	public Period get(int period_id) {
+	public Period getPeriod(int period_id) {
 	    // Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 		   
@@ -48,7 +49,8 @@ public class GameService {
 	  * 
 	  * @return a list of Periods
 	  */
-	 public List<Period> getPeriodsForGame(int game_id) {
+	@SuppressWarnings("unchecked")
+	public List<Period> getPeriodsForGame(int game_id) {
 	   
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
@@ -58,33 +60,73 @@ public class GameService {
 		   
 		// Retrieve all
 		return  query.list();
-		
 	 }
 	
 	
-	
-	 public void addGameEntry(GameEntry gameEntry) {
+	 /*
+	  * Adds a game entry
+	  */
+	 public Integer addGameEntry(GameEntry gameEntry) {
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 		   
 		// Save
-		session.save(gameEntry);
+		return (Integer)session.save(gameEntry);
 	 }
-	 
-	 
 	 
 	
 	/**
 	  * Adds a new period entry
 	  */
-	public void addPeriodEntry(PeriodEntry periodEntry) {
+	public Integer addPeriodEntry(PeriodEntry periodEntry) {
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 		   
 		// Save
-		session.save(periodEntry);
+		return (Integer)session.save(periodEntry);
 	}
 	 
 	
+	/*
+	 * Test function - return one record from table
+	 */
+	public TestTable getTestTable(int id) {
+	    // Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+		   
+		// Retrieve existing period first
+		TestTable testTable = (TestTable) session.get(TestTable.class, id);
+		   
+		return testTable;	
+	}
+	
+	
+	/**
+	  * Test function - return all records from test table
+	  */
+	@SuppressWarnings("unchecked")
+	public List<TestTable> getTestTables() {
+	   
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+		   
+		// Create a Hibernate query (HQL)
+		Query query = session.createQuery("FROM TestTable t");
+		   
+		// Retrieve all
+		return  query.list();
+	 }
+	
+	
+	/**
+	  * Test function - add a new record in test table
+	  */
+	public Integer addTestTable(TestTable testTable) {
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+		   
+		// Save
+		return (Integer)session.save(testTable);
+	}
 	
 }
