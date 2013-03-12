@@ -14,8 +14,8 @@ import javax.persistence.Table;
 import javax.persistence.JoinColumn;
 
 @Entity
-@Table(name = "option_combination")
-public class OptionCombination {
+@Table(name = "selection_combination")
+public class SelectionCombination {
 	
 	@Id
 	@Column(name = "combination_id")
@@ -28,8 +28,8 @@ public class OptionCombination {
 	
 	@OneToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name="combination_selection",
-            joinColumns = @JoinColumn( name="option_combination"),
+            name="combination_options",
+            joinColumns = @JoinColumn( name="selection_combination"),
             inverseJoinColumns = @JoinColumn( name="period_option")
     )
 	private Set <PeriodOption> periodOptions;
@@ -38,7 +38,7 @@ public class OptionCombination {
 	/*
 	 * Default constructor - required by Hibernate
 	 */
-	public OptionCombination() {
+	public SelectionCombination() {
 		
 	}
 

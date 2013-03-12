@@ -6,6 +6,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xmlns:mvc="http://www.springframework.org/schema/mvc"
 	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
 	xsi:schemaLocation="
 		http://www.springframework.org/schema/beans
 		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
@@ -21,6 +22,7 @@
 	<context:component-scan base-package="com.inplayrs.rest.controller" />
 	<context:component-scan base-package="com.inplayrs.rest.service" />
 	<context:component-scan base-package="com.inplayrs.rest.ds" />
+	<context:component-scan base-package="com.inplayrs.rest.mapper" />
 	
 	<!-- Configure support for new Spring MVC features such as declarative validation with @Valid, 
 		 HTTP message conversion with @RequestBody/@ResponseBody, new field conversion architecture, etc-->
@@ -36,6 +38,8 @@
 	   <property name="messageConverters">
 	       <list>
 	           <ref bean="jsonConverter" />
+	           <bean class="org.springframework.http.converter.StringHttpMessageConverter"/>
+        	   <bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter"/>
 			   <!-- <ref bean="marshallingConverter" />	-->
 	       </list>
 	   </property>
@@ -49,9 +53,18 @@
 		 media type application/json.-->
 	<bean id="jsonConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
 	   <property name="supportedMediaTypes" value="application/json" />
+	   <property name="objectMapper" ref="jacksonObjectMapper"/> 
 	</bean>
 	
+  	<!-- This is meant to ensure that jodatime times are serialized / deserialised from JSON correctly
+  		 however it doesn't seem to work and we created CustomDateTimeSerializer and  CustomDateTimeDeserializer
+  		 to do the job.  We may want to remove the below at some point -->
+	<bean id="jacksonObjectMapper" class="com.inplayrs.rest.mapper.CustomObjectMapper" />
+	<bean id="jacksonSerializationConfig" class="com.fasterxml.jackson.databind.SerializationConfig"
+	    factory-bean="jacksonObjectMapper" factory-method="getSerializationConfig" >
+	</bean>
 	
+		
 	<!-- This is another type of HttpMessageConverter.  The MarshallingHttpMessageConverter 
 		 enables you to Read/write XML data using Spring's marshaller/un-marshaller. It converts 
 		 data of media type application/xml.-#->

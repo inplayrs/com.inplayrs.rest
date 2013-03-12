@@ -3,7 +3,7 @@ package com.inplayrs.rest.service;
 
 import com.inplayrs.rest.ds.GameEntry;
 import com.inplayrs.rest.ds.Period;
-import com.inplayrs.rest.ds.PeriodEntry;
+import com.inplayrs.rest.ds.PeriodSelection;
 import com.inplayrs.rest.ds.TestTable;
 
 import java.util.HashSet;
@@ -78,55 +78,14 @@ public class GameService {
 	/**
 	  * Adds a new period entry
 	  */
-	public Integer addPeriodEntry(PeriodEntry periodEntry) {
+	public Integer addPeriodSelection(PeriodSelection periodSelection) {
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 		   
 		// Save
-		return (Integer)session.save(periodEntry);
+		return (Integer)session.save(periodSelection);
 	}
 	 
 	
-	/*
-	 * Test function - return one record from table
-	 */
-	public TestTable getTestTable(int id) {
-	    // Retrieve session from Hibernate
-		Session session = sessionFactory.getCurrentSession();
-		   
-		// Retrieve existing period first
-		TestTable testTable = (TestTable) session.get(TestTable.class, id);
-		   
-		return testTable;	
-	}
-	
-	
-	/**
-	  * Test function - return all records from test table
-	  */
-	@SuppressWarnings("unchecked")
-	public List<TestTable> getTestTables() {
-	   
-		// Retrieve session from Hibernate
-		Session session = sessionFactory.getCurrentSession();
-		   
-		// Create a Hibernate query (HQL)
-		Query query = session.createQuery("FROM TestTable t");
-		   
-		// Retrieve all
-		return  query.list();
-	 }
-	
-	
-	/**
-	  * Test function - add a new record in test table
-	  */
-	public Integer addTestTable(TestTable testTable) {
-		// Retrieve session from Hibernate
-		Session session = sessionFactory.getCurrentSession();
-		   
-		// Save
-		return (Integer)session.save(testTable);
-	}
 	
 }

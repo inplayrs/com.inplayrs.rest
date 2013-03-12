@@ -6,6 +6,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Type;
+import org.joda.time.LocalDateTime;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.inplayrs.rest.jodatime.CustomDateTimeDeserializer;
+import com.inplayrs.rest.jodatime.CustomDateTimeSerializer;
+
 @Entity
 @Table(name = "test_table")
 public class TestTable {
@@ -22,6 +30,12 @@ public class TestTable {
 	@Column(name = "field_2_int")
 	private int field_2_int;
 	
+	
+	@Column(name = "field_3_date")
+	@Type(type="org.jadira.usertype.dateandtime.joda.PersistentLocalDateTime")
+	@JsonSerialize(using = CustomDateTimeSerializer.class)
+	@JsonDeserialize(using = CustomDateTimeDeserializer.class)
+	private LocalDateTime field_3_date;
 	
 	/*
 	 * Default constructor - required by Hibernate
@@ -58,6 +72,16 @@ public class TestTable {
 
 	public void setField_2_int(int field_2_int) {
 		this.field_2_int = field_2_int;
+	}
+
+
+	public LocalDateTime getField_3_date() {
+		return field_3_date;
+	}
+
+
+	public void setField_3_date(LocalDateTime field_3_date) {
+		this.field_3_date = field_3_date;
 	}
 	
 	

@@ -2,9 +2,13 @@ package com.inplayrs.rest.service;
 
 import javax.annotation.Resource;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.inplayrs.rest.ds.Period;
+import com.inplayrs.rest.ds.User;
 
 
 /*
@@ -31,6 +35,18 @@ public class UserService {
 		}		
 	
 	}
+	
+	
+	public User getUser(int user_id) {
+	    // Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+		   
+		// Retrieve existing user first
+		User user = (User) session.get(User.class, user_id);
+		   
+		return user;
+	}
+	
 	
 	
 	

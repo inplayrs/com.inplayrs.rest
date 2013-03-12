@@ -37,7 +37,7 @@ public class GameEntry {
 	private int points;
 	
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "game_entry_id")
-	private Set <PeriodEntry> periodEntries;
+	private Set <PeriodSelection> periodSelections;
 	
 	
 	/*
@@ -78,13 +78,13 @@ public class GameEntry {
 	}
 
 
-	public Set<PeriodEntry> getPeriodEntries() {
-		return periodEntries;
+	public Set<PeriodSelection> getPeriodEntries() {
+		return periodSelections;
 	}
 
 
-	public void setPeriodEntries(Set<PeriodEntry> periodEntries) {
-		this.periodEntries = periodEntries;
+	public void setPeriodEntries(Set<PeriodSelection> periodSelections) {
+		this.periodSelections = periodSelections;
 	}
 
 

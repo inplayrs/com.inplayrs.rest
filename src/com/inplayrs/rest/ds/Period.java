@@ -10,6 +10,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.Type;
+import org.joda.time.LocalDateTime;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.inplayrs.rest.jodatime.CustomDateTimeDeserializer;
+import com.inplayrs.rest.jodatime.CustomDateTimeSerializer;
  
 
 @Entity
@@ -17,15 +25,6 @@ import javax.persistence.Table;
 public class Period {
 
 
-	// Game variables
-	/*
-	private String game_name;
-	private int game_template_id;
-	private int event;
-	private int round;
-	private int game_state;
-	 */
-	
 	// Period variables
 	@Id
 	@Column(name = "period_id")
@@ -37,6 +36,18 @@ public class Period {
 	
 	@Column(name = "name")
 	private String name;
+	
+	@Column(name = "start_time")
+	@Type(type="org.jadira.usertype.dateandtime.joda.PersistentLocalDateTime")
+	@JsonSerialize(using = CustomDateTimeSerializer.class)
+	@JsonDeserialize(using = CustomDateTimeDeserializer.class)
+	private LocalDateTime start_time;
+	
+	@Column(name = "elapsed_time")
+	@Type(type="org.jadira.usertype.dateandtime.joda.PersistentLocalDateTime")
+	@JsonSerialize(using = CustomDateTimeSerializer.class)
+	@JsonDeserialize(using = CustomDateTimeDeserializer.class)
+	private LocalDateTime elapsed_time;
 	
 	@Column(nullable=true, name = "state")
 	private Integer state;
@@ -51,16 +62,6 @@ public class Period {
 	}
 	
 	
-
-	public Period(int period_id, int game_id, String name, Integer state) {
-		this.period_id = period_id;
-		this.game_id = game_id;
-		this.name = name;
-		this.state = state;
-	}
-
-
-
 	public int getPeriod_id() {
 		return period_id;
 	}
@@ -99,6 +100,26 @@ public class Period {
 	
 	public void setPeriodOptions(Set<PeriodOption> periodOptions) {
 		this.periodOptions = periodOptions;
+	}
+
+
+	public LocalDateTime getStart_time() {
+		return start_time;
+	}
+
+
+	public void setStart_time(LocalDateTime start_time) {
+		this.start_time = start_time;
+	}
+
+
+	public LocalDateTime getElapsed_time() {
+		return elapsed_time;
+	}
+
+
+	public void setElapsed_time(LocalDateTime elapsed_time) {
+		this.elapsed_time = elapsed_time;
 	}
 	
 	

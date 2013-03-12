@@ -11,13 +11,13 @@ import javax.persistence.Table;
 
 
 @Entity
-@Table(name = "period_entry")
-public class PeriodEntry {
+@Table(name = "period_selection")
+public class PeriodSelection {
 
 	@Id
-	@Column(name = "period_entry_id")
+	@Column(name = "selection_id")
 	@GeneratedValue
-	private int period_entry_id;
+	private int selection_id;
 	
 	@Column(name = "period", insertable = false, updatable = false)
 	private int period_id;
@@ -36,16 +36,16 @@ public class PeriodEntry {
 	/*
 	 * Default constructor - required by Hibernate
 	 */
-	public PeriodEntry() {
+	public PeriodSelection() {
 		
 	}
 
-	public int getPeriod_entry_id() {
-		return period_entry_id;
+	public int getSelection_id() {
+		return selection_id;
 	}
 
-	public void setPeriod_entry_id(int period_entry_id) {
-		this.period_entry_id = period_entry_id;
+	public void setSelection_id(int selection_id) {
+		this.selection_id = selection_id;
 	}
 
 	public Period getPeriod() {
