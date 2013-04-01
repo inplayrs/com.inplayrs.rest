@@ -47,18 +47,14 @@ public class GameService {
 	/**
 	  * Retrieves all periods for a given game
 	  * 
-	  * @return a list of Periods
+	  * @return list of Periods
 	  */
 	@SuppressWarnings("unchecked")
-	public List<Period> getPeriodsForGame(int game_id) {
+	public List<Period> getPeriodsInGame(Integer game_id) {
 	   
-		// Retrieve session from Hibernate
-		Session session = sessionFactory.getCurrentSession();
-		   
-		// Create a Hibernate query (HQL)
-		Query query = session.createQuery("FROM Period p where p.game_id = ".concat(Integer.toString(game_id)));
-		   
-		// Retrieve all
+		// Retrieve session from Hibernate, create query (HQL) and return a list of Periods
+		Session session = sessionFactory.getCurrentSession(); 
+		Query query = session.createQuery("FROM Period p where p.game.game_id = ".concat(game_id.toString()));
 		return  query.list();
 	 }
 	

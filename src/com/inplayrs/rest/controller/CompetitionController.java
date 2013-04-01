@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.http.HttpStatus;
 
+import com.inplayrs.rest.ds.Competition;
 import com.inplayrs.rest.ds.FanGroup;
+import com.inplayrs.rest.ds.Game;
 import com.inplayrs.rest.service.CompetitionService;
 import com.inplayrs.rest.service.GameService;
 
@@ -30,12 +32,48 @@ public class CompetitionController {
 	
 	@RequestMapping(value = "/fangroups", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
-    public @ResponseBody List<FanGroup> getFanGroupsInCompetition(@RequestParam(value="comp_id", required=true) int comp_id) {
+    public @ResponseBody List<FanGroup> getFanGroupsInCompetition(@RequestParam(value="comp_id", required=true) Integer comp_id) {
     	
 		List<FanGroup> fanGroups = competitionService.getFanGroupsInCompetition(comp_id);
 		 
 		return fanGroups;
     }
+	
+	
+	@RequestMapping(value = "/list", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+    public @ResponseBody List<Competition> getCompetitions(@RequestParam(value="state", required=false) Integer state) {
+    	
+		List<Competition> competitions;
+		
+		if (state != null) {
+			competitions = competitionService.getCompetitions(state);
+		} else {
+			competitions = competitionService.getCompetitions();
+		}
+		 
+		return competitions;
+    }
+	
+	
+	@RequestMapping(value = "/games", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+    public @ResponseBody List<Game> getGamesInCompetition(@RequestParam(value="comp_id", required=true) Integer comp_id, 
+    													  @RequestParam(value="state", required=false) Integer state) {
+		List<Game> games;
+		
+		if (state != null) {
+			games = competitionService.getGamesInCompetition(comp_id, state);
+		} else {
+			games = competitionService.getGamesInCompetition(comp_id);
+		}
+	
+		return games;
+    }
+	
+	
+	
+	
 	
 	
 }

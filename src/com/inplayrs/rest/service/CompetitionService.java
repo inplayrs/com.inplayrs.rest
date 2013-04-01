@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.inplayrs.rest.ds.Competition;
 import com.inplayrs.rest.ds.FanGroup;
+import com.inplayrs.rest.ds.Game;
 
 
 /*
@@ -24,29 +25,42 @@ public class CompetitionService {
 	@Resource(name="sessionFactory")
 	private SessionFactory sessionFactory;
 	
-	public List<Competition> getCompetitions(int cat_id) {
-			   
-		// Retrieve session from Hibernate
-		Session session = sessionFactory.getCurrentSession();
-		   
-		// Create a Hibernate query (HQL)
-		Query query = session.createQuery("FROM Competition c where c.category = ".concat(Integer.toString(cat_id)));
-		   
-		// Retrieve all
-		return  query.list();
-	 }
 	
-	
-	public List<FanGroup> getFanGroupsInCompetition(int comp_id) {
-		// Retrieve session from Hibernate
+	public List<FanGroup> getFanGroupsInCompetition(Integer comp_id) {
+		// Retrieve session from Hibernate, create query (HQL) and return a list of fangroups
 		Session session = sessionFactory.getCurrentSession();
-		   
-		// Create a Hibernate query (HQL)
-		Query query = session.createQuery("FROM FanGroup f where f.competition.comp_id = ".concat(Integer.toString(comp_id)));
-		   
-		// Retrieve all
+		Query query = session.createQuery("FROM FanGroup f where f.competition.comp_id = ".concat(comp_id.toString()));
 		return  query.list();
 	}
 	
+	
+	public List<Competition> getCompetitions(Integer state) {   
+		// Retrieve session from Hibernate, create query (HQL) and return a list of competitions
+		Session session = sessionFactory.getCurrentSession();
+		Query query = session.createQuery("FROM Competition c where c.state = ".concat(state.toString()));
+		return  query.list();
+	 }
+	
+	public List<Competition> getCompetitions() {   
+		// Retrieve session from Hibernate, create query (HQL) and return a list of competitions
+		Session session = sessionFactory.getCurrentSession();
+		Query query = session.createQuery("FROM Competition c");
+		return  query.list();
+	}
+	
+	
+	public List<Game> getGamesInCompetition(Integer comp_id, Integer state) {
+		// Retrieve session from Hibernate, create query (HQL) and return a list of games
+		Session session = sessionFactory.getCurrentSession();
+		Query query = session.createQuery("FROM Game g where g.competition.comp_id = ".concat(comp_id.toString()).concat(" and g.state = ").concat(state.toString()));
+		return  query.list();
+	}
+	
+	public List<Game> getGamesInCompetition(Integer comp_id) {
+		// Retrieve session from Hibernate, create query (HQL) and return a list of games
+		Session session = sessionFactory.getCurrentSession();
+		Query query = session.createQuery("FROM Game g where g.competition.comp_id = ".concat(comp_id.toString()));
+		return  query.list();
+	}
 	
 }

@@ -38,10 +38,10 @@ public class GameController {
 	
 	@RequestMapping(value = "/periods", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
-    public @ResponseBody List<Period> getPeriodsForGame(@RequestParam(value="game_id", required=true) int game_id) {
+    public @ResponseBody List<Period> getPeriodsInGame(@RequestParam(value="game_id", required=true) Integer game_id) {
     	
-		List<Period> periods = gameService.getPeriodsForGame(game_id);
-		 
+		List<Period> periods = gameService.getPeriodsInGame(game_id);
+		
 		return periods;
     }
 	
