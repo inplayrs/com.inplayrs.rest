@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.http.HttpStatus;
 
+import com.inplayrs.rest.ds.FanGroup;
 import com.inplayrs.rest.service.CompetitionService;
 import com.inplayrs.rest.service.GameService;
 
@@ -27,6 +28,14 @@ public class CompetitionController {
 	@Resource(name="competitionService")
 	private CompetitionService competitionService;
 	
+	@RequestMapping(value = "/fangroups", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+    public @ResponseBody List<FanGroup> getFanGroupsInCompetition(@RequestParam(value="comp_id", required=true) int comp_id) {
+    	
+		List<FanGroup> fanGroups = competitionService.getFanGroupsInCompetition(comp_id);
+		 
+		return fanGroups;
+    }
 	
 	
 }

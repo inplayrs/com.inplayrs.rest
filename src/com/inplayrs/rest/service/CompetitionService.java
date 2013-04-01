@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.inplayrs.rest.ds.Competition;
+import com.inplayrs.rest.ds.FanGroup;
 
 
 /*
@@ -34,6 +35,18 @@ public class CompetitionService {
 		// Retrieve all
 		return  query.list();
 	 }
+	
+	
+	public List<FanGroup> getFanGroupsInCompetition(int comp_id) {
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+		   
+		// Create a Hibernate query (HQL)
+		Query query = session.createQuery("FROM FanGroup f where f.competition.comp_id = ".concat(Integer.toString(comp_id)));
+		   
+		// Retrieve all
+		return  query.list();
+	}
 	
 	
 }

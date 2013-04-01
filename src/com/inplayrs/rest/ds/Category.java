@@ -46,6 +46,14 @@ public class Category {
 	public void setName(String name) {
 		this.name = name;
 	}
+
+	public Set<Competition> getCompetitions() {
+		return competitions;
+	}
+
+	public void setCompetitions(Set<Competition> competitions) {
+		this.competitions = competitions;
+	}
 	
 	
 	

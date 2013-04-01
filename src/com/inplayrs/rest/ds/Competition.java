@@ -12,8 +12,6 @@ import javax.persistence.Table;
 import org.hibernate.annotations.Type;
 import org.joda.time.LocalDateTime;
 
-//import org.jadira.usertype.dateandtime.jsr310.PersistentLocalDateTime;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -32,6 +30,11 @@ public class Competition {
 	@Column(name = "name")
 	private String name;
 	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "category", nullable = false)
+	@JsonIgnore
+	private Category category;
+	
 	@Column(name = "start_date")
 	@Type(type="org.jadira.usertype.dateandtime.joda.PersistentLocalDateTime")
 	@JsonSerialize(using = CustomDateTimeSerializer.class)
@@ -46,11 +49,6 @@ public class Competition {
 	
 	@Column(name = "state")
 	private int state;
-	
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "category", nullable = false)
-	@JsonIgnore
-	private Category category;
 	
 	
 	/*

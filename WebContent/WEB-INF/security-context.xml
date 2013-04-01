@@ -1,33 +1,38 @@
 <beans:beans xmlns="http://www.springframework.org/schema/security"
-    xmlns:beans="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	xmlns:beans="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
                     	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
                     	http://www.springframework.org/schema/security 
                     	http://www.springframework.org/schema/security/spring-security-3.1.xsd">
 
- 	<!-- Note that in this config file, security is the default namespace rather than beans, 
- 		 so any bean declarations must be prefixed with 'beans:' -->   
-      
-    <!-- Handle authentication.  Inject our own custom security filter into the springSecurityFilterChain
-		 Don't create sessions as this is a RESTful web service -->
-	<http create-session="stateless" entry-point-ref="authenticationEntryPoint" authentication-manager-ref="authenticationManager">
-	    <custom-filter ref="customRestFilter" position="BASIC_AUTH_FILTER" />
-	    <intercept-url pattern="/**" access="ROLE_USER" />
+	<!-- Note that in this config file, security is the default namespace rather 
+		than beans, so any bean declarations must be prefixed with 'beans:' -->
+
+	<!-- Handle authentication. Inject our own custom security filter into the 
+		springSecurityFilterChain Don't create sessions as this is a RESTful web 
+		service -->
+	<http create-session="stateless" entry-point-ref="authenticationEntryPoint"
+		authentication-manager-ref="authenticationManager">
+		<custom-filter ref="customRestFilter" position="BASIC_AUTH_FILTER" />
+		<intercept-url pattern="/**" access="ROLE_USER" />
 	</http>
-	 
-	<beans:bean id="authenticationEntryPoint" class="org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint">
-	    <beans:property name="realmName" value="Not Authorized" />
+
+	<beans:bean id="authenticationEntryPoint"
+		class="org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint">
+		<beans:property name="realmName" value="Not Authorized" />
 	</beans:bean>
-	 
-	<beans:bean id="customRestFilter" class="com.inplayrs.rest.security.CustomRestSecurityFilter">
-	    <beans:constructor-arg name="authenticationManager" ref="authenticationManager" />
+
+	<beans:bean id="customRestFilter"
+		class="com.inplayrs.rest.security.CustomRestSecurityFilter">
+		<beans:constructor-arg name="authenticationManager"
+			ref="authenticationManager" />
 	</beans:bean>
-	 
+
 	<authentication-manager alias="authenticationManager">
-	    <authentication-provider ref="restAuthenticationProvider" />
+		<authentication-provider ref="restAuthenticationProvider" />
 	</authentication-manager>
-	 
-	<beans:bean id="restAuthenticationProvider" class="com.inplayrs.rest.security.RestAuthenticationProvider" />	
-	
+
+	<beans:bean id="restAuthenticationProvider"
+		class="com.inplayrs.rest.security.RestAuthenticationProvider" />
+
 </beans:beans>
