@@ -36,6 +36,9 @@ public class Game {
 	@JsonIgnore
 	private Competition competition;
 	
+	@Column(name = "competition", insertable=false, updatable = false)
+	private int competition_id;
+	
 	@Column(name = "game_type")
 	private int game_type;
 	
@@ -220,6 +223,18 @@ public class Game {
 
 	public void setStake(int stake) {
 		this.stake = stake;
+	}
+
+
+
+	public int getCompetition_id() {
+		return competition_id;
+	}
+
+
+
+	public void setCompetition_id(int competition_id) {
+		this.competition_id = competition_id;
 	}
 
 	

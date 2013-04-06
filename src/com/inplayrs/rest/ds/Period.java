@@ -35,7 +35,7 @@ public class Period {
 	@Column(name = "name")
 	private String name;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "game", nullable = false)
 	@JsonIgnore
 	private Game game;

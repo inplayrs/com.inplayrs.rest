@@ -2,6 +2,7 @@ package com.inplayrs.rest.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -16,7 +17,10 @@ import com.inplayrs.rest.ds.Game;
 import com.inplayrs.rest.service.CompetitionService;
 import com.inplayrs.rest.service.GameService;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import javax.annotation.Resource;
 
 /*
@@ -42,32 +46,49 @@ public class CompetitionController {
 	
 	@RequestMapping(value = "/list", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
-    public @ResponseBody List<Competition> getCompetitions(@RequestParam(value="state", required=false) Integer state) {
+    public @ResponseBody List<Competition> getCompetitions(@RequestParam(value="state", required=false) Integer state,
+    													   @RequestParam(value="stateOP", required=false) String stateOP) {
     	
-		List<Competition> competitions;
+		// Validate stateOP parameter
+		Map<String, Integer> validStateOperators = new HashMap<String, Integer>();
+		validStateOperators.put(null, 1);
+		validStateOperators.put("eq", 1);
+		validStateOperators.put("ne", 1);
+		validStateOperators.put("lt", 1);
+		validStateOperators.put("gt", 1);
 		
-		if (state != null) {
-			competitions = competitionService.getCompetitions(state);
-		} else {
-			competitions = competitionService.getCompetitions();
+		if (!validStateOperators.containsKey(stateOP)) {
+			throw new RuntimeException("Invalid stateOP value passed");
 		}
-		 
+		
+		List<Competition> competitions;
+		competitions = competitionService.getCompetitions(state, stateOP);	 
 		return competitions;
     }
 	
 	
 	@RequestMapping(value = "/games", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
-    public @ResponseBody List<Game> getGamesInCompetition(@RequestParam(value="comp_id", required=true) Integer comp_id, 
-    													  @RequestParam(value="state", required=false) Integer state) {
-		List<Game> games;
+	@ExceptionHandler(RuntimeException.class)
+    public @ResponseBody List<Game> getGames(@RequestParam(value="comp_id", required=false) Integer comp_id, 
+    										 @RequestParam(value="state", required=false) Integer state,
+    										 @RequestParam(value="stateOP", required=false) String stateOP){
 		
-		if (state != null) {
-			games = competitionService.getGamesInCompetition(comp_id, state);
-		} else {
-			games = competitionService.getGamesInCompetition(comp_id);
+		// Validate stateOP parameter
+		Map<String, Integer> validStateOperators = new HashMap<String, Integer>();
+		validStateOperators.put(null, 1);
+		validStateOperators.put("eq", 1);
+		validStateOperators.put("ne", 1);
+		validStateOperators.put("lt", 1);
+		validStateOperators.put("gt", 1);
+		
+		if (!validStateOperators.containsKey(stateOP)) {
+			throw new RuntimeException("Invalid stateOP value passed");
 		}
-	
+		
+		// Get list of games
+		List<Game> games;
+		games = competitionService.getGames(comp_id, state, stateOP);
 		return games;
     }
 	
