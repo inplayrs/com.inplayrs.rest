@@ -13,6 +13,7 @@ import org.hibernate.annotations.Type;
 import org.joda.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.inplayrs.rest.jodatime.CustomDateTimeDeserializer;
@@ -31,7 +32,7 @@ public class Game {
 	@Column(name = "name")
 	private String name;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "competition", nullable = false)
 	@JsonIgnore
 	private Competition competition;
@@ -72,8 +73,8 @@ public class Game {
 	@Column(name = "processed")
 	@JsonIgnore
 	private boolean processed;
-
 	
+		
 	
 	/*
 	 * Default constructor - required by Hibernate
@@ -236,7 +237,7 @@ public class Game {
 	public void setCompetition_id(int competition_id) {
 		this.competition_id = competition_id;
 	}
-
+	
 	
 	
 }

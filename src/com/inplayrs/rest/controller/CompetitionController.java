@@ -14,9 +14,13 @@ import org.springframework.http.HttpStatus;
 import com.inplayrs.rest.ds.Competition;
 import com.inplayrs.rest.ds.FanGroup;
 import com.inplayrs.rest.ds.Game;
+import com.inplayrs.rest.ds.Period;
+import com.inplayrs.rest.responseds.GameResponse;
+import com.inplayrs.rest.responseds.PeriodResponse;
 import com.inplayrs.rest.service.CompetitionService;
 import com.inplayrs.rest.service.GameService;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +74,7 @@ public class CompetitionController {
 	@RequestMapping(value = "/games", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
 	@ExceptionHandler(RuntimeException.class)
-    public @ResponseBody List<Game> getGames(@RequestParam(value="comp_id", required=false) Integer comp_id, 
+    public @ResponseBody List<GameResponse> getGames(@RequestParam(value="comp_id", required=false) Integer comp_id, 
     										 @RequestParam(value="state", required=false) Integer state,
     										 @RequestParam(value="stateOP", required=false) String stateOP){
 		
@@ -89,7 +93,16 @@ public class CompetitionController {
 		// Get list of games
 		List<Game> games;
 		games = competitionService.getGames(comp_id, state, stateOP);
-		return games;
+		
+		// Convert Games into GameResponse objects
+		// (objects that are in the format the client needs - mainly for alpha)
+		ArrayList<GameResponse> gameResponses = new ArrayList<GameResponse>();
+		for (Game g : games) {
+			GameResponse gr = new GameResponse(g);
+			gameResponses.add(gr);
+		}
+		
+		return gameResponses;
     }
 	
 	
