@@ -38,7 +38,7 @@ public class GameResponse {
 	private int stake;
 	
 	@JsonProperty
-	private int num_user_entries;
+	private int num_players;
 	
 	@JsonProperty
 	private int global_pot_size;
@@ -56,7 +56,7 @@ public class GameResponse {
 		this.start_date = g.getStart_date();
 		this.state = g.getState();
 		this.stake = g.getStake();	
-		this.num_user_entries = g.getNum_user_entries();
+		this.num_players = g.getNum_players();
 		this.global_pot_size = g.getGlobal_pot_size();
 		this.fangroup_pot_size = g.getFangroup_pot_size();
 		

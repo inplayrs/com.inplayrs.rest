@@ -47,6 +47,8 @@ public class GameEntry {
 	@Column(name = "h2h_winnings")
 	private int h2h_winnings;
 	
+	@Column(name = "total_winnings")
+	private int total_winnings;
 	
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "gameEntry")
 	private Set <PeriodSelection> periodSelections;
@@ -137,6 +139,16 @@ public class GameEntry {
 
 	public void setPeriodSelections(Set<PeriodSelection> periodSelections) {
 		this.periodSelections = periodSelections;
+	}
+
+
+	public int getTotal_winnings() {
+		return total_winnings;
+	}
+
+
+	public void setTotal_winnings(int total_winnings) {
+		this.total_winnings = total_winnings;
 	}
 
 

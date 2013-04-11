@@ -61,8 +61,8 @@ public class Game {
 	@Column(name = "stake")
 	private int stake;
 	
-	@Column(name = "num_user_entries")
-	private int num_user_entries;
+	@Column(name = "num_players")
+	private int num_players;
 	
 	@Column(name = "global_pot_size")
 	private int global_pot_size;
@@ -168,14 +168,14 @@ public class Game {
 
 
 
-	public int getNum_user_entries() {
-		return num_user_entries;
+	public int getNum_players() {
+		return num_players;
 	}
 
 
 
-	public void setNum_user_entries(int num_user_entries) {
-		this.num_user_entries = num_user_entries;
+	public void setNum_players(int num_players) {
+		this.num_players = num_players;
 	}
 
 

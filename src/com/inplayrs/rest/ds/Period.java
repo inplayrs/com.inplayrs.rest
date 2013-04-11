@@ -40,6 +40,9 @@ public class Period {
 	@JsonIgnore
 	private Game game;
 	
+	@Column(name = "game", insertable=false, updatable = false)
+	private int game_id;
+	
 	@Column(name = "start_date")
 	@Type(type="org.jadira.usertype.dateandtime.joda.PersistentLocalDateTime")
 	@JsonSerialize(using = CustomDateTimeSerializer.class)
@@ -62,11 +65,16 @@ public class Period {
 	private String score;
 	
 	@Column(name = "result")
-	private String result;
+	private int result;
 	
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "period")
-	private Set<PeriodOption> periodOptions;
+	@Column(name = "points0")
+	private int points0;
 	
+	@Column(name = "points1")
+	private int points1;
+	
+	@Column(name = "points2")
+	private int points2;
 	
 	/*
 	 * Default constructor - required by Hibernate
@@ -155,24 +163,56 @@ public class Period {
 	}
 
 
-	public String getResult() {
+	public int getResult() {
 		return result;
 	}
 
 
-	public void setResult(String result) {
+	public void setResult(int result) {
 		this.result = result;
 	}
 
 
-	public Set<PeriodOption> getPeriodOptions() {
-		return periodOptions;
+	public int getPoints0() {
+		return points0;
 	}
 
 
-	public void setPeriodOptions(Set<PeriodOption> periodOptions) {
-		this.periodOptions = periodOptions;
+	public void setPoints0(int points0) {
+		this.points0 = points0;
 	}
+
+
+	public int getPoints1() {
+		return points1;
+	}
+
+
+	public void setPoints1(int points1) {
+		this.points1 = points1;
+	}
+
+
+	public int getPoints2() {
+		return points2;
+	}
+
+
+	public void setPoints2(int points2) {
+		this.points2 = points2;
+	}
+
+
+	public int getGame_id() {
+		return game_id;
+	}
+
+
+	public void setGame_id(int game_id) {
+		this.game_id = game_id;
+	}
+
+
 
 	
 }
