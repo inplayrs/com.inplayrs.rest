@@ -16,7 +16,6 @@ import com.inplayrs.rest.ds.FanGroup;
 import com.inplayrs.rest.ds.Game;
 import com.inplayrs.rest.ds.Period;
 import com.inplayrs.rest.responseds.GameResponse;
-import com.inplayrs.rest.responseds.PeriodResponse;
 import com.inplayrs.rest.service.CompetitionService;
 import com.inplayrs.rest.service.GameService;
 

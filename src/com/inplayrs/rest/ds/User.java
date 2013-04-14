@@ -11,11 +11,8 @@ import javax.persistence.Table;
 @Table(name = "user")
 public class User {
 
-	@Id
-	@Column(name = "user_id")
-	@GeneratedValue
-	private int user_id;
 	
+	@Id
 	@Column(name = "username")
 	private String username;
 	
@@ -34,16 +31,6 @@ public class User {
 	 */
 	public User() {
 		
-	}
-
-
-	public int getUser_id() {
-		return user_id;
-	}
-
-
-	public void setUser_id(int user_id) {
-		this.user_id = user_id;
 	}
 
 

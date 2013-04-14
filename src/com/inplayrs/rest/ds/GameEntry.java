@@ -30,10 +30,16 @@ public class GameEntry {
 	@JsonIgnore
 	private Game game;
 	
+	@Column(name = "game", insertable=false, updatable = false)
+	private int game_id;
+	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user", nullable = false)
 	@JsonIgnore
 	private User user;
+	
+	@Column(name = "user", insertable=false, updatable = false)
+	private String username;
 	
 	@Column(name = "total_points")
 	private int total_points;
@@ -59,6 +65,12 @@ public class GameEntry {
 	 */
 	public GameEntry() {
 		
+	}
+	
+	
+	public GameEntry(int game_id, String username) {
+		this.game_id = game_id;
+		this.username = username;
 	}
 
 
@@ -149,6 +161,26 @@ public class GameEntry {
 
 	public void setTotal_winnings(int total_winnings) {
 		this.total_winnings = total_winnings;
+	}
+
+
+	public int getGame_id() {
+		return game_id;
+	}
+
+
+	public void setGame_id(int game_id) {
+		this.game_id = game_id;
+	}
+
+
+	public String getUsername() {
+		return username;
+	}
+
+
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
 

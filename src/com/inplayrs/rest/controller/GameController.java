@@ -1,6 +1,7 @@
 package com.inplayrs.rest.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import com.inplayrs.rest.ds.GameEntry;
 import com.inplayrs.rest.ds.Period;
 import com.inplayrs.rest.ds.PeriodSelection;
+import com.inplayrs.rest.responseds.GamePointsResponse;
 import com.inplayrs.rest.service.GameService;
 
 import java.util.List;
@@ -34,7 +36,9 @@ public class GameController {
 	@Resource(name="gameService")
 	private GameService gameService;
 	
-	
+	/*
+	 * GET game/periods
+	 */
 	@RequestMapping(value = "/periods", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
     public @ResponseBody List<Period> getPeriodsInGame(@RequestParam(value="game_id", required=true) Integer game_id) {
@@ -46,22 +50,38 @@ public class GameController {
     }
 	
 	
-	@RequestMapping(value = "/game_entry", method = RequestMethod.POST, headers="Accept=application/json")
+	/*
+	 * GET game/points
+	 */
+	@RequestMapping(value = "/points", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+    public @ResponseBody GamePointsResponse getGamePoints(@RequestParam(value="game_id", required=true) Integer game_id) {
+    		
+		// Get username of player
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+			
+		// Get game points
+		GamePointsResponse gamePoints = gameService.getGamePoints(game_id, username);
+		
+		return gamePoints;
+    }
+	
+	
+	/*
+	 * POST game/selections
+	 */
+	@RequestMapping(value = "/selections", method = RequestMethod.POST, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.CREATED )
-	public @ResponseBody Integer addGameEntry(@RequestBody GameEntry gameEntry) {
+	public @ResponseBody Integer addGamePeriodSelections(@RequestParam(value="game_id", required=true) Integer game_id,														
+														 @RequestBody PeriodSelection[] periodSelections) {
 
-		return gameService.addGameEntry(gameEntry);
+		// Get username of player
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		
+		return gameService.addGamePeriodSelections(game_id, username, periodSelections);
 		 	
 	}
 	
-	
-    @RequestMapping(value = "/period_selection", method = RequestMethod.POST, headers="Accept=application/json")
-    @ResponseStatus( HttpStatus.CREATED )
-    public @ResponseBody Integer addPeriodSelection(@RequestBody PeriodSelection periodSelection) {
-   
-		return gameService.addPeriodSelection(periodSelection); 
-		 	
-	}
     
 
 	
