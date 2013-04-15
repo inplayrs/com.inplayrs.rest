@@ -37,6 +37,9 @@ public class CompetitionController {
 	@Resource(name="competitionService")
 	private CompetitionService competitionService;
 	
+	/*
+	 * GET competition/fangroups
+	 */
 	@RequestMapping(value = "/fangroups", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
     public @ResponseBody List<FanGroup> getFanGroupsInCompetition(@RequestParam(value="comp_id", required=true) Integer comp_id) {
@@ -47,6 +50,9 @@ public class CompetitionController {
     }
 	
 	
+	/*
+	 * GET competition/list
+	 */
 	@RequestMapping(value = "/list", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
     public @ResponseBody List<Competition> getCompetitions(@RequestParam(value="state", required=false) Integer state,
@@ -70,6 +76,9 @@ public class CompetitionController {
     }
 	
 	
+	/*
+	 * GET competition/games
+	 */
 	@RequestMapping(value = "/games", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
 	@ExceptionHandler(RuntimeException.class)

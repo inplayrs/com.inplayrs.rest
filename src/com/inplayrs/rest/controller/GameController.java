@@ -82,8 +82,20 @@ public class GameController {
 		 	
 	}
 	
-    
+	
+	/*
+	 * POST game/period/bank
+	 */
+	@RequestMapping(value = "/period/bank", method = RequestMethod.POST, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.CREATED )
+	public @ResponseBody Integer bankPeriodPoints(@RequestParam(value="period_id", required=true) Integer period_id) {
 
+		// Get username of player
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		
+		return gameService.bankPeriodPoints(period_id, username);
+		 	
+	}
 	
 	
 }

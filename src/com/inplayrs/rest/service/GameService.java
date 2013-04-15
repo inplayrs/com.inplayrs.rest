@@ -201,6 +201,66 @@ public class GameService {
 		
 		return null;
 	}
+
+
+	public Integer bankPeriodPoints(Integer period_id, String username) {
+		
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+		
+		StringBuffer queryString = new StringBuffer("from PeriodSelection ps where ps.period = ");
+		queryString.append(period_id);
+		queryString.append(" and ps.gameEntry.user = '");
+		queryString.append(username);
+		queryString.append("'");
+		
+		Query query = session.createQuery(queryString.toString());
+		
+		@SuppressWarnings("unchecked")
+		List<PeriodSelection> result = query.list();
+		
+		if (result.isEmpty()) {
+			System.out.println("No PeriodSelection for this User and Period found.  Cannot bank points.");
+			return -1;
+		} else {
+			PeriodSelection ps = result.get(0);
+			// Can't bank points if already banked
+			if (ps.isCashed_out()) {
+				System.out.println("User has already banked points for this period");
+				return -1;
+			}
+			
+			Period period = ps.getPeriod();
+			
+			// Can only bank points if period is still in play
+			if (period.getState() == 1) {
+				// Update points won
+				switch(ps.getSelection()) {
+					case 0 : ps.setAwarded_points(period.getPoints0());
+							 break;
+					case 1 : ps.setAwarded_points(period.getPoints1());
+							 break;
+					case 2 : ps.setAwarded_points(period.getPoints2());
+							 break;
+					default: break;
+				}
+				
+				// Set banked
+				ps.setCashed_out(true);
+				
+				// Update PeriodSelection
+				session.update(ps);
+				
+				return ps.getAwarded_points();
+				
+			} else {
+				System.out.println("Cannot bank points, period is no longer in play");
+				return -1;
+			}
+
+		}
+			
+	}
 	 
 	
 	
