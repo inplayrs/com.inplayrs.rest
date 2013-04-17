@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.http.HttpStatus;
 
-import com.inplayrs.rest.ds.GameEntry;
 import com.inplayrs.rest.ds.Period;
 import com.inplayrs.rest.ds.PeriodSelection;
 import com.inplayrs.rest.responseds.GamePointsResponse;
@@ -19,7 +18,6 @@ import com.inplayrs.rest.service.GameService;
 import java.util.List;
 
 import javax.annotation.Resource;
- 
 
 import org.springframework.web.bind.annotation.RequestParam;
 

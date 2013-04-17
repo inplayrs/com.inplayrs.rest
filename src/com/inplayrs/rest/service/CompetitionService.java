@@ -28,9 +28,7 @@ public class CompetitionService {
 	@Resource(name="sessionFactory")
 	private SessionFactory sessionFactory;
 	
-	
-	
-	
+	@SuppressWarnings("unchecked")
 	public List<FanGroup> getFanGroupsInCompetition(Integer comp_id) {
 		// Retrieve session from Hibernate, create query (HQL) and return a list of fangroups
 		Session session = sessionFactory.getCurrentSession();
@@ -39,6 +37,7 @@ public class CompetitionService {
 	}
 	
 		
+	@SuppressWarnings("unchecked")
 	public List<Competition> getCompetitions(Integer state, String stateOP) {
 		
 		Map<String, String> operators = new HashMap<String, String>();
@@ -64,6 +63,7 @@ public class CompetitionService {
 	}
 	
 	
+	@SuppressWarnings("unchecked")
 	public List<Game> getGames(Integer comp_id, Integer state, String stateOP) {
 		
 		Map<String, String> operators = new HashMap<String, String>();

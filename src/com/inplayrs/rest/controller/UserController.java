@@ -1,23 +1,19 @@
 package com.inplayrs.rest.controller;
 
-import java.util.List;
-
 import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
-//import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.PathVariable;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.inplayrs.rest.ds.Period;
 import com.inplayrs.rest.ds.User;
-import com.inplayrs.rest.service.GameService;
 import com.inplayrs.rest.service.UserService;
 
 
@@ -25,7 +21,7 @@ import com.inplayrs.rest.service.UserService;
  * Handles user data requests
  */
 @Controller
-@RequestMapping("/users")
+@RequestMapping("/user")
 public class UserController {
 
 	@Autowired
@@ -41,6 +37,23 @@ public class UserController {
 		 
 		return user;
     }
+	
+	
+	
+	/*
+	 * POST user/fan
+	 */
+	@RequestMapping(value = "/fan", method = RequestMethod.POST, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.CREATED )
+	public @ResponseBody Integer setUserFan(@RequestParam(value="comp_id", required=true) Integer comp_id,
+											@RequestParam(value="fangroup_id", required=true) Integer fangroup_id) {
+
+		// Get username of player
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		
+		return userService.setUserFan(comp_id, fangroup_id, username);
+		 	
+	}
 	
     
     

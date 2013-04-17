@@ -9,6 +9,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 
 @Entity
 @Table(name = "fan")
@@ -26,6 +28,10 @@ public class Fan {
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "fangroup", nullable = false)
 	private FanGroup fangroup;
+	
+	@JsonIgnore
+	@Column(name = "fangroup", insertable=false, updatable = false)
+	private int fangroup_id;
 	
 	@Column(name = "pat_count")
 	private int pat_count;
@@ -89,6 +95,16 @@ public class Fan {
 
 	public void setWinnings(int winnings) {
 		this.winnings = winnings;
+	}
+
+
+	public int getFangroup_id() {
+		return fangroup_id;
+	}
+
+
+	public void setFangroup_id(int fangroup_id) {
+		this.fangroup_id = fangroup_id;
 	}
 
 	

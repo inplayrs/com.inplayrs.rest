@@ -5,15 +5,12 @@ import com.inplayrs.rest.ds.Game;
 import com.inplayrs.rest.ds.GameEntry;
 import com.inplayrs.rest.ds.Period;
 import com.inplayrs.rest.ds.PeriodSelection;
-import com.inplayrs.rest.ds.TestTable;
 import com.inplayrs.rest.ds.User;
 import com.inplayrs.rest.responseds.GamePointsResponse;
 
-import java.util.HashSet;
 import java.util.List;
 import javax.annotation.Resource;
-import org.hibernate.Hibernate;
-//import org.apache.log4j.Logger;
+
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
@@ -22,7 +19,6 @@ import org.hibernate.transform.Transformers;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 
 
 /*
