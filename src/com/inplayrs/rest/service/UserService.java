@@ -31,7 +31,11 @@ public class UserService {
 		if ( (user.equals("chris") && pass.equals("pw1")) ||
 			 (user.equals("anil") && pass.equals("pw2")) ||
 			 (user.equals("david") && pass.equals("pw3")) ||
-			 (user.equals("mani") && pass.equals("pw4")) ) {
+			 (user.equals("mani") && pass.equals("pw4")) ||
+			 (user.equals("matt") && pass.equals("pw5")) ||
+			 (user.equals("guest1") && pass.equals("pw6")) ||
+			 (user.equals("guest2") && pass.equals("pw7")) 
+				) {
 			
 			return true;
 		} else {
