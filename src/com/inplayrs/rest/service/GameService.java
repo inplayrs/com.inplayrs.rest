@@ -215,15 +215,13 @@ public class GameService {
 		@SuppressWarnings("unchecked")
 		List<PeriodSelection> result = query.list();
 		
-		if (result.isEmpty()) {
-			System.out.println("No PeriodSelection for this User and Period found.  Cannot bank points.");
-			return -1;
+		if (result.isEmpty()) {		
+			throw new RuntimeException("No PeriodSelection for this User and Period found.  Cannot bank points."); 
 		} else {
 			PeriodSelection ps = result.get(0);
 			// Can't bank points if already banked
 			if (ps.isCashed_out()) {
-				System.out.println("User has already banked points for this period");
-				return -1;
+				throw new RuntimeException("User has already banked points for this period");
 			}
 			
 			Period period = ps.getPeriod();
@@ -247,11 +245,13 @@ public class GameService {
 				// Update PeriodSelection
 				session.update(ps);
 				
-				return ps.getAwarded_points();
+				return null;
+				
+				// Just returning null on success for alpha.  Going forward we will change this
+				//return ps.getAwarded_points();
 				
 			} else {
-				System.out.println("Cannot bank points, period is no longer in play");
-				return -1;
+				throw new RuntimeException("Cannot bank points, period is no longer in play");
 			}
 
 		}

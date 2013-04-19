@@ -75,18 +75,26 @@ public class UserService {
 			f.setUser((User) session.load(User.class, username));
 			
 			session.save(f);
-			return f.getFan_id();
+			
+			return null;
+			
+			// For alpha we are just returning null on success
+			//return f.getFan_id();
 		} else {
 			Fan currentFan = result.get(0);
 			if (currentFan.getFangroup_id() == fangroup_id) {
 				System.out.println("User has already selected this fangroup");
-				return 0;
+				return null;
 			} else {
 				// Set fangroup.  In future release we will prevent users from changing
 				// their fangroup after the competition has started
 				currentFan.setFangroup((FanGroup) session.load(FanGroup.class, fangroup_id));
 				session.update(currentFan);
-				return currentFan.getFan_id();
+				
+				return null;
+				
+				// For alpha we are just returning null on success
+				//return currentFan.getFan_id();
 			}
 			
 		}
