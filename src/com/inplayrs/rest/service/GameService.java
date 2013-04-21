@@ -60,6 +60,25 @@ public class GameService {
 		return  query.list();
 	 }
 	
+
+	
+	@SuppressWarnings("unchecked")
+	public List<PeriodSelection> getPeriodSelections(Integer game_id, String username) {
+		
+		// Retrieve session from Hibernate, create query (HQL) and return a GamePointsResponse
+		Session session = sessionFactory.getCurrentSession(); 
+		
+		StringBuffer queryString = new StringBuffer("from PeriodSelection ps where ps.gameEntry.game_id = ");
+		queryString.append(game_id.toString());
+		queryString.append(" and ps.gameEntry.user = '");
+		queryString.append(username);
+		queryString.append("'");
+		
+		Query query = session.createQuery(queryString.toString());
+		
+		return query.list();
+	}
+	
 	
 	
 	public GamePointsResponse getGamePoints(Integer game_id, String username) {
@@ -72,11 +91,8 @@ public class GameService {
 		queryString.append("g.fangroup_pot_size, ");
 		queryString.append("h2h.h2h_pot_size, ");
 		queryString.append("ge.total_winnings, ");
-		queryString.append("(CASE ");
-		queryString.append("WHEN h2h.game_entry_1 = ge.game_entry_id then h2h.user_2 ");
-		queryString.append("WHEN h2h.game_entry_2 = ge.game_entry_id then h2h.user_1 ");
-		queryString.append("ELSE null ");
-		queryString.append("END) as h2h_user, ");
+		queryString.append("h2h_ggl.user as h2h_user, ");
+		queryString.append("h2h_ggl.points as h2h_points, ");
 		queryString.append("ggl.fangroup_name as fangroup_name, ");
 		queryString.append("ggl.points, ");
 		queryString.append("ggl.rank as global_rank, ");
@@ -90,7 +106,10 @@ public class GameService {
 		queryString.append("left join global_game_leaderboard ggl on (ggl.game = ge.game and ggl.user = ge.user) ");
 		queryString.append("left join fangroup_game_leaderboard fgl on (fgl.game = ge.game and fgl.fangroup_id = ggl.fangroup_id) ");
 		queryString.append("left join user_in_fangroup_game_leaderboard uifgl on (uifgl.game = ge.game and uifgl.user = ge.user) ");
-		queryString.append("where ge.game = ").append(game_id.toString());
+		queryString.append("left join global_game_leaderboard h2h_ggl ON (h2h_ggl.game = ge.game and h2h_ggl.user = ");
+		queryString.append("(CASE WHEN h2h.game_entry_1 = ge.game_entry_id then h2h.user_2 ");
+		queryString.append(" WHEN h2h.game_entry_2 = ge.game_entry_id then h2h.user_1 ELSE null END) ) ");
+		queryString.append(" where ge.game = ").append(game_id.toString());
 		queryString.append(" and ge.user = '").append(username).append("'");
 		
 		SQLQuery query = session.createSQLQuery(queryString.toString());
@@ -100,6 +119,7 @@ public class GameService {
 		query.addScalar("h2h_pot_size");
 		query.addScalar("total_winnings");
 		query.addScalar("h2h_user");
+		query.addScalar("h2h_points");
 		query.addScalar("fangroup_name");
 		query.addScalar("points");
 		query.addScalar("global_rank");
@@ -112,8 +132,10 @@ public class GameService {
 		
 		if (result.isEmpty()) {
 			return null;
-		} else {
-			return (GamePointsResponse) result.get(0);
+		} else {	
+			GamePointsResponse gpr = (GamePointsResponse) result.get(0);
+			gpr.setPeriodSelections(getPeriodSelections(game_id, username));		
+			return gpr;
 		}
 	}
 	
@@ -226,8 +248,8 @@ public class GameService {
 			
 			Period period = ps.getPeriod();
 			
-			// Can only bank points if period is still in preplay/transition/inplay
-			if (period.getState() >= -1 && period.getState() <= 1) {
+			// Can only bank points if period is still in transition/inplay
+			if (period.getState() == 0 || period.getState() == 1) {
 				// Update points won
 				switch(ps.getSelection()) {
 					case 0 : ps.setAwarded_points(period.getPoints0());
@@ -244,8 +266,10 @@ public class GameService {
 				
 				// Update PeriodSelection
 				session.update(ps);
-				
-				return ps;
+					
+				// Return null for alpha
+				return null;
+				//return ps;
 				
 			} else {
 				throw new RuntimeException("Cannot bank points, period is no longer in play");

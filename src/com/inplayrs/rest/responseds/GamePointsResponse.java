@@ -1,9 +1,12 @@
 package com.inplayrs.rest.responseds;
 
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.inplayrs.rest.ds.PeriodSelection;
 
 @Entity
 public class GamePointsResponse {
@@ -41,6 +44,10 @@ public class GamePointsResponse {
 	@JsonProperty
 	private String h2h_user;
 	
+	@Column(name = "h2h_points")
+	@JsonProperty
+	private Integer h2h_points;
+	
 	@Column(name = "h2h_pot_size")
 	@JsonProperty
 	private Integer h2h_pot_size;
@@ -54,6 +61,9 @@ public class GamePointsResponse {
 	@Column(name = "total_winnings")
 	@JsonProperty
 	private Integer total_winnings;
+	
+	@JsonProperty
+	private List<PeriodSelection> periodSelections;
 	
 	
 	public GamePointsResponse() {
@@ -161,6 +171,26 @@ public class GamePointsResponse {
 		this.user_in_fangroup_rank = user_in_fangroup_rank;
 	}
 
-	
+
+	public Integer getH2h_points() {
+		return h2h_points;
+	}
+
+
+	public void setH2h_points(Integer h2h_points) {
+		this.h2h_points = h2h_points;
+	}
+
+
+	public List<PeriodSelection> getPeriodSelections() {
+		return periodSelections;
+	}
+
+
+	public void setPeriodSelections(List<PeriodSelection> periodSelections) {
+		this.periodSelections = periodSelections;
+	}
+
+
 	
 }

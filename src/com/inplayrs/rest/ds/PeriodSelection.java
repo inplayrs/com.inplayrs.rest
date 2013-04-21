@@ -19,6 +19,7 @@ public class PeriodSelection {
 	@Id
 	@Column(name = "period_selection_id")
 	@GeneratedValue
+	@JsonIgnore
 	private int period_selection_id;
 	
 	@ManyToOne(fetch = FetchType.EAGER)
@@ -27,6 +28,7 @@ public class PeriodSelection {
 	private GameEntry gameEntry;
 	
 	@Column(name = "game_entry", insertable=false, updatable = false)
+	@JsonIgnore
 	private int game_entry_id;
 	
 	@ManyToOne(fetch = FetchType.EAGER)
@@ -41,6 +43,7 @@ public class PeriodSelection {
 	private int selection;
 	
 	@Column(name = "potential_points")
+	@JsonIgnore
 	private int potential_points;
 	
 	@Column(name = "awarded_points")
