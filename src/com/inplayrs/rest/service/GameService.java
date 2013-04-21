@@ -166,17 +166,17 @@ public class GameService {
 			List <PeriodSelection> psqResult = periodSelectionQuery.list();
 			
 			if (psqResult.isEmpty()) {
-				// Add the new period selection if state is in play
-				if (ps.getPeriod().getState() == 1) {
+				// Add the new period selection if state is preplay/transition/inplay
+				if (ps.getPeriod().getState() >= -1 && ps.getPeriod().getState() <=1) {
 					System.out.println("adding new selection");
 					session.save(ps);
 				} else {
-					System.out.println("Could not update Period Selection, Period is no longer in play");
+					System.out.println("Could not update Period Selection, Period is no longer in preplay/transition/inplay");
 				}
 			} else {
 				PeriodSelection currentSelection = psqResult.get(0);
 				// Update if in play and not cashed out
-				if (currentSelection.getPeriod().getState() == 1) {
+				if (currentSelection.getPeriod().getState() >= 1 && currentSelection.getPeriod().getState() <= 1) {
 					if (currentSelection.isCashed_out()) {
 						System.out.println("Could not update Period Selection, user has already banked their points");
 					} else {
@@ -186,7 +186,7 @@ public class GameService {
 					}
 					
 				} else {
-					System.out.println("Could not update Period Selection, Period is no longer in play");
+					System.out.println("Could not update Period Selection, Period is no longer in preplay/transition/inplay");
 				}
 				
 			}
@@ -199,7 +199,7 @@ public class GameService {
 	}
 
 
-	public Integer bankPeriodPoints(Integer period_id, String username) {
+	public PeriodSelection bankPeriodPoints(Integer period_id, String username) {
 		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
@@ -226,8 +226,8 @@ public class GameService {
 			
 			Period period = ps.getPeriod();
 			
-			// Can only bank points if period is still in play
-			if (period.getState() == 1) {
+			// Can only bank points if period is still in preplay/transition/inplay
+			if (period.getState() >= -1 && period.getState() <= 1) {
 				// Update points won
 				switch(ps.getSelection()) {
 					case 0 : ps.setAwarded_points(period.getPoints0());
@@ -245,10 +245,7 @@ public class GameService {
 				// Update PeriodSelection
 				session.update(ps);
 				
-				return null;
-				
-				// Just returning null on success for alpha.  Going forward we will change this
-				//return ps.getAwarded_points();
+				return ps;
 				
 			} else {
 				throw new RuntimeException("Cannot bank points, period is no longer in play");
