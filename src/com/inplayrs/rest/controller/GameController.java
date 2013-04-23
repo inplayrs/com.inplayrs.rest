@@ -13,8 +13,10 @@ import org.springframework.http.HttpStatus;
 import com.inplayrs.rest.ds.Period;
 import com.inplayrs.rest.ds.PeriodSelection;
 import com.inplayrs.rest.responseds.GamePointsResponse;
+import com.inplayrs.rest.responseds.PeriodResponse;
 import com.inplayrs.rest.service.GameService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -34,17 +36,26 @@ public class GameController {
 	@Resource(name="gameService")
 	private GameService gameService;
 	
+	
 	/*
 	 * GET game/periods
 	 */
 	@RequestMapping(value = "/periods", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
-    public @ResponseBody List<Period> getPeriodsInGame(@RequestParam(value="game_id", required=true) Integer game_id) {
+    public @ResponseBody List<PeriodResponse> getPeriodsInGame(@RequestParam(value="game_id", required=true) Integer game_id) {
     	
 		// Get periods
 		List<Period> periods = gameService.getPeriodsInGame(game_id);
 		
-		return periods;
+		// Convert Periods into PeriodResponse objects
+		// (objects that are in the format the client needs - mainly for alpha)
+		ArrayList<PeriodResponse> periodResponses = new ArrayList<PeriodResponse>();
+		for (Period p : periods) {
+			PeriodResponse pr = new PeriodResponse(p);
+			periodResponses.add(pr);
+		}
+		
+		return periodResponses;
     }
 	
 	

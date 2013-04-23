@@ -37,6 +37,7 @@ public class Period {
 	private Game game;
 	
 	@Column(name = "game", insertable=false, updatable = false)
+	@JsonIgnore
 	private int game_id;
 	
 	@Column(name = "start_date")
@@ -49,6 +50,7 @@ public class Period {
 	@Type(type="org.jadira.usertype.dateandtime.joda.PersistentLocalDateTime")
 	@JsonSerialize(using = CustomDateTimeSerializer.class)
 	@JsonDeserialize(using = CustomDateTimeDeserializer.class)
+	@JsonIgnore
 	private LocalDateTime end_date;
 	
 	@Column(name = "elapsed_time")

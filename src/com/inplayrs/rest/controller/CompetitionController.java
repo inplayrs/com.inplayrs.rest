@@ -3,7 +3,6 @@ package com.inplayrs.rest.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -14,10 +13,8 @@ import org.springframework.http.HttpStatus;
 import com.inplayrs.rest.ds.Competition;
 import com.inplayrs.rest.ds.FanGroup;
 import com.inplayrs.rest.ds.Game;
-import com.inplayrs.rest.ds.Period;
 import com.inplayrs.rest.responseds.GameResponse;
 import com.inplayrs.rest.service.CompetitionService;
-import com.inplayrs.rest.service.GameService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
