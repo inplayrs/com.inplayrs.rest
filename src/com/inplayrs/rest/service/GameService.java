@@ -91,10 +91,10 @@ public class GameService {
 		queryString.append("g.fangroup_pot_size, ");
 		queryString.append("h2h.h2h_pot_size, ");
 		queryString.append("ge.total_winnings, ");
-		queryString.append("h2h_ggl.user as h2h_user, ");
-		queryString.append("h2h_ggl.points as h2h_points, ");
+		queryString.append("h2h_ge.user as h2h_user, ");
+		queryString.append("h2h_ge.total_points as h2h_points, ");
 		queryString.append("ggl.fangroup_name as fangroup_name, ");
-		queryString.append("ggl.points, ");
+		queryString.append("ge.total_points as points, ");
 		queryString.append("ggl.rank as global_rank, ");
 		queryString.append("fgl.rank as fangroup_rank, ");
 		queryString.append("uifgl.rank as user_in_fangroup_rank ");
@@ -106,7 +106,7 @@ public class GameService {
 		queryString.append("left join global_game_leaderboard ggl on (ggl.game = ge.game and ggl.user = ge.user) ");
 		queryString.append("left join fangroup_game_leaderboard fgl on (fgl.game = ge.game and fgl.fangroup_id = ggl.fangroup_id) ");
 		queryString.append("left join user_in_fangroup_game_leaderboard uifgl on (uifgl.game = ge.game and uifgl.user = ge.user) ");
-		queryString.append("left join global_game_leaderboard h2h_ggl ON (h2h_ggl.game = ge.game and h2h_ggl.user = ");
+		queryString.append("left join game_entry h2h_ge ON (h2h_ge.game = ge.game and h2h_ge.user = ");
 		queryString.append("(CASE WHEN h2h.game_entry_1 = ge.game_entry_id then h2h.user_2 ");
 		queryString.append(" WHEN h2h.game_entry_2 = ge.game_entry_id then h2h.user_1 ELSE null END) ) ");
 		queryString.append(" where ge.game = ").append(game_id.toString());
@@ -161,11 +161,16 @@ public class GameService {
 		
 		if (result.isEmpty()) {
 			// Create a new GameEntry
+			Game g = (Game) session.load(Game.class, game_id);	
 			gameEntry.setGame_id(game_id);
 			gameEntry.setUsername(username);
-			gameEntry.setGame((Game) session.load(Game.class, game_id));
+			gameEntry.setGame(g);
 			gameEntry.setUser((User) session.load(User.class, username));
 			session.save(gameEntry);
+			
+			// Increment num players
+			g.setNum_players(g.getNum_players()+1);
+			session.update(g);
 		} else {
 			// get the game_entry_id
 			gameEntry = (GameEntry) result.get(0);
@@ -177,8 +182,20 @@ public class GameService {
 			ps.setGameEntry(gameEntry);
 			ps.setGame_entry_id(gameEntry.getGame_entry_id());
 
-			ps.setPeriod((Period) session.load(Period.class, ps.getPeriod_id()));
+			Period period = (Period) session.load(Period.class, ps.getPeriod_id());
+			ps.setPeriod(period);
 				
+			// Set potential_points for period_selection
+			switch(ps.getSelection()) {
+				case 0 : ps.setPotential_points(period.getPoints0());
+						 break;
+				case 1 : ps.setPotential_points(period.getPoints1());
+						 break;
+				case 2 : ps.setPotential_points(period.getPoints2());
+						 break;
+				default: break;
+			}
+			
 			Query periodSelectionQuery = session.createQuery("from PeriodSelection ps where ps.gameEntry = "+
 															 gameEntry.getGame_entry_id()+
 															 " and ps.period = "+
@@ -189,15 +206,16 @@ public class GameService {
 			
 			if (psqResult.isEmpty()) {
 				// Add the new period selection if state is preplay/transition/inplay
-				if (ps.getPeriod().getState() >= -1 && ps.getPeriod().getState() <=1) {
+				int period_state = ps.getPeriod().getState();
+				if (period_state >= -1 && period_state <=1) {
 					System.out.println("adding new selection");
 					session.save(ps);
 				} else {
 					System.out.println("Could not update Period Selection, Period is no longer in preplay/transition/inplay");
 				}
 			} else {
-				PeriodSelection currentSelection = psqResult.get(0);
 				// Update if pre-play/transition and not cashed out
+				PeriodSelection currentSelection = psqResult.get(0);
 				int period_state = currentSelection.getPeriod().getState();
 				if (period_state == -1 || period_state == 0) {
 					if (currentSelection.isCashed_out()) {
@@ -205,6 +223,7 @@ public class GameService {
 					} else {
 						System.out.println("updating existing selection");
 						currentSelection.setSelection(ps.getSelection());
+						currentSelection.setPotential_points(ps.getPotential_points());
 						session.update(currentSelection);
 					}
 					
@@ -250,7 +269,8 @@ public class GameService {
 			Period period = ps.getPeriod();
 			
 			// Can only bank points if period is still in transition/inplay
-			if (period.getState() == 0 || period.getState() == 1) {
+			int period_state = period.getState();
+			if (period_state == 0 || period_state == 1) {
 				// Update points won
 				switch(ps.getSelection()) {
 					case 0 : ps.setAwarded_points(period.getPoints0());
@@ -268,9 +288,13 @@ public class GameService {
 				// Update PeriodSelection
 				session.update(ps);
 					
+				// Update total_points in game entry
+				GameEntry ge = ps.getGameEntry();
+				ge.setTotal_points(ge.getTotal_points() + ps.getAwarded_points());
+				session.update(ge);
+				
 				// Return null for alpha
 				return null;
-				//return ps;
 				
 			} else {
 				throw new RuntimeException("Cannot bank points, period is no longer in play");

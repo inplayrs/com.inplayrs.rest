@@ -43,7 +43,6 @@ public class PeriodSelection {
 	private int selection;
 	
 	@Column(name = "potential_points")
-	@JsonIgnore
 	private int potential_points;
 	
 	@Column(name = "awarded_points")
