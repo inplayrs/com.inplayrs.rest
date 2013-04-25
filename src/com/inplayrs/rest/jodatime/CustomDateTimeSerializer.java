@@ -2,7 +2,6 @@ package com.inplayrs.rest.jodatime;
 
 import java.io.IOException;
 
-import org.joda.time.DateTime;
 import org.joda.time.LocalDateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;

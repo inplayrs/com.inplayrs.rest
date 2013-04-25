@@ -197,8 +197,9 @@ public class GameService {
 				}
 			} else {
 				PeriodSelection currentSelection = psqResult.get(0);
-				// Update if in play and not cashed out
-				if (currentSelection.getPeriod().getState() >= 1 && currentSelection.getPeriod().getState() <= 1) {
+				// Update if pre-play/transition and not cashed out
+				int period_state = currentSelection.getPeriod().getState();
+				if (period_state == -1 || period_state == 0) {
 					if (currentSelection.isCashed_out()) {
 						System.out.println("Could not update Period Selection, user has already banked their points");
 					} else {
