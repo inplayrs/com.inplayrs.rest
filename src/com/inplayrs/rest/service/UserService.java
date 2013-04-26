@@ -34,7 +34,9 @@ public class UserService {
 			 (user.equals("mani") && pass.equals("pw4")) ||
 			 (user.equals("matt") && pass.equals("pw5")) ||
 			 (user.equals("guest1") && pass.equals("pw6")) ||
-			 (user.equals("guest2") && pass.equals("pw7")) 
+			 (user.equals("guest2") && pass.equals("pw7")) ||
+			 (user.equals("karina") && pass.equals("pw8")) ||
+			 (user.equals("graham") && pass.equals("pw9"))
 				) {
 			
 			return true;
