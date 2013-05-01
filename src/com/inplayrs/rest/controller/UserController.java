@@ -55,6 +55,42 @@ public class UserController {
 		 	
 	}
 	
+	
+	/*
+	 * POST user/register
+	 */
+	@RequestMapping(value = "/register", method = RequestMethod.POST, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.CREATED )
+	public @ResponseBody User registerUser(@RequestParam(value="username", required=true) String username,
+										   @RequestParam(value="password", required=true) String password,
+										   @RequestParam(value="email", required=false) String email) {
+
+		return userService.registerUser(username, password, email);
+		 	
+	}
+	
+	
+	
+	/*
+	 * POST user/account/update
+	 */
+	@RequestMapping(value = "/account/update", method = RequestMethod.POST, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.CREATED )
+	public @ResponseBody User updateAccount(@RequestParam(value="password", required=false) String password,
+										    @RequestParam(value="email", required=false) String email) {
+
+		if (password == null && email == null) {
+			// No account details specified to update
+			return null;
+		}
+		
+		// Get username of player
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		
+		return userService.updateAccount(username, password, email);
+		 	
+	}
+	
     
     
     

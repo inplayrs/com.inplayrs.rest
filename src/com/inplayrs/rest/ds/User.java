@@ -5,6 +5,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 
 @Entity
 @Table(name = "user")
@@ -23,6 +25,10 @@ public class User {
 	
 	@Column(name = "total_winnings")
 	private int total_winnings;
+	
+	@Column(name = "password_hash")
+	@JsonIgnore
+	private String password_hash;
 	
 	
 	/*
@@ -70,6 +76,16 @@ public class User {
 
 	public void setTotal_winnings(int total_winnings) {
 		this.total_winnings = total_winnings;
+	}
+
+
+	public String getPassword_hash() {
+		return password_hash;
+	}
+
+
+	public void setPassword_hash(String password_hash) {
+		this.password_hash = password_hash;
 	}
 
 	

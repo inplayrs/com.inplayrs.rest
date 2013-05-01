@@ -1,5 +1,7 @@
 package com.inplayrs.rest.service;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -13,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.inplayrs.rest.ds.Fan;
 import com.inplayrs.rest.ds.FanGroup;
 import com.inplayrs.rest.ds.User;
+import com.inplayrs.rest.security.PasswordHash;
 
 
 /*
@@ -26,27 +29,120 @@ public class UserService {
 	private SessionFactory sessionFactory;
 	
 	
+	/*
+	 * Registers a user - creates an account
+	 */
+	public User registerUser(String username, String password, String email) {
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+				
+		// See if user already exists
+		User usr = (User) session.get(User.class, username);
+		
+		if (usr == null) {
+			usr = new User();
+			usr.setUsername(username);
+			try {
+				usr.setPassword_hash(PasswordHash.createHash(password));
+			} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+				e.printStackTrace();
+				throw new RuntimeException("Unable to create password hash");
+			}
+			if (email != null) {
+				usr.setEmail(email);
+			}
+			
+			session.save(usr);
+			return usr;
+			
+		} else {
+			throw new RuntimeException("User already exists");
+		}
+		
+	}
+	
+	
+	/*
+	 * Update user's account details - password, email
+	 */
+	public User updateAccount(String username, String password, String email) {
+
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+
+		// Get details of the user
+		User usr = (User) session.get(User.class, username);
+		
+		if (password != null) {
+			try {
+				usr.setPassword_hash(PasswordHash.createHash(password));
+			} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+				e.printStackTrace();
+				throw new RuntimeException("Unable to create password hash");
+			}
+		}
+		
+		if (email != null) {
+			usr.setEmail(email);
+		}
+		
+		session.update(usr);
+		return usr;
+	}
+	
+	
+	/*
+	 * Authenticate a user based on their password
+	 */
 	public boolean authenticate(String user, String pass) {
 		
-		if ( (user.equals("chris") && pass.equals("pw1")) ||
-			 (user.equals("anil") && pass.equals("pw2")) ||
-			 (user.equals("david") && pass.equals("pw3")) ||
-			 (user.equals("mani") && pass.equals("pw4")) ||
-			 (user.equals("matt") && pass.equals("pw5")) ||
-			 (user.equals("guest1") && pass.equals("pw6")) ||
-			 (user.equals("guest2") && pass.equals("pw7")) ||
-			 (user.equals("karina") && pass.equals("pw8")) ||
-			 (user.equals("graham") && pass.equals("pw9"))
-				) {
-			
+		// Allow generic API to have access
+		if (user.equals("guest") && pass.equals("hamm3rhead")) {
 			return true;
-		} else {
-			return false;
-		}		
+		}
+
+		
+		// TEMPORARY UNTIL PASSWORD HASHES ARE UPDATED IN DB
+		// ==================================================
+		if ( (user.equals("chris") && pass.equals("pw1")) ||
+				 (user.equals("anil") && pass.equals("pw2")) ||
+				 (user.equals("david") && pass.equals("pw3")) ||
+				 (user.equals("mani") && pass.equals("pw4")) ||
+				 (user.equals("matt") && pass.equals("pw5")) ||
+				 (user.equals("guest1") && pass.equals("pw6")) ||
+				 (user.equals("guest2") && pass.equals("pw7")) ||
+				 (user.equals("karina") && pass.equals("pw8")) ||
+				 (user.equals("graham") && pass.equals("pw9"))
+					) {
+				
+				return true;
+		} 
+		// ==================================================
+		
+		
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+		
+		// Get details of the requested user
+		User usr = (User) session.load(User.class, user);
+		
+		boolean isValid = false;
+		
+		try {
+			isValid = PasswordHash.validatePassword(pass, usr.getPassword_hash());
+		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return isValid;
 	
 	}
 	
 	
+	/*
+	 * Get a user account
+	 */
 	public User getUser(int user_id) {
 	    // Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
@@ -58,6 +154,9 @@ public class UserService {
 	}
 
 
+	/*
+	 * Set the fangroup for a user
+	 */
 	public Integer setUserFan(Integer comp_id, Integer fangroup_id, String username) {
 
 		// Retrieve session from Hibernate
@@ -106,6 +205,10 @@ public class UserService {
 		}
 
 	}
+
+	
+	
+
 	
 	
 	
