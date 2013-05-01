@@ -95,31 +95,7 @@ public class UserService {
 	 * Authenticate a user based on their password
 	 */
 	public boolean authenticate(String user, String pass) {
-		
-		// Allow generic API to have access
-		if (user.equals("guest") && pass.equals("hamm3rhead")) {
-			return true;
-		}
-
-		
-		// TEMPORARY UNTIL PASSWORD HASHES ARE UPDATED IN DB
-		// ==================================================
-		if ( (user.equals("chris") && pass.equals("pw1")) ||
-				 (user.equals("anil") && pass.equals("pw2")) ||
-				 (user.equals("david") && pass.equals("pw3")) ||
-				 (user.equals("mani") && pass.equals("pw4")) ||
-				 (user.equals("matt") && pass.equals("pw5")) ||
-				 (user.equals("guest1") && pass.equals("pw6")) ||
-				 (user.equals("guest2") && pass.equals("pw7")) ||
-				 (user.equals("karina") && pass.equals("pw8")) ||
-				 (user.equals("graham") && pass.equals("pw9"))
-					) {
 				
-				return true;
-		} 
-		// ==================================================
-		
-		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 		
@@ -136,7 +112,6 @@ public class UserService {
 		}
 		
 		return isValid;
-	
 	}
 	
 	
