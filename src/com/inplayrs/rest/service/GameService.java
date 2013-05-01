@@ -170,6 +170,12 @@ public class GameService {
 			
 			// Increment num players
 			g.setNum_players(g.getNum_players()+1);
+			
+			// Increment global pot size & fangroup pot size
+			g.setGlobal_pot_size(g.getGlobal_pot_size() + g.getStake());
+			g.setFangroup_pot_size(g.getFangroup_pot_size() + g.getStake());
+			
+			// Update the game
 			session.update(g);
 		} else {
 			// get the game_entry_id
