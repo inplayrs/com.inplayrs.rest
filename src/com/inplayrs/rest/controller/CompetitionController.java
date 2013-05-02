@@ -1,6 +1,7 @@
 package com.inplayrs.rest.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +15,7 @@ import com.inplayrs.rest.ds.Competition;
 import com.inplayrs.rest.ds.FanGroup;
 import com.inplayrs.rest.ds.Game;
 import com.inplayrs.rest.responseds.GameResponse;
+import com.inplayrs.rest.responseds.LeaderboardResponse;
 import com.inplayrs.rest.service.CompetitionService;
 
 import java.util.ArrayList;
@@ -111,8 +113,26 @@ public class CompetitionController {
     }
 	
 	
+	/*
+	 * GET competition/leaderboard
+	 */
+	@RequestMapping(value = "/leaderboard", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+    public @ResponseBody List <LeaderboardResponse> getLeaderboard(@RequestParam(value="comp_id", required=true) Integer comp_id,
+    													           @RequestParam(value="type", required=true) String type) {
+    	
+		// Validate leaderboard type
+		if (!type.equals("global") && !type.equals("fangroup") && !type.equals("userinfangroup")) {
+			throw new RuntimeException("Invalid leaderboard type specified");
+		}
+		
+		// Get username of player
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		
+		return competitionService.getLeaderboard(comp_id, type, username);
+    }
 	
-	
+
 	
 	
 }
