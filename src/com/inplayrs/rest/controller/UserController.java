@@ -1,5 +1,8 @@
 package com.inplayrs.rest.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +16,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.inplayrs.rest.ds.FanGroup;
 import com.inplayrs.rest.ds.User;
+import com.inplayrs.rest.responseds.FangroupResponse;
 import com.inplayrs.rest.service.UserService;
 
 
@@ -29,16 +34,19 @@ public class UserController {
 	private UserService userService;
 	
     
-	@RequestMapping(value = "/lookup", method = RequestMethod.GET, headers="Accept=application/json")
+	/*
+	 * GET user/account
+	 */
+	@RequestMapping(value = "/account", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
-    public @ResponseBody User getUser(@RequestParam(value="user_id", required=true) int user_id) {
+    public @ResponseBody User getUser(@RequestParam(value="username", required=true) String username) {
     	
-		User user = userService.getUser(user_id);
+		User user = userService.getUser(username);
 		 
 		return user;
     }
 	
-	
+		
 	
 	/*
 	 * POST user/fan
@@ -92,7 +100,28 @@ public class UserController {
 	}
 	
     
-    
+	/*
+	 * GET user/fangroups
+	 */
+	@RequestMapping(value = "/fangroups", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+    public @ResponseBody List <FangroupResponse> getUserFangroups() {
+    	
+		// Get username of player
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		
+		List <FanGroup> fangroups = userService.getUserFangroups(username);
+		
+		// Convert FanGroups into FangroupResponse objects
+		// (objects that are in the format the client needs - mainly for alpha)
+		ArrayList<FangroupResponse> fangroupResponses = new ArrayList<FangroupResponse>();
+		for (FanGroup fg : fangroups) {
+			FangroupResponse fgr = new FangroupResponse(fg);
+			fangroupResponses.add(fgr);
+		}
+		 
+		return fangroupResponses;
+    }
     
     
 }

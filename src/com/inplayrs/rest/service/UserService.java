@@ -118,12 +118,12 @@ public class UserService {
 	/*
 	 * Get a user account
 	 */
-	public User getUser(int user_id) {
+	public User getUser(String username) {
 	    // Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 		   
 		// Retrieve existing user first
-		User user = (User) session.get(User.class, user_id);
+		User user = (User) session.get(User.class, username);
 		   
 		return user;
 	}
@@ -181,12 +181,29 @@ public class UserService {
 
 	}
 
-	
-	
+
+	/*
+	 * Get all fangroups for a user
+	 */
+	@SuppressWarnings("unchecked")
+	public List <FanGroup> getUserFangroups(String username) {
+		 // Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+		   
+
+		// Check to see if the user already has a fangroup selected for this competition
+		StringBuffer queryString = new StringBuffer("select fangroup from Fan f ");
+		queryString.append("where f.user = '");
+		queryString.append(username);
+		queryString.append("'");
+		
+		Query query = session.createQuery(queryString.toString());
+		
+		return query.list();
+		
+	}
 
 	
-	
-	
-	
+
 	
 }

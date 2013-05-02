@@ -27,7 +27,7 @@ public class FanGroup {
 	@Column(name = "name")
 	private String name;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "competition", nullable = false)
 	@PrimaryKeyJoinColumn
 	@JsonIgnore

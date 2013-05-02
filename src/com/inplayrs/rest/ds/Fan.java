@@ -25,6 +25,10 @@ public class Fan {
 	@JoinColumn(name = "user", nullable = false)
 	private User user;
 	
+	@JsonIgnore
+	@Column(name = "user", insertable=false, updatable = false)
+	private String username;
+	
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "fangroup", nullable = false)
 	private FanGroup fangroup;
@@ -105,6 +109,16 @@ public class Fan {
 
 	public void setFangroup_id(int fangroup_id) {
 		this.fangroup_id = fangroup_id;
+	}
+
+
+	public String getUsername() {
+		return username;
+	}
+
+
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
 	
