@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 
 import com.inplayrs.rest.ds.Period;
 import com.inplayrs.rest.ds.PeriodSelection;
+import com.inplayrs.rest.responseds.GameLeaderboardResponse;
 import com.inplayrs.rest.responseds.GamePointsResponse;
 import com.inplayrs.rest.responseds.PeriodResponse;
 import com.inplayrs.rest.service.GameService;
@@ -42,7 +43,8 @@ public class GameController {
 	 */
 	@RequestMapping(value = "/periods", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
-    public @ResponseBody List<PeriodResponse> getPeriodsInGame(@RequestParam(value="game_id", required=true) Integer game_id) {
+    public @ResponseBody List<PeriodResponse> getPeriodsInGame(
+    	   @RequestParam(value="game_id", required=true) Integer game_id) {
     	
 		// Get periods
 		List<Period> periods = gameService.getPeriodsInGame(game_id);
@@ -64,7 +66,8 @@ public class GameController {
 	 */
 	@RequestMapping(value = "/points", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
-    public @ResponseBody GamePointsResponse getGamePoints(@RequestParam(value="game_id", required=true) Integer game_id) {
+    public @ResponseBody GamePointsResponse getGamePoints(
+    	   @RequestParam(value="game_id", required=true) Integer game_id) {
     		
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -81,8 +84,9 @@ public class GameController {
 	 */
 	@RequestMapping(value = "/selections", method = RequestMethod.POST, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.CREATED )
-	public @ResponseBody Integer addGamePeriodSelections(@RequestParam(value="game_id", required=true) Integer game_id,														
-														 @RequestBody PeriodSelection[] periodSelections) {
+	public @ResponseBody Integer addGamePeriodSelections(
+		   @RequestParam(value="game_id", required=true) Integer game_id,														
+		   @RequestBody PeriodSelection[] periodSelections) {
 
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -97,7 +101,8 @@ public class GameController {
 	 */
 	@RequestMapping(value = "/period/bank", method = RequestMethod.POST, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.CREATED )
-	public @ResponseBody PeriodSelection bankPeriodPoints(@RequestParam(value="period_id", required=true) Integer period_id) {
+	public @ResponseBody PeriodSelection bankPeriodPoints(
+		   @RequestParam(value="period_id", required=true) Integer period_id) {
 
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -105,6 +110,30 @@ public class GameController {
 		return gameService.bankPeriodPoints(period_id, username);
 		 	
 	}
+	
+	
+	
+	/*
+	 * GET game/leaderboard
+	 */
+	@RequestMapping(value = "/leaderboard", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+    public @ResponseBody List <GameLeaderboardResponse> getLeaderboard(
+    	   @RequestParam(value="game_id", required=true) Integer game_id,
+    	   @RequestParam(value="type", required=true) String type) {
+    	
+		// Validate leaderboard type
+		if (!type.equals("global") && !type.equals("fangroup") && !type.equals("userinfangroup")) {
+			throw new RuntimeException("Invalid leaderboard type specified");
+		}
+		
+		// Get username of player
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		
+		return gameService.getLeaderboard(game_id, type, username);
+    }
+	
+	
 	
 	
 }

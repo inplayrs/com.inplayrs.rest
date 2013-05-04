@@ -2,16 +2,13 @@ package com.inplayrs.rest.responseds;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class LeaderboardResponse {
+public class CompetitionLeaderboardResponse {
 
 	@JsonProperty
 	int rank;
 	
 	@JsonProperty
 	String name;
-	
-	@JsonProperty
-	int points;
 	
 	@JsonProperty
 	int games_played;
@@ -23,7 +20,7 @@ public class LeaderboardResponse {
 	/*
 	 * Default constructor
 	 */
-	public LeaderboardResponse() {}
+	public CompetitionLeaderboardResponse() {}
 
 
 	public int getRank() {
@@ -45,17 +42,17 @@ public class LeaderboardResponse {
 		this.name = name;
 	}
 
-
-	public int getPoints() {
-		return points;
+	
+	public int getGames_played() {
+		return games_played;
 	}
 
 
-	public void setPoints(int points) {
-		this.points = points;
+	public void setGames_played(int games_played) {
+		this.games_played = games_played;
 	}
 
-
+	
 	public int getWinnings() {
 		return winnings;
 	}
@@ -66,15 +63,7 @@ public class LeaderboardResponse {
 	}
 
 
-	public int getGames_played() {
-		return games_played;
-	}
 
-
-	public void setGames_played(int games_played) {
-		this.games_played = games_played;
-	}
-	
 	
 	
 }

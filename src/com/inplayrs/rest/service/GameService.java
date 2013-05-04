@@ -1,11 +1,13 @@
 package com.inplayrs.rest.service;
 
 
+import com.inplayrs.rest.ds.Fan;
 import com.inplayrs.rest.ds.Game;
 import com.inplayrs.rest.ds.GameEntry;
 import com.inplayrs.rest.ds.Period;
 import com.inplayrs.rest.ds.PeriodSelection;
 import com.inplayrs.rest.ds.User;
+import com.inplayrs.rest.responseds.GameLeaderboardResponse;
 import com.inplayrs.rest.responseds.GamePointsResponse;
 
 import java.util.List;
@@ -308,6 +310,81 @@ public class GameService {
 
 		}
 			
+	}
+
+
+	@SuppressWarnings("unchecked")
+	public List<GameLeaderboardResponse> getLeaderboard(Integer game_id,
+			String type, String username) {
+
+		// Retrieve session from Hibernate, create query (HQL) and return a GamePointsResponse
+		Session session = sessionFactory.getCurrentSession(); 
+		
+		StringBuffer queryString = new StringBuffer("select ");
+		
+		// Build query string based on type of leaderboard
+		switch(type) {
+			case "global":
+				queryString.append("ggl.rank, ");
+				queryString.append("ggl.user as name, ");
+				queryString.append("ggl.points, ");
+				queryString.append("ggl.potential_winnings ");
+				queryString.append("from global_game_leaderboard ggl ");
+				queryString.append("where game = ");
+				queryString.append(game_id);
+				break;
+				
+			case "fangroup":
+				queryString.append("fgl.rank, ");
+				queryString.append("fgl.fangroup_name as name, ");
+				queryString.append("fgl.total_points as points, ");
+				queryString.append("fgl.potential_winnings ");
+				queryString.append("from fangroup_game_leaderboard fgl ");
+				queryString.append("where game = ");
+				queryString.append(game_id);
+				break;
+				
+			case "userinfangroup":					
+				queryString.append("uifgl.rank, ");
+				queryString.append("uifgl.user as name, ");
+				queryString.append("uifgl.points, ");
+				queryString.append("uifgl.potential_winnings ");
+				queryString.append("from user_in_fangroup_game_leaderboard uifgl ");
+				queryString.append("where game = ");
+				queryString.append(game_id);
+				queryString.append(" and fangroup_id = ");
+				
+				// Get fangroup of  user
+				StringBuffer fanQueryString = new StringBuffer("from Fan f where f.fangroup.competition = ");
+				fanQueryString.append("(select competition_id from Game g where g.game_id = ");
+				fanQueryString.append(game_id);
+				fanQueryString.append(") and f.user = '");
+				fanQueryString.append(username);
+				fanQueryString.append("'");
+				Query fanQuery = session.createQuery(fanQueryString.toString());
+				
+				List<Fan> result = fanQuery.list();
+				if (result.isEmpty()) {
+					return null;
+				} else {
+					Fan fan = result.get(0);
+					queryString.append(fan.getFangroup_id());
+				}
+				
+				break;
+				
+			default: return null;	
+		}
+
+		SQLQuery query = session.createSQLQuery(queryString.toString());
+		query.addScalar("rank");
+		query.addScalar("name");
+		query.addScalar("points");
+		query.addScalar("potential_winnings");
+		query.setResultTransformer(Transformers.aliasToBean(GameLeaderboardResponse.class));
+		
+		return query.list();
+		
 	}
 	 
 	

@@ -39,7 +39,8 @@ public class UserController {
 	 */
 	@RequestMapping(value = "/account", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
-    public @ResponseBody User getUser(@RequestParam(value="username", required=true) String username) {
+    public @ResponseBody User getUser(
+    	   @RequestParam(value="username", required=true) String username) {
     	
 		User user = userService.getUser(username);
 		 
@@ -53,8 +54,9 @@ public class UserController {
 	 */
 	@RequestMapping(value = "/fan", method = RequestMethod.POST, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.CREATED )
-	public @ResponseBody Integer setUserFan(@RequestParam(value="comp_id", required=true) Integer comp_id,
-											@RequestParam(value="fangroup_id", required=true) Integer fangroup_id) {
+	public @ResponseBody Integer setUserFan(
+		   @RequestParam(value="comp_id", required=true) Integer comp_id,
+		   @RequestParam(value="fangroup_id", required=true) Integer fangroup_id) {
 
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -69,9 +71,10 @@ public class UserController {
 	 */
 	@RequestMapping(value = "/register", method = RequestMethod.POST, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.CREATED )
-	public @ResponseBody User registerUser(@RequestParam(value="username", required=true) String username,
-										   @RequestParam(value="password", required=true) String password,
-										   @RequestParam(value="email", required=false) String email) {
+	public @ResponseBody User registerUser(
+		   @RequestParam(value="username", required=true) String username,
+		   @RequestParam(value="password", required=true) String password,
+		   @RequestParam(value="email", required=false) String email) {
 
 		return userService.registerUser(username, password, email);
 		 	
@@ -84,8 +87,9 @@ public class UserController {
 	 */
 	@RequestMapping(value = "/account/update", method = RequestMethod.POST, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.CREATED )
-	public @ResponseBody User updateAccount(@RequestParam(value="password", required=false) String password,
-										    @RequestParam(value="email", required=false) String email) {
+	public @ResponseBody User updateAccount(
+		   @RequestParam(value="password", required=false) String password,
+		   @RequestParam(value="email", required=false) String email) {
 
 		if (password == null && email == null) {
 			// No account details specified to update

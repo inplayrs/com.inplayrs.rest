@@ -15,7 +15,7 @@ import com.inplayrs.rest.ds.Competition;
 import com.inplayrs.rest.ds.FanGroup;
 import com.inplayrs.rest.ds.Game;
 import com.inplayrs.rest.responseds.GameResponse;
-import com.inplayrs.rest.responseds.LeaderboardResponse;
+import com.inplayrs.rest.responseds.CompetitionLeaderboardResponse;
 import com.inplayrs.rest.service.CompetitionService;
 
 import java.util.ArrayList;
@@ -41,7 +41,8 @@ public class CompetitionController {
 	 */
 	@RequestMapping(value = "/fangroups", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
-    public @ResponseBody List<FanGroup> getFanGroupsInCompetition(@RequestParam(value="comp_id", required=true) Integer comp_id) {
+    public @ResponseBody List<FanGroup> getFanGroupsInCompetition(
+    	   @RequestParam(value="comp_id", required=true) Integer comp_id) {
     	
 		List<FanGroup> fanGroups = competitionService.getFanGroupsInCompetition(comp_id);
 		 
@@ -54,8 +55,9 @@ public class CompetitionController {
 	 */
 	@RequestMapping(value = "/list", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
-    public @ResponseBody List<Competition> getCompetitions(@RequestParam(value="state", required=false) Integer state,
-    													   @RequestParam(value="stateOP", required=false) String stateOP) {
+    public @ResponseBody List<Competition> getCompetitions(
+    	   @RequestParam(value="state", required=false) Integer state,
+    	   @RequestParam(value="stateOP", required=false) String stateOP) {
     	
 		// Validate stateOP parameter
 		Map<String, Integer> validStateOperators = new HashMap<String, Integer>();
@@ -81,9 +83,10 @@ public class CompetitionController {
 	@RequestMapping(value = "/games", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
 	@ExceptionHandler(RuntimeException.class)
-    public @ResponseBody List<GameResponse> getGames(@RequestParam(value="comp_id", required=false) Integer comp_id, 
-    										 @RequestParam(value="state", required=false) Integer state,
-    										 @RequestParam(value="stateOP", required=false) String stateOP){
+    public @ResponseBody List<GameResponse> getGames(
+    	   @RequestParam(value="comp_id", required=false) Integer comp_id, 
+    	   @RequestParam(value="state", required=false) Integer state,
+    	   @RequestParam(value="stateOP", required=false) String stateOP){
 		
 		// Validate stateOP parameter
 		Map<String, Integer> validStateOperators = new HashMap<String, Integer>();
@@ -118,8 +121,9 @@ public class CompetitionController {
 	 */
 	@RequestMapping(value = "/leaderboard", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
-    public @ResponseBody List <LeaderboardResponse> getLeaderboard(@RequestParam(value="comp_id", required=true) Integer comp_id,
-    													           @RequestParam(value="type", required=true) String type) {
+    public @ResponseBody List <CompetitionLeaderboardResponse> getLeaderboard(
+    	   @RequestParam(value="comp_id", required=true) Integer comp_id,
+    	   @RequestParam(value="type", required=true) String type) {
     	
 		// Validate leaderboard type
 		if (!type.equals("global") && !type.equals("fangroup") && !type.equals("userinfangroup")) {

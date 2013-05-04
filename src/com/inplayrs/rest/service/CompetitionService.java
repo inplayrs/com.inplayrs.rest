@@ -19,7 +19,7 @@ import com.inplayrs.rest.ds.Competition;
 import com.inplayrs.rest.ds.Fan;
 import com.inplayrs.rest.ds.FanGroup;
 import com.inplayrs.rest.ds.Game;
-import com.inplayrs.rest.responseds.LeaderboardResponse;
+import com.inplayrs.rest.responseds.CompetitionLeaderboardResponse;
 
 
 /*
@@ -108,7 +108,7 @@ public class CompetitionService {
 	 * Returns a leaderboard
 	 */
 	@SuppressWarnings("unchecked")
-	public List<LeaderboardResponse> getLeaderboard(Integer comp_id, String type, String username) {
+	public List<CompetitionLeaderboardResponse> getLeaderboard(Integer comp_id, String type, String username) {
 
 		// Retrieve session from Hibernate, create query (HQL) and return a GamePointsResponse
 		Session session = sessionFactory.getCurrentSession(); 
@@ -173,7 +173,7 @@ public class CompetitionService {
 		query.addScalar("name");
 		query.addScalar("games_played");
 		query.addScalar("winnings");
-		query.setResultTransformer(Transformers.aliasToBean(LeaderboardResponse.class));
+		query.setResultTransformer(Transformers.aliasToBean(CompetitionLeaderboardResponse.class));
 		
 		return query.list();
 	
