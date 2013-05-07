@@ -337,7 +337,7 @@ public class GameService {
 			case "fangroup":
 				queryString.append("fgl.rank, ");
 				queryString.append("fgl.fangroup_name as name, ");
-				queryString.append("fgl.total_points as points, ");
+				queryString.append("fgl.avg_points as points, ");
 				queryString.append("fgl.potential_winnings ");
 				queryString.append("from fangroup_game_leaderboard fgl ");
 				queryString.append("where game = ");
