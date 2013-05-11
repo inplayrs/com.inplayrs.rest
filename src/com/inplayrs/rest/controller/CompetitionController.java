@@ -13,12 +13,11 @@ import org.springframework.http.HttpStatus;
 
 import com.inplayrs.rest.ds.Competition;
 import com.inplayrs.rest.ds.FanGroup;
-import com.inplayrs.rest.ds.Game;
+import com.inplayrs.rest.responseds.CompetitionPointsResponse;
 import com.inplayrs.rest.responseds.GameResponse;
 import com.inplayrs.rest.responseds.CompetitionLeaderboardResponse;
 import com.inplayrs.rest.service.CompetitionService;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -100,19 +99,11 @@ public class CompetitionController {
 			throw new RuntimeException("Invalid stateOP value passed");
 		}
 		
+		// Get username of player
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		
 		// Get list of games
-		List<Game> games;
-		games = competitionService.getGames(comp_id, state, stateOP);
-		
-		// Convert Games into GameResponse objects
-		// (objects that are in the format the client needs - mainly for alpha)
-		ArrayList<GameResponse> gameResponses = new ArrayList<GameResponse>();
-		for (Game g : games) {
-			GameResponse gr = new GameResponse(g);
-			gameResponses.add(gr);
-		}
-		
-		return gameResponses;
+		return competitionService.getGames(comp_id, state, stateOP, username);
     }
 	
 	
@@ -137,6 +128,21 @@ public class CompetitionController {
     }
 	
 
-	
+	/*
+	 * GET competition/points
+	 */
+	@RequestMapping(value = "/points", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+    public @ResponseBody CompetitionPointsResponse getCompetitionPoints(
+    	   @RequestParam(value="comp_id", required=true) Integer comp_id) {
+    		
+		// Get username of player
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+			
+		// Get game points
+		CompetitionPointsResponse competitionPoints = competitionService.getCompetitionPoints(comp_id, username);
+		
+		return competitionPoints;
+    }
 	
 }
