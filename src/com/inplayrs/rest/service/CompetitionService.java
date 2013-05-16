@@ -54,7 +54,7 @@ public class CompetitionService {
 		operators.put("lt", "<");
 		operators.put("gt", ">");
 		
-		StringBuffer queryString = new StringBuffer("select c, ge.game_entry_id from Competition c ");
+		StringBuffer queryString = new StringBuffer("select c, max(ge.game_entry_id) from Competition c ");
 		queryString.append("left join c.games g ");
 		queryString.append("left join g.gameEntries ge ");
 		queryString.append("with ge.user.username = '").append(username).append("'");
