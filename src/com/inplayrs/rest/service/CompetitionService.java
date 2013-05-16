@@ -1,6 +1,8 @@
 package com.inplayrs.rest.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +22,7 @@ import com.inplayrs.rest.ds.Fan;
 import com.inplayrs.rest.ds.FanGroup;
 import com.inplayrs.rest.responseds.CompetitionLeaderboardResponse;
 import com.inplayrs.rest.responseds.CompetitionPointsResponse;
+import com.inplayrs.rest.responseds.CompetitionResponse;
 import com.inplayrs.rest.responseds.GameResponse;
 
 
@@ -42,8 +45,7 @@ public class CompetitionService {
 	}
 	
 		
-	@SuppressWarnings("unchecked")
-	public List<Competition> getCompetitions(Integer state, String stateOP) {
+	public List<CompetitionResponse> getCompetitions(Integer state, String stateOP, String username) {
 		
 		Map<String, String> operators = new HashMap<String, String>();
 		operators.put(null, "=");
@@ -52,7 +54,11 @@ public class CompetitionService {
 		operators.put("lt", "<");
 		operators.put("gt", ">");
 		
-		StringBuffer queryString = new StringBuffer("from Competition c");
+		StringBuffer queryString = new StringBuffer("select c, ge.game_entry_id from Competition c ");
+		queryString.append("left join c.games g ");
+		queryString.append("left join g.gameEntries ge ");
+		queryString.append("with ge.user.username = '").append(username).append("'");
+		
 		
 		if (state != null) {
 			queryString.append(" where c.state ");
@@ -61,10 +67,33 @@ public class CompetitionService {
 			queryString.append(state);
 		}
 		
+		queryString.append(" group by c.comp_id");
+		
 		// Retrieve session from Hibernate, create query (HQL) and return a list of competitions
 		Session session = sessionFactory.getCurrentSession();
 		Query query = session.createQuery(queryString.toString());
-		return  query.list();
+		
+		ArrayList<CompetitionResponse> response = new ArrayList<CompetitionResponse>();
+					
+		@SuppressWarnings("rawtypes")
+		Iterator compAndEntry = query.list().iterator();
+		while(compAndEntry.hasNext()) {
+			Object[] tuple = (Object[]) compAndEntry.next();
+			
+			Competition comp = (Competition) tuple[0];
+			Integer entry = (Integer) tuple[1];
+			  
+			CompetitionResponse cr = new CompetitionResponse(comp);
+			if (entry != null) {
+				cr.setEntered(true);
+			} else {
+				cr.setEntered(false);
+			}
+			
+			response.add(cr);	 
+		}
+		
+		return  response;
 	}
 	
 	

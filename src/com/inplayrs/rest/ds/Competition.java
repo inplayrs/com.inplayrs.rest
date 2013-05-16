@@ -1,5 +1,7 @@
 package com.inplayrs.rest.ds;
 
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -7,6 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Type;
@@ -52,6 +55,10 @@ public class Competition {
 	
 	@Column(name = "state")
 	private int state;
+	
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "competition")
+	@JsonIgnore
+	private Set <Game> games;
 	
 	
 	/*
@@ -128,6 +135,16 @@ public class Competition {
 
 	public void setCategory_id(int category_id) {
 		this.category_id = category_id;
+	}
+
+
+	public Set<Game> getGames() {
+		return games;
+	}
+
+
+	public void setGames(Set<Game> games) {
+		this.games = games;
 	}
 	
 	

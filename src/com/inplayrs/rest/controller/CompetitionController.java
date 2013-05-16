@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.http.HttpStatus;
 
-import com.inplayrs.rest.ds.Competition;
 import com.inplayrs.rest.ds.FanGroup;
 import com.inplayrs.rest.responseds.CompetitionPointsResponse;
+import com.inplayrs.rest.responseds.CompetitionResponse;
 import com.inplayrs.rest.responseds.GameResponse;
 import com.inplayrs.rest.responseds.CompetitionLeaderboardResponse;
 import com.inplayrs.rest.service.CompetitionService;
@@ -54,7 +54,7 @@ public class CompetitionController {
 	 */
 	@RequestMapping(value = "/list", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
-    public @ResponseBody List<Competition> getCompetitions(
+    public @ResponseBody List<CompetitionResponse> getCompetitions(
     	   @RequestParam(value="state", required=false) Integer state,
     	   @RequestParam(value="stateOP", required=false) String stateOP) {
     	
@@ -70,9 +70,10 @@ public class CompetitionController {
 			throw new RuntimeException("Invalid stateOP value passed");
 		}
 		
-		List<Competition> competitions;
-		competitions = competitionService.getCompetitions(state, stateOP);	 
-		return competitions;
+		// Get username of player
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		  
+		return competitionService.getCompetitions(state, stateOP, username);	
     }
 	
 	

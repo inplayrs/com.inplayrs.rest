@@ -95,7 +95,7 @@ public class GameService {
 		queryString.append("ge.total_winnings, ");
 		queryString.append("h2h_ge.user as h2h_user, ");
 		queryString.append("h2h_ge.total_points as h2h_points, ");
-		queryString.append("ggl.fangroup_name as fangroup_name, ");
+		queryString.append("fangrp.name as fangroup_name, ");
 		queryString.append("ge.total_points as points, ");
 		queryString.append("ggl.rank as global_rank, ");
 		queryString.append("fgl.rank as fangroup_rank, ");
@@ -111,7 +111,13 @@ public class GameService {
 		queryString.append("left join game_entry h2h_ge ON (h2h_ge.game = ge.game and h2h_ge.user = ");
 		queryString.append("(CASE WHEN h2h.game_entry_1 = ge.game_entry_id then h2h.user_2 ");
 		queryString.append(" WHEN h2h.game_entry_2 = ge.game_entry_id then h2h.user_1 ELSE null END) ) ");
-		queryString.append(" where ge.game = ").append(game_id.toString());
+		queryString.append("left join (");
+		queryString.append("select fg.name, fg.competition, f.user ");
+		queryString.append("from fangroup fg ");
+		queryString.append("left join fan f on f.fangroup = fg.fangroup_id ");
+		queryString.append("where f.user = '").append(username).append("'");
+		queryString.append(") as fangrp	on fangrp.competition = g.competition ");
+		queryString.append("where ge.game = ").append(game_id.toString());
 		queryString.append(" and ge.user = '").append(username).append("'");
 		
 		SQLQuery query = session.createSQLQuery(queryString.toString());
