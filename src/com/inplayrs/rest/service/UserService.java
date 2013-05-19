@@ -15,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.inplayrs.rest.ds.Fan;
 import com.inplayrs.rest.ds.FanGroup;
 import com.inplayrs.rest.ds.User;
+import com.inplayrs.rest.exception.InvalidStateException;
+import com.inplayrs.rest.exception.RestError;
 import com.inplayrs.rest.security.PasswordHash;
 
 
@@ -137,10 +139,17 @@ public class UserService {
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 		
+		FanGroup fg = (FanGroup) session.load(FanGroup.class, fangroup_id);
+		
+		if (fg.getComp_id() != comp_id) {
+			throw new InvalidStateException(new RestError(2102, "Fangroup with ID "+fangroup_id+" does not exist in competition with ID "+comp_id));
+		}
+		
+		
 		// Check to see if the user already has a fangroup selected for this competition
 		StringBuffer queryString = new StringBuffer("from Fan f where f.user = '");
 		queryString.append(username);
-		queryString.append("' and f.fangroup.comp_id = ");
+		queryString.append("' and f.fangroup.competition = ");
 		queryString.append(comp_id);
 		
 		Query query = session.createQuery(queryString.toString());
@@ -149,32 +158,47 @@ public class UserService {
 		List<Fan> result = query.list();
 		
 		if (result.isEmpty()) {
-			// Set new fan			
+			System.out.println("XXX User has not yet selected fangroup for this competition");
+			
+			// User has not yet selected fangroup for this competition, 
+			// so we can set the fangroup			
 			Fan f = new Fan();
+			
 			f.setFangroup((FanGroup) session.load(FanGroup.class, fangroup_id));
 			f.setUser((User) session.load(User.class, username));
+
+	
 			
 			session.save(f);
 			
-			return null;
-			
 			// For alpha we are just returning null on success
-			//return f.getFan_id();
+			return null;
+
 		} else {
 			Fan currentFan = result.get(0);
 			if (currentFan.getFangroup_id() == fangroup_id) {
-				System.out.println("User has already selected this fangroup");
-				return null;
+				System.out.println("XXX User has already selected this fangroup for this competition");
+				throw new InvalidStateException(new RestError(2100, "You have already selected this fangroup for this competition"));
 			} else {
-				// Set fangroup.  In future release we will prevent users from changing
-				// their fangroup after the competition has started
+				// Do not allow user to change fangroup if they already have 
+				// a game entry in this competition
+				StringBuffer gameEntryQueryString = new StringBuffer("from GameEntry ge where ge.game.competition_id = ");
+				gameEntryQueryString.append(comp_id).append(" and ge.user = '");
+				gameEntryQueryString.append(username).append("'");
+				
+				Query gameEntryQuery = session.createQuery(gameEntryQueryString.toString());
+				int numEntriesInComp = gameEntryQuery.list().size();
+				if (numEntriesInComp > 0) {
+					System.out.println("XXX User has already played game");
+					throw new InvalidStateException(new RestError(2101, "Unable to set new fangroup, you have already played a game in this competition"));
+				}
+				
+				System.out.println("XXX User has this many entries in comp: "+numEntriesInComp);
+				
+				// Set fangroup as user has not yet entered any games in this competition
 				currentFan.setFangroup((FanGroup) session.load(FanGroup.class, fangroup_id));
 				session.update(currentFan);
-				
 				return null;
-				
-				// For alpha we are just returning null on success
-				//return currentFan.getFan_id();
 			}
 			
 		}

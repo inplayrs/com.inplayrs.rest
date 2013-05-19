@@ -7,6 +7,9 @@ import com.inplayrs.rest.ds.GameEntry;
 import com.inplayrs.rest.ds.Period;
 import com.inplayrs.rest.ds.PeriodSelection;
 import com.inplayrs.rest.ds.User;
+import com.inplayrs.rest.exception.InvalidParameterException;
+import com.inplayrs.rest.exception.InvalidStateException;
+import com.inplayrs.rest.exception.RestError;
 import com.inplayrs.rest.responseds.GameLeaderboardResponse;
 import com.inplayrs.rest.responseds.GamePointsResponse;
 
@@ -48,11 +51,9 @@ public class GameService {
 	 }
 	
 	
-	/**
-	  * Retrieves all periods for a given game
-	  * 
-	  * @return list of Periods
-	  */
+	/*
+	 * GET game/periods
+	 */
 	@SuppressWarnings("unchecked")
 	public List<Period> getPeriodsInGame(Integer game_id) {
 	   
@@ -63,7 +64,7 @@ public class GameService {
 	 }
 	
 
-	
+
 	@SuppressWarnings("unchecked")
 	public List<PeriodSelection> getPeriodSelections(Integer game_id, String username) {
 		
@@ -82,7 +83,9 @@ public class GameService {
 	}
 	
 	
-	
+	/*
+	 * GET game/points
+	 */
 	public GamePointsResponse getGamePoints(Integer game_id, String username) {
 		
 		// Retrieve session from Hibernate, create query (HQL) and return a GamePointsResponse
@@ -151,7 +154,7 @@ public class GameService {
 
 
 	/*
-	 *  Add period selections for a game
+	 *  POST game/selections
 	 */
 	public Integer addGamePeriodSelections(Integer game_id, String username, PeriodSelection[] periodSelections) {
 		// Retrieve session from Hibernate
@@ -169,7 +172,13 @@ public class GameService {
 		
 		if (result.isEmpty()) {
 			// Create a new GameEntry
-			Game g = (Game) session.load(Game.class, game_id);	
+			Game g;
+			try {
+				g = (Game) session.load(Game.class, game_id);	
+			}
+			catch (Exception e) {
+				throw new InvalidParameterException(new RestError("Game with ID "+game_id.toString()+" does not exist"));
+			}
 			gameEntry.setGame_id(game_id);
 			gameEntry.setUsername(username);
 			gameEntry.setGame(g);
@@ -255,6 +264,10 @@ public class GameService {
 	}
 
 
+	
+	/*
+	 * POST game/period/bank
+	 */
 	public PeriodSelection bankPeriodPoints(Integer period_id, String username) {
 		
 		// Retrieve session from Hibernate
@@ -272,12 +285,12 @@ public class GameService {
 		List<PeriodSelection> result = query.list();
 		
 		if (result.isEmpty()) {		
-			throw new RuntimeException("No PeriodSelection for this User and Period found.  Cannot bank points."); 
+			throw new InvalidStateException(new RestError(2000, "You have not made a selection for this period yet. Cannot bank points.")); 
 		} else {
 			PeriodSelection ps = result.get(0);
 			// Can't bank points if already banked
 			if (ps.isCashed_out()) {
-				throw new RuntimeException("User has already banked points for this period");
+				throw new InvalidStateException(new RestError(2001, "You have already banked your points for this period"));
 			}
 			
 			Period period = ps.getPeriod();
@@ -310,8 +323,16 @@ public class GameService {
 				// Return null for alpha
 				return null;
 				
-			} else {
-				throw new RuntimeException("Cannot bank points, period is no longer in play");
+			} else {	
+				if (period_state < 0) {
+					throw new InvalidStateException(new RestError(2002, "Cannot bank points, period has not started yet"));
+				} else if (period_state == 2) {
+					throw new InvalidStateException(new RestError(2003, "Cannot bank points, period has now completed"));
+				} else if (period_state == 3) {
+					throw new InvalidStateException(new RestError(2004, "Cannot bank points, period is currently suspended. Please try again later!"));
+				} else {
+					throw new InvalidStateException(new RestError(2005, "Cannot bank points, unknown period_state: "+period_state));
+				}
 			}
 
 		}
@@ -319,6 +340,9 @@ public class GameService {
 	}
 
 
+	/*
+	 * GET game/leaderboard
+	 */
 	@SuppressWarnings("unchecked")
 	public List<GameLeaderboardResponse> getLeaderboard(Integer game_id,
 			String type, String username) {
