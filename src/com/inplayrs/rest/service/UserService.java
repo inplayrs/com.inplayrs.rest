@@ -139,9 +139,15 @@ public class UserService {
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 		
-		FanGroup fg = (FanGroup) session.load(FanGroup.class, fangroup_id);
+		FanGroup fangroup;
+		try {
+			fangroup = (FanGroup) session.get(FanGroup.class, fangroup_id);
+		}
+		catch(Exception e) {
+			throw new InvalidStateException(new RestError(2103, "Fangroup with ID "+fangroup_id+" does not exist"));
+		}
 		
-		if (fg.getComp_id() != comp_id) {
+		if (fangroup == null || fangroup.getComp_id() != comp_id) {
 			throw new InvalidStateException(new RestError(2102, "Fangroup with ID "+fangroup_id+" does not exist in competition with ID "+comp_id));
 		}
 		
@@ -164,11 +170,9 @@ public class UserService {
 			// so we can set the fangroup			
 			Fan f = new Fan();
 			
-			f.setFangroup((FanGroup) session.load(FanGroup.class, fangroup_id));
+			f.setFangroup(fangroup);
 			f.setUser((User) session.load(User.class, username));
 
-	
-			
 			session.save(f);
 			
 			// For alpha we are just returning null on success
