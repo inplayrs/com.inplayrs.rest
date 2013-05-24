@@ -7,6 +7,7 @@ import com.inplayrs.rest.ds.GameEntry;
 import com.inplayrs.rest.ds.Period;
 import com.inplayrs.rest.ds.PeriodSelection;
 import com.inplayrs.rest.ds.User;
+import com.inplayrs.rest.exception.DBException;
 import com.inplayrs.rest.exception.InvalidParameterException;
 import com.inplayrs.rest.exception.InvalidStateException;
 import com.inplayrs.rest.exception.RestError;
@@ -16,10 +17,12 @@ import com.inplayrs.rest.responseds.GamePointsResponse;
 import java.util.List;
 import javax.annotation.Resource;
 
+import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.transform.Transformers;
 
 import org.springframework.stereotype.Service;
@@ -156,19 +159,25 @@ public class GameService {
 	/*
 	 *  POST game/selections
 	 */
+	@SuppressWarnings("unchecked")
 	public Integer addGamePeriodSelections(Integer game_id, String username, PeriodSelection[] periodSelections) {
 		// Retrieve session from Hibernate
-		Session session = sessionFactory.getCurrentSession();
+		Session session = sessionFactory.getCurrentSession();		
 		
 		// GameEntry for the selections
 		GameEntry gameEntry = new GameEntry();
 		
 		// Create game entry if we don't already have one
-		Query gameEntryQuery = session.createQuery("FROM GameEntry ge where ge.game = "+game_id.toString()+
+		Query gameEntryQuery = session.createQuery("from GameEntry ge where ge.game = "+game_id.toString()+
 										   " and ge.user = '"+username+"'");
 		
-		@SuppressWarnings("unchecked")
-		List<GameEntry> result = gameEntryQuery.list();
+		List<GameEntry> result = null;
+		try {
+			result = gameEntryQuery.list();
+		}
+		catch (Exception e) {
+			throw new DBException(new RestError(1001, "Failed to find user's game entries"));
+		}
 		
 		if (result.isEmpty()) {
 			// Create a new GameEntry
@@ -177,23 +186,55 @@ public class GameService {
 				g = (Game) session.load(Game.class, game_id);	
 			}
 			catch (Exception e) {
-				throw new InvalidParameterException(new RestError("Game with ID "+game_id.toString()+" does not exist"));
+				throw new DBException(new RestError(1001, "Failed to get game with ID "+game_id));
 			}
+			
+			// Check that user has a fangroup before creating a game entry
+			StringBuffer fangroupQueryString = new StringBuffer("from Fan f where f.user = '");
+			fangroupQueryString.append(username).append("' and f.fangroup.competition = ");
+			
+			try {
+			fangroupQueryString.append(g.getCompetition_id());
+			}catch (ObjectNotFoundException e) {
+				throw new InvalidParameterException(new RestError(2200, "Game with ID "+game_id.toString()+" does not exist"));
+			}
+			
+			Query fangroupQuery = session.createQuery(fangroupQueryString.toString());
+			List <Fan> fan = fangroupQuery.list();
+			if (fan.isEmpty()) {
+				throw new InvalidStateException(new RestError(2201, "Please select a fangroup for this competition before entering!"));
+			}
+			
+			
+			// Update game entry with game details and save
 			gameEntry.setGame_id(game_id);
 			gameEntry.setUsername(username);
 			gameEntry.setGame(g);
 			gameEntry.setUser((User) session.load(User.class, username));
-			session.save(gameEntry);
 			
-			// Increment num players
-			g.setNum_players(g.getNum_players()+1);
+			// Wrap the creation of the game entry and the update of the game in a transaction
+			Transaction tx = null;
+			try {
+				tx = session.beginTransaction();
+				
+				session.save(gameEntry);
 			
-			// Increment global pot size & fangroup pot size
-			g.setGlobal_pot_size(g.getGlobal_pot_size() + g.getStake());
-			g.setFangroup_pot_size(g.getFangroup_pot_size() + g.getStake());
+				// Increment num players
+				g.setNum_players(g.getNum_players()+1);
+				
+				// Increment global pot size & fangroup pot size
+				g.setGlobal_pot_size(g.getGlobal_pot_size() + g.getStake());
+				g.setFangroup_pot_size(g.getFangroup_pot_size() + g.getStake());
 			
-			// Update the game
-			session.update(g);
+				// Update the game
+				session.update(g);
+				
+				tx.commit();
+			}
+			catch (Exception e) {
+				if (tx != null) tx.rollback(); 
+				throw new DBException(new RestError(1000, "Failed to save game entry and update game pot sizes"));
+			}
 		} else {
 			// get the game_entry_id
 			gameEntry = (GameEntry) result.get(0);
@@ -224,7 +265,6 @@ public class GameService {
 															 " and ps.period = "+
 															 ps.getPeriod_id());
 			
-			@SuppressWarnings("unchecked")
 			List <PeriodSelection> psqResult = periodSelectionQuery.list();
 			
 			if (psqResult.isEmpty()) {
@@ -232,7 +272,12 @@ public class GameService {
 				int period_state = ps.getPeriod().getState();
 				if (period_state >= -1 && period_state <=1) {
 					System.out.println("adding new selection");
-					session.save(ps);
+					try {
+						session.save(ps);
+					}
+					catch (Exception e) {
+						throw new DBException(new RestError(1000, "Failed to create new period selection"));
+					}
 				} else {
 					System.out.println("Could not update Period Selection, Period is no longer in preplay/transition/inplay");
 				}
@@ -247,7 +292,12 @@ public class GameService {
 						System.out.println("updating existing selection");
 						currentSelection.setSelection(ps.getSelection());
 						currentSelection.setPotential_points(ps.getPotential_points());
-						session.update(currentSelection);
+						try {
+							session.update(currentSelection);
+						}
+						catch (Exception e) {
+							throw new DBException(new RestError(1000, "Failed to update period selection"));
+						}
 					}
 					
 				} else {

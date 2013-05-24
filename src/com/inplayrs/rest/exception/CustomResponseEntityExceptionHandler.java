@@ -36,6 +36,13 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
         return ex.getRestError();
     }
 	
+	@ExceptionHandler
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    @ResponseBody
+    protected RestError handleException(DBException ex) {
+        return ex.getRestError();
+    }
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, 
