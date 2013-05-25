@@ -212,29 +212,18 @@ public class GameService {
 			gameEntry.setGame(g);
 			gameEntry.setUser((User) session.load(User.class, username));
 			
-			// Wrap the creation of the game entry and the update of the game in a transaction
-			Transaction tx = null;
-			try {
-				tx = session.beginTransaction();
-				
-				session.save(gameEntry);
+			session.save(gameEntry);
+		
+			// Increment num players
+			g.setNum_players(g.getNum_players()+1);
 			
-				// Increment num players
-				g.setNum_players(g.getNum_players()+1);
-				
-				// Increment global pot size & fangroup pot size
-				g.setGlobal_pot_size(g.getGlobal_pot_size() + g.getStake());
-				g.setFangroup_pot_size(g.getFangroup_pot_size() + g.getStake());
-			
-				// Update the game
-				session.update(g);
-				
-				tx.commit();
-			}
-			catch (Exception e) {
-				if (tx != null) tx.rollback(); 
-				throw new DBException(new RestError(1000, "Failed to save game entry and update game pot sizes"));
-			}
+			// Increment global pot size & fangroup pot size
+			g.setGlobal_pot_size(g.getGlobal_pot_size() + g.getStake());
+			g.setFangroup_pot_size(g.getFangroup_pot_size() + g.getStake());
+		
+			// Update the game
+			session.update(g);	
+
 		} else {
 			// get the game_entry_id
 			gameEntry = (GameEntry) result.get(0);
