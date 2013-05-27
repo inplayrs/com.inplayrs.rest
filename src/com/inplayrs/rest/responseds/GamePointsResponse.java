@@ -58,6 +58,21 @@ public class GamePointsResponse {
 	private Integer user_in_fangroup_rank;
 	
 	// from game_entry
+	@Column(name = "global_winnings")
+	@JsonProperty
+	private Integer global_winnings;
+	
+	// from game_entry
+	@Column(name = "fangroup_winnings")
+	@JsonProperty
+	private Integer fangroup_winnings;
+	
+	// from game_entry
+	@Column(name = "h2h_winnings")
+	@JsonProperty
+	private Integer h2h_winnings;
+	
+	// from game_entry
 	@Column(name = "total_winnings")
 	@JsonProperty
 	private Integer total_winnings;
@@ -149,7 +164,36 @@ public class GamePointsResponse {
 	public void setH2h_pot_size(Integer h2h_pot_size) {
 		this.h2h_pot_size = h2h_pot_size;
 	}
+	
 
+	public Integer getGlobal_winnings() {
+		return global_winnings;
+	}
+
+
+	public void setGlobal_winnings(Integer global_winnings) {
+		this.global_winnings = global_winnings;
+	}
+
+
+	public Integer getFangroup_winnings() {
+		return fangroup_winnings;
+	}
+
+
+	public void setFangroup_winnings(Integer fangroup_winnings) {
+		this.fangroup_winnings = fangroup_winnings;
+	}
+
+
+	public Integer getH2h_winnings() {
+		return h2h_winnings;
+	}
+
+
+	public void setH2h_winnings(Integer h2h_winnings) {
+		this.h2h_winnings = h2h_winnings;
+	}
 
 
 	public Integer getTotal_winnings() {

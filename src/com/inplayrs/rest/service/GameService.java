@@ -22,7 +22,6 @@ import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.hibernate.transform.Transformers;
 
 import org.springframework.stereotype.Service;
@@ -98,6 +97,9 @@ public class GameService {
 		queryString.append("g.global_pot_size, ");
 		queryString.append("g.fangroup_pot_size, ");
 		queryString.append("h2h.h2h_pot_size, ");
+		queryString.append("ge.global_winnings, ");
+		queryString.append("ge.fangroup_winnings, ");
+		queryString.append("ge.h2h_winnings, ");
 		queryString.append("ge.total_winnings, ");
 		queryString.append("h2h_ge.user as h2h_user, ");
 		queryString.append("h2h_ge.total_points as h2h_points, ");
@@ -131,6 +133,9 @@ public class GameService {
 		query.addScalar("global_pot_size");
 		query.addScalar("fangroup_pot_size");
 		query.addScalar("h2h_pot_size");
+		query.addScalar("global_winnings");
+		query.addScalar("fangroup_winnings");
+		query.addScalar("h2h_winnings");
 		query.addScalar("total_winnings");
 		query.addScalar("h2h_user");
 		query.addScalar("h2h_points");
