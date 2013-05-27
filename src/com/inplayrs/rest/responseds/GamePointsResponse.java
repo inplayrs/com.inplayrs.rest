@@ -5,6 +5,8 @@ import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.inplayrs.rest.ds.PeriodSelection;
 
@@ -77,7 +79,9 @@ public class GamePointsResponse {
 	@JsonProperty
 	private Integer total_winnings;
 	
+	// Only include periodSelections in JSON response when not null
 	@JsonProperty
+	@JsonInclude(Include.NON_NULL) 
 	private List<PeriodSelection> periodSelections;
 	
 	

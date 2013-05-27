@@ -88,7 +88,12 @@ public class GameService {
 	/*
 	 * GET game/points
 	 */
-	public GamePointsResponse getGamePoints(Integer game_id, String username) {
+	public GamePointsResponse getGamePoints(Integer game_id, String username, Boolean includeSelections) {
+		
+		// Default includeSelections to true
+		if (includeSelections == null) { 
+			includeSelections = true;
+		}
 		
 		// Retrieve session from Hibernate, create query (HQL) and return a GamePointsResponse
 		Session session = sessionFactory.getCurrentSession(); 
@@ -153,7 +158,9 @@ public class GameService {
 			return null;
 		} else {	
 			GamePointsResponse gpr = (GamePointsResponse) result.get(0);
-			gpr.setPeriodSelections(getPeriodSelections(game_id, username));		
+			if (includeSelections) {
+				gpr.setPeriodSelections(getPeriodSelections(game_id, username));		
+			}
 			return gpr;
 		}
 	}

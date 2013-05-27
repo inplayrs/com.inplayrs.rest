@@ -67,13 +67,14 @@ public class GameController {
 	@RequestMapping(value = "/points", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
     public @ResponseBody GamePointsResponse getGamePoints(
-    	   @RequestParam(value="game_id", required=true) Integer game_id) {
+    	   @RequestParam(value="game_id", required=true) Integer game_id,
+    	   @RequestParam(value="includeSelections", required=false) Boolean includeSelections) {
     		
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
 			
 		// Get game points
-		GamePointsResponse gamePoints = gameService.getGamePoints(game_id, username);
+		GamePointsResponse gamePoints = gameService.getGamePoints(game_id, username, includeSelections);
 		
 		return gamePoints;
     }
