@@ -184,7 +184,6 @@ public class Game {
 	}
 
 
-
 	public int getGlobal_pot_size() {
 		return global_pot_size;
 	}
@@ -241,6 +240,18 @@ public class Game {
 
 	public void setCompetition_id(int competition_id) {
 		this.competition_id = competition_id;
+	}
+
+
+
+	public Set<GameEntry> getGameEntries() {
+		return gameEntries;
+	}
+
+
+
+	public void setGameEntries(Set<GameEntry> gameEntries) {
+		this.gameEntries = gameEntries;
 	}
 	
 	

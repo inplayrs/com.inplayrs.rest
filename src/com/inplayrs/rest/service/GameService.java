@@ -112,7 +112,11 @@ public class GameService {
 		queryString.append("ge.total_points as points, ");
 		queryString.append("ggl.rank as global_rank, ");
 		queryString.append("fgl.rank as fangroup_rank, ");
-		queryString.append("uifgl.rank as user_in_fangroup_rank ");
+		queryString.append("uifgl.rank as user_in_fangroup_rank, ");
+		queryString.append("g.num_players as global_pool_size, ");
+		queryString.append("num_fangroups.num_fangroups_entered, ");
+		queryString.append("fangroup_pool.fangroup_pool_size ");
+
 		queryString.append("from  ");
 		queryString.append("game_entry ge ");
 		queryString.append("left join game g on g.game_id = ge.game ");
@@ -125,13 +129,44 @@ public class GameService {
 		queryString.append("(CASE WHEN h2h.game_entry_1 = ge.game_entry_id then h2h.user_2 ");
 		queryString.append(" WHEN h2h.game_entry_2 = ge.game_entry_id then h2h.user_1 ELSE null END) ) ");
 		queryString.append("left join (");
-		queryString.append("select fg.name, fg.competition, f.user ");
+		queryString.append("select fg.name, fg.fangroup_id, fg.competition, f.user ");
 		queryString.append("from fangroup fg ");
 		queryString.append("left join fan f on f.fangroup = fg.fangroup_id ");
 		queryString.append("where f.user = '").append(username).append("'");
-		queryString.append(") as fangrp	on fangrp.competition = g.competition ");
+		queryString.append(") as fangrp	on fangrp.competition = g.competition ");		
+		queryString.append("left join ( ");
+		queryString.append("select ");
+		queryString.append("g.game_id, ");
+		queryString.append("count(distinct fg.fangroup_id) as num_fangroups_entered ");
+		queryString.append("from  ");
+		queryString.append("game_entry ge ");
+		queryString.append("left join game g on g.game_id = ge.game ");
+		queryString.append("left join fan f on ge.user = f.user ");
+		queryString.append("left join fangroup fg on fg.fangroup_id = f.fangroup ");
+		queryString.append("where  ");
+		queryString.append("ge.game = ").append(game_id);
+		queryString.append(" and fg.competition = g.competition ");
+		queryString.append("and ge.user != 'Monkey' ");
+		queryString.append(") as num_fangroups on num_fangroups.game_id = g.game_id ");
+		queryString.append("left join ( ");
+		queryString.append("select ");
+		queryString.append("f.fangroup as fangroup_id, ");
+		queryString.append("fg.name as fangroup_name, ");
+		queryString.append("count(fg.fangroup_id) as fangroup_pool_size ");
+		queryString.append("from  ");
+		queryString.append("game_entry ge ");
+		queryString.append("left join game g on g.game_id = ge.game ");
+		queryString.append("left join fan f on ge.user = f.user ");
+		queryString.append("left join fangroup fg on fg.fangroup_id = f.fangroup ");
+		queryString.append("where  ");
+		queryString.append("ge.game = ").append(game_id);
+		queryString.append(" and fg.competition = g.competition ");
+		queryString.append("group by fg.fangroup_id  ");
+		queryString.append(") as fangroup_pool on fangroup_pool.fangroup_id = fangrp.fangroup_id ");
+
 		queryString.append("where ge.game = ").append(game_id.toString());
 		queryString.append(" and ge.user = '").append(username).append("'");
+		
 		
 		SQLQuery query = session.createSQLQuery(queryString.toString());
 		
@@ -149,6 +184,9 @@ public class GameService {
 		query.addScalar("global_rank");
 		query.addScalar("fangroup_rank");
 		query.addScalar("user_in_fangroup_rank");
+		query.addScalar("global_pool_size");
+		query.addScalar("num_fangroups_entered", org.hibernate.type.IntegerType.INSTANCE);
+		query.addScalar("fangroup_pool_size",  org.hibernate.type.IntegerType.INSTANCE);
 		query.setResultTransformer(Transformers.aliasToBean(GamePointsResponse.class));
 				
 		@SuppressWarnings("unchecked")
@@ -232,7 +270,7 @@ public class GameService {
 			// Increment global pot size & fangroup pot size
 			g.setGlobal_pot_size(g.getGlobal_pot_size() + g.getStake());
 			g.setFangroup_pot_size(g.getFangroup_pot_size() + g.getStake());
-		
+			
 			// Update the game
 			session.update(g);	
 
@@ -336,12 +374,12 @@ public class GameService {
 		List<PeriodSelection> result = query.list();
 		
 		if (result.isEmpty()) {		
-			throw new InvalidStateException(new RestError(2000, "You have not made a selection for this period yet. Cannot bank points.")); 
+			throw new InvalidStateException(new RestError(2000, "You have not made a selection for this event yet. Cannot bank points.")); 
 		} else {
 			PeriodSelection ps = result.get(0);
 			// Can't bank points if already banked
 			if (ps.isCashed_out()) {
-				throw new InvalidStateException(new RestError(2001, "You have already banked your points for this period"));
+				throw new InvalidStateException(new RestError(2001, "You have already banked your points for this event"));
 			}
 			
 			Period period = ps.getPeriod();
@@ -376,11 +414,11 @@ public class GameService {
 				
 			} else {	
 				if (period_state < 0) {
-					throw new InvalidStateException(new RestError(2002, "Cannot bank points, period has not started yet"));
+					throw new InvalidStateException(new RestError(2002, "Cannot bank points, event has not started yet"));
 				} else if (period_state == 2) {
-					throw new InvalidStateException(new RestError(2003, "Cannot bank points, period has now completed"));
+					throw new InvalidStateException(new RestError(2003, "Cannot bank points, event has now completed"));
 				} else if (period_state == 3) {
-					throw new InvalidStateException(new RestError(2004, "Cannot bank points, period is currently suspended. Please try again later!"));
+					throw new InvalidStateException(new RestError(2004, "Cannot bank points, event is currently suspended. Please try again later!"));
 				} else {
 					throw new InvalidStateException(new RestError(2005, "Cannot bank points, unknown period_state: "+period_state));
 				}

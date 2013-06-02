@@ -79,6 +79,21 @@ public class GamePointsResponse {
 	@JsonProperty
 	private Integer total_winnings;
 	
+	// Number of people who have entered the game
+	@Column(name = "global_pool_size")
+	@JsonProperty
+	private Integer global_pool_size;
+	
+	// Number of fangroups who have users that have entered the game
+	@Column(name = "num_fangroups_entered")
+	@JsonProperty
+	private Integer num_fangroups_entered;
+	
+	// Number of users in your fangroup who have entered the game
+	@Column(name = "fangroup_pool_size")
+	@JsonProperty
+	private Integer fangroup_pool_size;
+	
 	// Only include periodSelections in JSON response when not null
 	@JsonProperty
 	@JsonInclude(Include.NON_NULL) 
@@ -237,6 +252,36 @@ public class GamePointsResponse {
 
 	public void setPeriodSelections(List<PeriodSelection> periodSelections) {
 		this.periodSelections = periodSelections;
+	}
+
+
+	public Integer getGlobal_pool_size() {
+		return global_pool_size;
+	}
+
+
+	public void setGlobal_pool_size(Integer global_pool_size) {
+		this.global_pool_size = global_pool_size;
+	}
+
+
+	public Integer getNum_fangroups_entered() {
+		return num_fangroups_entered;
+	}
+
+
+	public void setNum_fangroups_entered(Integer num_fangroups_entered) {
+		this.num_fangroups_entered = num_fangroups_entered;
+	}
+
+
+	public Integer getFangroup_pool_size() {
+		return fangroup_pool_size;
+	}
+
+
+	public void setFangroup_pool_size(Integer fangroup_pool_size) {
+		this.fangroup_pool_size = fangroup_pool_size;
 	}
 
 
