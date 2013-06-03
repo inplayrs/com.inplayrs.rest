@@ -39,7 +39,7 @@ public class GameService {
 	private SessionFactory sessionFactory;
 	
 	
-	/**
+	/*
 	  * Retrieves a single period by the period_id
 	  */
 	public Period getPeriod(int period_id) {

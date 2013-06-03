@@ -36,6 +36,10 @@ public class CompetitionService {
 	@Resource(name="sessionFactory")
 	private SessionFactory sessionFactory;
 	
+	
+	/*
+	 * GET competition/fangroups
+	 */
 	@SuppressWarnings("unchecked")
 	public List<FanGroup> getFanGroupsInCompetition(Integer comp_id) {
 		// Retrieve session from Hibernate, create query (HQL) and return a list of fangroups
@@ -45,6 +49,9 @@ public class CompetitionService {
 	}
 	
 		
+	/*
+	 * GET competition/list
+	 */
 	public List<CompetitionResponse> getCompetitions(Integer state, String stateOP, String username) {
 		
 		Map<String, String> operators = new HashMap<String, String>();
@@ -97,6 +104,9 @@ public class CompetitionService {
 	}
 	
 	
+	/*
+	 * GET competition/games
+	 */
 	@SuppressWarnings("unchecked")
 	public List<GameResponse> getGames(Integer comp_id, Integer state, String stateOP, String username) {
 		
@@ -173,7 +183,7 @@ public class CompetitionService {
 
 
 	/*
-	 * Returns a leaderboard
+	 * GET competition/leaderboard
 	 */
 	@SuppressWarnings("unchecked")
 	public List<CompetitionLeaderboardResponse> getLeaderboard(Integer comp_id, String type, String username) {
@@ -250,6 +260,9 @@ public class CompetitionService {
 	}
 
 
+	/*
+	 * GET competition/points
+	 */
 	public CompetitionPointsResponse getCompetitionPoints(Integer comp_id, String username) {
 
 		// Retrieve session from Hibernate, create query (HQL) and return a GamePointsResponse
@@ -261,13 +274,90 @@ public class CompetitionService {
 		queryString.append("gcl.fangroup_name, ");
 		queryString.append("fcl.rank as fangroup_rank, ");
 		queryString.append("fcl.winnings as fangroup_winnings, ");
-		queryString.append("uifcl.rank as user_in_fangroup_rank ");
+		queryString.append("uifcl.rank as user_in_fangroup_rank, ");	
+		queryString.append("global_pool.global_pool_size, ");
+		queryString.append("num_fangroups.num_fangroups_entered, ");
+		queryString.append("fangroup_pool.fangroup_pool_size, ");
+		queryString.append("global_winnings.total_global_winnings, ");
+		queryString.append("fangroup_winnings.total_fangroup_winnings, ");
+		queryString.append("userinfangroup_winnings.total_userinfangroup_winnings ");
 		queryString.append("from  ");
 		queryString.append("global_comp_leaderboard gcl ");
 		queryString.append("left join fangroup_comp_leaderboard fcl on  ");
 		queryString.append("(fcl.competition = gcl.competition and fcl.fangroup_id = gcl.fangroup_id) ");
 		queryString.append("left join user_in_fangroup_comp_leaderboard uifcl on  ");
 		queryString.append("(uifcl.competition = gcl.competition and uifcl.user = gcl.user) ");
+		queryString.append("left join ( ");
+		queryString.append("select ");
+		queryString.append("g.competition, ");
+		queryString.append("count(distinct ge.user) as global_pool_size ");
+		queryString.append("from ");
+		queryString.append("game_entry ge ");
+		queryString.append("left join game g on g.game_id = ge.game ");
+		queryString.append("where ");
+		queryString.append("g.competition = ").append(comp_id).append(" and ");
+		queryString.append("ge.user != 'Monkey' ");
+		queryString.append(") as global_pool on global_pool.competition = gcl.competition ");
+		queryString.append("left join ( ");
+		queryString.append("select ");
+		queryString.append("g.competition, ");
+		queryString.append("count(distinct fg.name) as num_fangroups_entered ");
+		queryString.append("from ");
+		queryString.append("game_entry ge ");
+		queryString.append("left join game g on g.game_id = ge.game ");
+		queryString.append("left join fan f on f.user = ge.user ");
+		queryString.append("left join fangroup fg on fg.fangroup_id = f.fangroup ");
+		queryString.append("where ");
+		queryString.append("g.competition = ").append(comp_id);
+		queryString.append(" and fg.competition = ").append(comp_id);
+		queryString.append(" and f.user != 'Monkey' ");
+		queryString.append(") as num_fangroups on num_fangroups.competition = gcl.competition ");
+		queryString.append("left join ( ");
+		queryString.append("select ");
+		queryString.append("g.competition, ");
+		queryString.append("fg.fangroup_id, ");
+		queryString.append("count(distinct ge.user) as fangroup_pool_size ");
+		queryString.append("from ");
+		queryString.append("game_entry ge ");
+		queryString.append("left join game g on g.game_id = ge.game ");
+		queryString.append("left join fan f on f.user = ge.user ");
+		queryString.append("left join fangroup fg on fg.fangroup_id = f.fangroup ");
+		queryString.append("where ");
+		queryString.append("g.competition = ").append(comp_id);
+		queryString.append(" and fg.competition = ").append(comp_id);
+		queryString.append(" and f.user != 'Monkey'  ");
+		queryString.append("group by fg.fangroup_id ");
+		queryString.append(") as fangroup_pool on fangroup_pool.fangroup_id = gcl.fangroup_id ");
+		queryString.append("left join ( ");
+		queryString.append("select ");
+		queryString.append("gcl.competition, ");
+		queryString.append("sum(gcl.winnings) as total_global_winnings ");
+		queryString.append("from  ");
+		queryString.append("global_comp_leaderboard gcl ");
+		queryString.append("where  ");
+		queryString.append("gcl.competition = ").append(comp_id);
+		queryString.append(" ) as global_winnings on global_winnings.competition = gcl.competition ");
+		queryString.append("left join ( ");
+		queryString.append("select ");
+		queryString.append("fcl.competition, ");
+		queryString.append("sum(fcl.winnings) as total_fangroup_winnings ");
+		queryString.append("from  ");
+		queryString.append("fangroup_comp_leaderboard fcl ");
+		queryString.append("where  ");
+		queryString.append("fcl.competition = ").append(comp_id);
+		queryString.append(" ) as fangroup_winnings on fangroup_winnings.competition = gcl.competition ");
+		queryString.append("left join ( ");
+		queryString.append("select ");
+		queryString.append("uifcl.competition, ");
+		queryString.append("uifcl.fangroup_id, ");
+		queryString.append("sum(uifcl.winnings) as total_userinfangroup_winnings ");
+		queryString.append("from  ");
+		queryString.append("user_in_fangroup_comp_leaderboard uifcl ");
+		queryString.append("where  ");
+		queryString.append("uifcl.competition = ").append(comp_id);
+		queryString.append(" group by uifcl.fangroup_id ");
+		queryString.append(") as userinfangroup_winnings on (userinfangroup_winnings.competition = gcl.competition and ");
+		queryString.append("userinfangroup_winnings.fangroup_id = gcl.fangroup_id) ");
 		queryString.append("where ");
 		queryString.append("gcl.user = '").append(username).append("' ");
 		queryString.append("and gcl.competition = ").append(comp_id);
@@ -280,6 +370,12 @@ public class CompetitionService {
 		query.addScalar("fangroup_rank");
 		query.addScalar("fangroup_winnings");
 		query.addScalar("user_in_fangroup_rank");
+		query.addScalar("global_pool_size", org.hibernate.type.IntegerType.INSTANCE);
+		query.addScalar("num_fangroups_entered", org.hibernate.type.IntegerType.INSTANCE);
+		query.addScalar("fangroup_pool_size", org.hibernate.type.IntegerType.INSTANCE);
+		query.addScalar("total_global_winnings", org.hibernate.type.IntegerType.INSTANCE);
+		query.addScalar("total_fangroup_winnings", org.hibernate.type.IntegerType.INSTANCE);
+		query.addScalar("total_userinfangroup_winnings", org.hibernate.type.IntegerType.INSTANCE);
 		
 		query.setResultTransformer(Transformers.aliasToBean(CompetitionPointsResponse.class));
 
