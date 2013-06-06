@@ -51,14 +51,24 @@ public class UserService {
 				throw new RuntimeException("Unable to create password hash");
 			}
 			if (email != null) {
-				usr.setEmail(email);
+				// Check that an existing user doesn't have the same email
+				StringBuffer queryString = new StringBuffer("select count(*) from User where email = '");
+				queryString.append(email).append("'");
+				
+				Integer usersWithSameEmail = ( (Long) session.createQuery(queryString.toString()).iterate().next() ).intValue();
+				
+				if (usersWithSameEmail > 0) {
+					throw new InvalidStateException(new RestError(2301, "Email address "+email+" is already registered"));
+				} else {
+					usr.setEmail(email);
+				}
 			}
 			
 			session.save(usr);
 			return usr;
 			
 		} else {
-			throw new RuntimeException("User already exists");
+			throw new InvalidStateException(new RestError(2300, "Username "+username+" is already taken"));
 		}
 		
 	}
@@ -75,6 +85,10 @@ public class UserService {
 		// Get details of the user
 		User usr = (User) session.get(User.class, username);
 		
+		if (usr == null) {
+			throw new InvalidStateException(new RestError(2400, "User "+username+" does not exist"));
+		}
+		
 		if (password != null) {
 			try {
 				usr.setPassword_hash(PasswordHash.createHash(password));
@@ -85,7 +99,17 @@ public class UserService {
 		}
 		
 		if (email != null) {
-			usr.setEmail(email);
+			// Check that an existing user doesn't have the same email
+			StringBuffer queryString = new StringBuffer("select count(*) from User where email = '");
+			queryString.append(email).append("'");;
+			
+			Integer usersWithSameEmail = ( (Long) session.createQuery(queryString.toString()).iterate().next() ).intValue();
+		
+			if (usersWithSameEmail > 0) {
+				throw new InvalidStateException(new RestError(2401, "Email address "+email+" is already registered"));
+			} else {
+				usr.setEmail(email);
+			}
 		}
 		
 		session.update(usr);
@@ -181,7 +205,6 @@ public class UserService {
 		} else {
 			Fan currentFan = result.get(0);
 			if (currentFan.getFangroup_id() == fangroup_id) {
-				System.out.println("XXX User has already selected this fangroup for this competition");
 				throw new InvalidStateException(new RestError(2100, "You have already selected this fangroup for this competition"));
 			} else {
 				// Do not allow user to change fangroup if they already have 
@@ -193,12 +216,9 @@ public class UserService {
 				Query gameEntryQuery = session.createQuery(gameEntryQueryString.toString());
 				int numEntriesInComp = gameEntryQuery.list().size();
 				if (numEntriesInComp > 0) {
-					System.out.println("XXX User has already played game");
 					throw new InvalidStateException(new RestError(2101, "Unable to set new fangroup, you have already played a game in this competition"));
 				}
-				
-				System.out.println("XXX User has this many entries in comp: "+numEntriesInComp);
-				
+							
 				// Set fangroup as user has not yet entered any games in this competition
 				currentFan.setFangroup((FanGroup) session.load(FanGroup.class, fangroup_id));
 				session.update(currentFan);
@@ -232,6 +252,5 @@ public class UserService {
 	}
 
 	
-
 	
 }

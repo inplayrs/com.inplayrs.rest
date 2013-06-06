@@ -74,7 +74,7 @@ public class UserController {
 	public @ResponseBody User registerUser(
 		   @RequestParam(value="username", required=true) String username,
 		   @RequestParam(value="password", required=true) String password,
-		   @RequestParam(value="email", required=false) String email) {
+		   @RequestParam(value="email", required=true) String email) {
 
 		return userService.registerUser(username, password, email);
 		 	
