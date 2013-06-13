@@ -1,5 +1,6 @@
 package com.inplayrs.rest.ds;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -21,9 +22,10 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.inplayrs.rest.jodatime.CustomDateTimeDeserializer;
 import com.inplayrs.rest.jodatime.CustomDateTimeSerializer;
 
+@SuppressWarnings("serial")
 @Entity
 @Table(name = "competition")
-public class Competition {
+public class Competition implements Serializable {
 
 	@Id
 	@Column(name = "comp_id")
@@ -145,6 +147,30 @@ public class Competition {
 
 	public void setGames(Set<Game> games) {
 		this.games = games;
+	}
+
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + comp_id;
+		return result;
+	}
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Competition other = (Competition) obj;
+		if (comp_id != other.comp_id)
+			return false;
+		return true;
 	}
 	
 	

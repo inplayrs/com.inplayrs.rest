@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.inplayrs.rest.ds.FanGroup;
 import com.inplayrs.rest.ds.User;
+import com.inplayrs.rest.exception.InvalidParameterException;
+import com.inplayrs.rest.exception.RestError;
 import com.inplayrs.rest.responseds.FangroupResponse;
 import com.inplayrs.rest.service.UserService;
 
@@ -128,6 +130,35 @@ public class UserController {
     }
     
     
+	
+	/*
+	 * POST user/pat
+	 */
+	@RequestMapping(value = "/pat", method = RequestMethod.POST, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.CREATED )
+	public @ResponseBody User pat(
+		   @RequestParam(value="user", required=true) String user,
+		   @RequestParam(value="comp_id", required=false) Integer comp_id,
+		   @RequestParam(value="game_id", required=false) Integer game_id) {
+
+		// Must either specify comp_id or game_id
+		if (comp_id == null && game_id == null) {
+			throw new InvalidParameterException(new RestError(2500, "Must specify either comp_id or game_id when patting a user"));
+		}
+		
+		// Get username of player
+		String fromUser = SecurityContextHolder.getContext().getAuthentication().getName();
+		
+		if (fromUser.equals(user)) {
+			throw new InvalidParameterException(new RestError(2503, "You cannot pat yourself!"));
+		}
+		
+		return userService.pat(fromUser, user, comp_id, game_id);
+		 	
+	}
+	
+	
+	
 }
 
 

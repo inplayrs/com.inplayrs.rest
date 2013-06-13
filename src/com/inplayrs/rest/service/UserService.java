@@ -9,12 +9,18 @@ import javax.annotation.Resource;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.inplayrs.rest.ds.Competition;
 import com.inplayrs.rest.ds.Fan;
 import com.inplayrs.rest.ds.FanGroup;
+import com.inplayrs.rest.ds.Game;
+import com.inplayrs.rest.ds.Pat;
 import com.inplayrs.rest.ds.User;
+import com.inplayrs.rest.exception.InvalidParameterException;
 import com.inplayrs.rest.exception.InvalidStateException;
 import com.inplayrs.rest.exception.RestError;
 import com.inplayrs.rest.security.PasswordHash;
@@ -32,7 +38,7 @@ public class UserService {
 	
 	
 	/*
-	 * Registers a user - creates an account
+	 * POST user/register
 	 */
 	public User registerUser(String username, String password, String email) {
 		// Retrieve session from Hibernate
@@ -75,7 +81,7 @@ public class UserService {
 	
 	
 	/*
-	 * Update user's account details - password, email
+	 * POST user/account/update
 	 */
 	public User updateAccount(String username, String password, String email) {
 
@@ -142,7 +148,7 @@ public class UserService {
 	
 	
 	/*
-	 * Get a user account
+	 * GET user/account
 	 */
 	public User getUser(String username) {
 	    // Retrieve session from Hibernate
@@ -156,7 +162,7 @@ public class UserService {
 
 
 	/*
-	 * Set the fangroup for a user
+	 * POST user/fan
 	 */
 	public Integer setUserFan(Integer comp_id, Integer fangroup_id, String username) {
 
@@ -231,7 +237,7 @@ public class UserService {
 
 
 	/*
-	 * Get all fangroups for a user
+	 * GET user/fangroups
 	 */
 	@SuppressWarnings("unchecked")
 	public List <FanGroup> getUserFangroups(String username) {
@@ -251,6 +257,76 @@ public class UserService {
 		
 	}
 
+	
+	
+	/*
+	 * POST user/pat
+	 */
+	@SuppressWarnings("unchecked")
+	public User pat(String fromUser, String toUser, Integer comp_id, Integer game_id) {
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+		
+		// Must either specify comp_id or game_id
+		if (comp_id == null && game_id == null) {
+			throw new InvalidParameterException(new RestError(2500, "Must specify either comp_id or game_id when patting a user"));
+		}
+		
+		// Cannot specify both comp_id and game_id 
+		// (Don't want to have to check whether the given game_id is for that competition)
+		if (comp_id != null && game_id != null) {
+			throw new InvalidParameterException(new RestError(2501, "Must specify either comp_id or game_id when patting a user, not both"));
+		}
+		
+		// Cannot pat yourself
+		if (fromUser.equals(toUser)) {
+			throw new InvalidParameterException(new RestError(2503, "You cannot pat yourself!"));
+		}
+		
+		// Verify whether fromUser is eligible to pat toUser at this time
+		StringBuffer queryString = new StringBuffer("from Pat p where p.fromUser = '");
+		queryString.append(fromUser).append("' and p.toUser = '").append(toUser);
+		
+		if (comp_id != null) {
+			queryString.append("' and p.competition = ").append(comp_id);
+		}
+		else {
+			Game g = (Game) session.get(Game.class, game_id);
+			queryString.append("' and p.competition = ").append(g.getCompetition_id());
+		}
+
+		queryString.append(" ORDER BY created desc");
+		
+		Query query = session.createQuery(queryString.toString()).setMaxResults(1);
+		
+		List <Pat> result = query.list();
+
+		// Check that fromUser hasn't recently patted toUser in this competition 
+		if (!result.isEmpty()) {	
+			Pat p = result.get(0);
+			if (p.getCreated().toDateTime().isAfter(DateTime.now(DateTimeZone.UTC).minusHours(3))) {
+				throw new InvalidStateException(new RestError(2502, "You have recently patted this user in this competition, please try again later!"));
+			}
+		}
+		
+				
+		// Pat the user
+		Pat newPat = new Pat();
+		newPat.setCompetition((Competition) session.load(Competition.class, comp_id));
+		newPat.setFromUser((User) session.load(User.class, fromUser));
+		newPat.setToUser((User) session.load(User.class, toUser));
+		session.save(newPat);
+
+		// Increment total pat count for user being patted
+		StringBuffer updateQueryString = new StringBuffer("update User u set u.total_pat_count = u.total_pat_count + 1 ");
+		updateQueryString.append("where u.username = '").append(toUser).append("'");
+		Query updateQuery = session.createQuery(updateQueryString.toString());
+		updateQuery.executeUpdate();
+		
+		return null;
+	}
+	
+	
 	
 	
 }
