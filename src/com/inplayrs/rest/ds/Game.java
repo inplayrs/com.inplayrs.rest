@@ -76,6 +76,12 @@ public class Game {
 	@JsonIgnore
 	private boolean processed;
 	
+	@Column(name = "banner_position")
+	private Integer banner_position;
+	
+	@Column(name = "banner_image_url")
+	private String banner_image_url;
+	
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "game")
 	@JsonIgnore
 	private Set<GameEntry> gameEntries;
@@ -252,6 +258,30 @@ public class Game {
 
 	public void setGameEntries(Set<GameEntry> gameEntries) {
 		this.gameEntries = gameEntries;
+	}
+
+
+
+	public Integer getBanner_position() {
+		return banner_position;
+	}
+
+
+
+	public void setBanner_position(Integer banner_position) {
+		this.banner_position = banner_position;
+	}
+
+
+
+	public String getBanner_image_url() {
+		return banner_image_url;
+	}
+
+
+
+	public void setBanner_image_url(String banner_image_url) {
+		this.banner_image_url = banner_image_url;
 	}
 	
 	

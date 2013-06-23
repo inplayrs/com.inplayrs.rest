@@ -132,7 +132,9 @@ public class CompetitionService {
 		queryString.append("(CASE  ");
 		queryString.append("WHEN ge.game_entry_id is NULL THEN false ");
 		queryString.append("ELSE true ");
-		queryString.append("END) as entered ");
+		queryString.append("END) as entered, ");
+		queryString.append("g.banner_position, ");
+		queryString.append("g.banner_image_url ");
 		queryString.append("from ");
 		queryString.append("game g ");
 		queryString.append("left join competition c on c.comp_id = g.competition ");
@@ -175,6 +177,8 @@ public class CompetitionService {
 		query.addScalar("global_pot_size");
 		query.addScalar("fangroup_pot_size");
 		query.addScalar("entered", org.hibernate.type.NumericBooleanType.INSTANCE); 
+		query.addScalar("banner_position");
+		query.addScalar("banner_image_url");
 		query.setResultTransformer(Transformers.aliasToBean(GameResponse.class));
 		
 		return query.list();

@@ -7,7 +7,9 @@ import javax.persistence.Entity;
 import org.hibernate.annotations.Type;
 import org.joda.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.inplayrs.rest.jodatime.CustomDateTimeDeserializer;
@@ -65,6 +67,16 @@ public class GameResponse {
 	@Column(name = "entered")
 	@JsonProperty
 	private boolean entered;  // has the current user entered this game
+	
+	@Column(name = "banner_position")
+	@JsonProperty
+	@JsonInclude(Include.NON_NULL) 
+	private Integer banner_position;
+	
+	@Column(name = "banner_image_url")
+	@JsonProperty
+	@JsonInclude(Include.NON_NULL) 
+	private String banner_image_url;
 	
 	/*
 	 * Default constructor
@@ -214,6 +226,26 @@ public class GameResponse {
 
 	public void setEntered(boolean entered) {
 		this.entered = entered;
+	}
+
+
+	public Integer getBanner_position() {
+		return banner_position;
+	}
+
+
+	public void setBanner_position(Integer banner_position) {
+		this.banner_position = banner_position;
+	}
+
+
+	public String getBanner_image_url() {
+		return banner_image_url;
+	}
+
+
+	public void setBanner_image_url(String banner_image_url) {
+		this.banner_image_url = banner_image_url;
 	}
 
 
