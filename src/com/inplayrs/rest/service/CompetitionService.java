@@ -1,23 +1,22 @@
 package com.inplayrs.rest.service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Resource;
 import org.apache.log4j.Logger;
-//import org.apache.log4j.Logger;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.transform.Transformers;
+import org.joda.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.inplayrs.rest.constants.Operators;
 import com.inplayrs.rest.ds.Competition;
 import com.inplayrs.rest.ds.Fan;
 import com.inplayrs.rest.ds.FanGroup;
@@ -39,7 +38,7 @@ public class CompetitionService {
 	private SessionFactory sessionFactory;
 	
 	//get log4j handler
-	private static final Logger log = Logger.getLogger(GameService.class);
+	private static final Logger log = Logger.getLogger(CompetitionService.class);
 	
 	
 	/*
@@ -58,14 +57,7 @@ public class CompetitionService {
 	 * GET competition/list
 	 */
 	public List<CompetitionResponse> getCompetitions(Integer state, String stateOP, String username) {
-		
-		Map<String, String> operators = new HashMap<String, String>();
-		operators.put(null, "=");
-		operators.put("eq", "=");
-		operators.put("ne", "!=");
-		operators.put("lt", "<");
-		operators.put("gt", ">");
-		
+				
 		StringBuffer queryString = new StringBuffer("select c, max(ge.game_entry_id) from Competition c ");
 		queryString.append("left join c.games g ");
 		queryString.append("left join g.gameEntries ge ");
@@ -74,7 +66,7 @@ public class CompetitionService {
 		
 		if (state != null) {
 			queryString.append(" where c.state ");
-			queryString.append(operators.get(stateOP));
+			queryString.append(Operators.opMap.get(stateOP));
 			queryString.append(" ");
 			queryString.append(state);
 		}
@@ -114,14 +106,7 @@ public class CompetitionService {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<GameResponse> getGames(Integer comp_id, Integer state, String stateOP, String username) {
-		
-		Map<String, String> operators = new HashMap<String, String>();
-		operators.put(null, "=");
-		operators.put("eq", "=");
-		operators.put("ne", "!=");
-		operators.put("lt", "<");
-		operators.put("gt", ">");
-		
+			
 		StringBuffer queryString = new StringBuffer("select ");
 		queryString.append("g.game_id, ");
 		queryString.append("g.name, ");
@@ -161,7 +146,7 @@ public class CompetitionService {
 			} else {
 				queryString.append(" and g.state ");				
 			}
-			queryString.append(operators.get(stateOP));
+			queryString.append(Operators.opMap.get(stateOP));
 			queryString.append(" ");
 			queryString.append(state);
 		}
@@ -416,7 +401,23 @@ public class CompetitionService {
 		queryString.append("gcl.competition.comp_id as comp_id, ");
 		queryString.append("gcl.competition.name as competition, ");
 		queryString.append("gcl.competition.category.name as category, ");
+		queryString.append("gcl.competition.end_date as comp_end_date, ");
 		queryString.append("gcl.user.username as user from GlobalCompLeaderboard gcl where gcl.rank = 1");
+		
+		// Filter by competition ID if specified
+		if (comp_id != null) {
+			queryString.append(" and gcl.competition.comp_id = ");
+			queryString.append(comp_id);
+		}
+		
+		// Filter by state of competition if specified
+		if (state != null) {
+			queryString.append(" and gcl.competition.state ");
+			queryString.append(Operators.opMap.get(stateOP));
+			queryString.append(" ");
+			queryString.append(state);
+		}
+		
 		
 		Query query = session.createQuery(queryString.toString());
 			
@@ -433,7 +434,8 @@ public class CompetitionService {
 			Integer competition_id = (Integer) row[0];
 			String competition = (String) row[1];
 			String category = (String) row[2];
-			String user = (String) row[3];
+			LocalDateTime compEndDate = (LocalDateTime) row[3];
+			String user = (String) row[4];
 		
 			// If this winner is for the same competition that we're processing, 
 			// add to the list of winners
@@ -447,7 +449,7 @@ public class CompetitionService {
 				cwr.setWinners(winners);
 			} 
 			else {
-				// Add the previous winner response object to the resultset
+				// Add the previous winner response object to the result set
 				if (cwr.getComp_id() != null) {
 					response.add(cwr);
 					cwr = new CompetitionWinnersResponse();
@@ -457,6 +459,7 @@ public class CompetitionService {
 				cwr.setComp_id(competition_id);
 				cwr.setCategory(category);
 				cwr.setCompetition(competition);
+				cwr.setCompEndDate(compEndDate);
 				
 				List<String> winners = new ArrayList<String>();
 				winners.add(user);

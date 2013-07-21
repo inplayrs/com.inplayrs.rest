@@ -222,6 +222,9 @@ public class GameService {
 		// GameEntry for the selections
 		GameEntry gameEntry = new GameEntry();
 		
+		// Keep track of whether this is the user's initial submit or not
+		boolean isInitialSubmit = false;
+		
 		// Create game entry if we don't already have one
 		Query gameEntryQuery = session.createQuery("from GameEntry ge where ge.game = "+game_id.toString()+
 										   " and ge.user = '"+username+"'");
@@ -235,6 +238,8 @@ public class GameService {
 		}
 		
 		if (result.isEmpty()) {
+			isInitialSubmit = true;
+			
 			// Create a new GameEntry
 			Game g;
 			try {
