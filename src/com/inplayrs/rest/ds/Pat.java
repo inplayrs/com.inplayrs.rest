@@ -18,10 +18,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.inplayrs.rest.jodatime.CustomDateTimeDeserializer;
 import com.inplayrs.rest.jodatime.CustomDateTimeSerializer;
 
-@SuppressWarnings("serial")
 @Entity
 @Table(name = "pat")
 public class Pat implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	@Id
 	@ManyToOne(fetch = FetchType.EAGER)

@@ -13,7 +13,7 @@
 
 		<property name="hibernate.connection.username">restapi</property>
 		<property name="hibernate.connection.password">jbW#32Hsq@@P</property>
-
+		<property name="hibernate.connection.driver_class">${app.jdbc.driverClassName}</property>
 
 		<property name="hibernate.c3p0.driverClass">${app.jdbc.driverClassName}</property>
 		<property name="hibernate.c3p0.jdbcUrl">${app.jdbc.url}</property>

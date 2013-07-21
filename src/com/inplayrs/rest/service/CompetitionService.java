@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
+import org.apache.log4j.Logger;
 //import org.apache.log4j.Logger;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
@@ -23,6 +24,7 @@ import com.inplayrs.rest.ds.FanGroup;
 import com.inplayrs.rest.responseds.CompetitionLeaderboardResponse;
 import com.inplayrs.rest.responseds.CompetitionPointsResponse;
 import com.inplayrs.rest.responseds.CompetitionResponse;
+import com.inplayrs.rest.responseds.CompetitionWinnersResponse;
 import com.inplayrs.rest.responseds.GameResponse;
 
 
@@ -35,6 +37,9 @@ public class CompetitionService {
 
 	@Resource(name="sessionFactory")
 	private SessionFactory sessionFactory;
+	
+	//get log4j handler
+	private static final Logger log = Logger.getLogger(GameService.class);
 	
 	
 	/*
@@ -393,6 +398,77 @@ public class CompetitionService {
 			return cpr;
 		}
 
+		
+	}
+	
+	
+	
+	/*
+	 * GET competition/winners
+	 */
+	public List<CompetitionWinnersResponse> getCompetitionWinners(Integer comp_id, Integer state, String stateOP) {
+		
+		// Retrieve session from Hibernate, create query (HQL) and return a list of fangroups
+		Session session = sessionFactory.getCurrentSession();
+		
+		// Get winners of competitions
+		StringBuffer queryString = new StringBuffer("select ");
+		queryString.append("gcl.competition.comp_id as comp_id, ");
+		queryString.append("gcl.competition.name as competition, ");
+		queryString.append("gcl.competition.category.name as category, ");
+		queryString.append("gcl.user.username as user from GlobalCompLeaderboard gcl where gcl.rank = 1");
+		
+		Query query = session.createQuery(queryString.toString());
+			
+		List<CompetitionWinnersResponse> response = new ArrayList<>();
+		
+		CompetitionWinnersResponse cwr = new CompetitionWinnersResponse();
+		
+		// Iterate over result set
+		@SuppressWarnings("rawtypes")
+		Iterator compWinners = query.list().iterator();
+		while(compWinners.hasNext()) {
+			// Process each competition winner and add to response object
+			Object[] row = (Object[]) compWinners.next();
+			Integer competition_id = (Integer) row[0];
+			String competition = (String) row[1];
+			String category = (String) row[2];
+			String user = (String) row[3];
+		
+			// If this winner is for the same competition that we're processing, 
+			// add to the list of winners
+			if (competition_id == cwr.getComp_id()) {
+				List<String> winners = new ArrayList<String>();
+				
+				if (!cwr.getWinners().isEmpty()) {
+					winners = cwr.getWinners();	
+				}
+				winners.add(user);
+				cwr.setWinners(winners);
+			} 
+			else {
+				// Add the previous winner response object to the resultset
+				if (cwr.getComp_id() != null) {
+					response.add(cwr);
+					cwr = new CompetitionWinnersResponse();
+				}
+				
+				// Set the new winner response object
+				cwr.setComp_id(competition_id);
+				cwr.setCategory(category);
+				cwr.setCompetition(competition);
+				
+				List<String> winners = new ArrayList<String>();
+				winners.add(user);
+				cwr.setWinners(winners);
+			}
+		}
+		// Add final result to response
+		if (cwr.getComp_id() != null) {
+			response.add(cwr);
+		}
+		
+		return  response;
 		
 	}
 	

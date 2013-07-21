@@ -35,7 +35,7 @@ public class Competition implements Serializable {
 	@Column(name = "name")
 	private String name;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "category", nullable = false)
 	@JsonIgnore
 	private Category category;

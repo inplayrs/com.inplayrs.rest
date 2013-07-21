@@ -1,6 +1,7 @@
 package com.inplayrs.rest.service;
 
 
+import com.inplayrs.rest.constants.State;
 import com.inplayrs.rest.ds.Fan;
 import com.inplayrs.rest.ds.Game;
 import com.inplayrs.rest.ds.GameEntry;
@@ -17,6 +18,7 @@ import com.inplayrs.rest.responseds.GamePointsResponse;
 import java.util.List;
 import javax.annotation.Resource;
 
+import org.apache.log4j.Logger;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
@@ -37,6 +39,9 @@ public class GameService {
 
 	@Resource(name="sessionFactory")
 	private SessionFactory sessionFactory;
+	
+	//get log4j handler
+	private static final Logger log = Logger.getLogger(GameService.class);
 	
 	
 	/*
@@ -244,8 +249,9 @@ public class GameService {
 			fangroupQueryString.append(username).append("' and f.fangroup.competition = ");
 			
 			try {
-			fangroupQueryString.append(g.getCompetition_id());
-			}catch (ObjectNotFoundException e) {
+				fangroupQueryString.append(g.getCompetition_id());
+			}
+			catch (ObjectNotFoundException e) {
 				throw new InvalidParameterException(new RestError(2200, "Game with ID "+game_id.toString()+" does not exist"));
 			}
 			
@@ -260,18 +266,16 @@ public class GameService {
 			gameEntry.setGame_id(game_id);
 			gameEntry.setUsername(username);
 			gameEntry.setGame(g);
+			gameEntry.setEntry_state(g.getState());
 			gameEntry.setUser((User) session.load(User.class, username));
 			
 			session.save(gameEntry);
 		
-			// Increment num players
+			// Increment num players, global pot size & fangroup pot size in game and update
 			g.setNum_players(g.getNum_players()+1);
-			
-			// Increment global pot size & fangroup pot size
 			g.setGlobal_pot_size(g.getGlobal_pot_size() + g.getStake());
 			g.setFangroup_pot_size(g.getFangroup_pot_size() + g.getStake());
 			
-			// Update the game
 			session.update(g);	
 
 		} else {
@@ -307,10 +311,10 @@ public class GameService {
 			List <PeriodSelection> psqResult = periodSelectionQuery.list();
 			
 			if (psqResult.isEmpty()) {
-				// Add the new period selection if state is preplay/transition/inplay
+				// Add the new period selection if state is preplay/transition
 				int period_state = ps.getPeriod().getState();
-				if (period_state >= -1 && period_state <=1) {
-					System.out.println("adding new selection");
+				if (period_state == State.PREPLAY || period_state == State.TRANSITION) {
+					log.debug("adding new selection");
 					try {
 						session.save(ps);
 					}
@@ -318,17 +322,17 @@ public class GameService {
 						throw new DBException(new RestError(1000, "Failed to create new period selection"));
 					}
 				} else {
-					System.out.println("Could not update Period Selection, Period is no longer in preplay/transition/inplay");
+					log.debug("Could not update Period Selection, Period is no longer in preplay/transition");
 				}
 			} else {
 				// Update if pre-play/transition and not cashed out
 				PeriodSelection currentSelection = psqResult.get(0);
 				int period_state = currentSelection.getPeriod().getState();
-				if (period_state == -1 || period_state == 0) {
+				if (period_state == State.PREPLAY || period_state == State.TRANSITION) {
 					if (currentSelection.isCashed_out()) {
-						System.out.println("Could not update Period Selection, user has already banked their points");
+						log.debug("Could not update Period Selection, user has already banked their points");
 					} else {
-						System.out.println("updating existing selection");
+						log.debug("updating existing selection");
 						currentSelection.setSelection(ps.getSelection());
 						currentSelection.setPotential_points(ps.getPotential_points());
 						try {
@@ -340,7 +344,7 @@ public class GameService {
 					}
 					
 				} else {
-					System.out.println("Could not update Period Selection, Period is no longer in preplay/transition/inplay");
+					log.debug("Could not update Period Selection, Period is no longer in preplay/transition/inplay");
 				}
 				
 			}
@@ -386,7 +390,7 @@ public class GameService {
 			
 			// Can only bank points if period is still in transition/inplay
 			int period_state = period.getState();
-			if (period_state == 0 || period_state == 1) {
+			if (period_state == State.TRANSITION || period_state == State.INPLAY) {
 				// Update points won
 				switch(ps.getSelection()) {
 					case 0 : ps.setAwarded_points(period.getPoints0());
@@ -413,11 +417,11 @@ public class GameService {
 				return null;
 				
 			} else {	
-				if (period_state < 0) {
+				if (period_state == State.PREPLAY || period_state == State.TRANSITION) {
 					throw new InvalidStateException(new RestError(2002, "Cannot bank points, event has not started yet"));
-				} else if (period_state == 2) {
+				} else if (period_state == State.COMPLETE) {
 					throw new InvalidStateException(new RestError(2003, "Cannot bank points, event has now completed"));
-				} else if (period_state == 3) {
+				} else if (period_state == State.SUSPENDED) {
 					throw new InvalidStateException(new RestError(2004, "Cannot bank points, event is currently suspended. Please try again later!"));
 				} else {
 					throw new InvalidStateException(new RestError(2005, "Cannot bank points, unknown period_state: "+period_state));

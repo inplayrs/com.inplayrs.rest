@@ -104,7 +104,7 @@ public class UserService {
 			}
 		}
 		
-		if (email != null) {
+		if (email != null && !email.equals(usr.getEmail())) {
 			// Check that an existing user doesn't have the same email
 			StringBuffer queryString = new StringBuffer("select count(*) from User where email = '");
 			queryString.append(email).append("'");;

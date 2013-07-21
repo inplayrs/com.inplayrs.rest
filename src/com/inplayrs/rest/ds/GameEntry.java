@@ -56,8 +56,14 @@ public class GameEntry {
 	@Column(name = "total_winnings")
 	private int total_winnings;
 	
+	@Column(name = "entry_state")
+	@JsonIgnore
+	private int entry_state;
+	
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "gameEntry")
 	private Set <PeriodSelection> periodSelections;
+	
+	
 	
 	
 	/*
@@ -181,6 +187,16 @@ public class GameEntry {
 
 	public void setUsername(String username) {
 		this.username = username;
+	}
+
+
+	public int getEntry_state() {
+		return entry_state;
+	}
+
+
+	public void setEntry_state(int entry_state) {
+		this.entry_state = entry_state;
 	}
 
 

@@ -77,7 +77,7 @@ public class Game {
 	private boolean processed;
 	
 	@Column(name = "banner_position")
-	private Integer banner_position;
+	private Integer bannerPosition;
 	
 	@Column(name = "banner_image_url")
 	private String banner_image_url;
@@ -262,14 +262,14 @@ public class Game {
 
 
 
-	public Integer getBanner_position() {
-		return banner_position;
+	public Integer getBannerPosition() {
+		return bannerPosition;
 	}
 
 
 
-	public void setBanner_position(Integer banner_position) {
-		this.banner_position = banner_position;
+	public void setBannerPosition(Integer banner_position) {
+		this.bannerPosition = banner_position;
 	}
 
 
@@ -283,7 +283,7 @@ public class Game {
 	public void setBanner_image_url(String banner_image_url) {
 		this.banner_image_url = banner_image_url;
 	}
-	
+
 	
 	
 }
