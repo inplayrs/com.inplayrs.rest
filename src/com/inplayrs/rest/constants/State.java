@@ -8,5 +8,6 @@ public class State {
 	public final static int INPLAY = 1;
 	public final static int COMPLETE = 2;
 	public final static int SUSPENDED = 3;
+	public final static int NEVERINPLAY = 4;
 	
 }
