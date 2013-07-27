@@ -218,7 +218,7 @@ public class GameService {
 	public Integer addGamePeriodSelections(Integer game_id, String username, PeriodSelection[] periodSelections) {
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();		
-		
+
 		// GameEntry for the selections
 		GameEntry gameEntry = new GameEntry();
 		
@@ -296,6 +296,12 @@ public class GameService {
 
 			Period period = (Period) session.load(Period.class, ps.getPeriod_id());
 			ps.setPeriod(period);
+			
+			// Do not allow user to perform their initial submit of selections if a period is suspended
+			if (isInitialSubmit && period.getState() == State.SUSPENDED) {
+				session.delete(gameEntry);
+				throw new InvalidStateException(new RestError(2202, "One or more events are currently suspended, please try again later!"));
+			}
 				
 			// Set potential_points for period_selection
 			switch(ps.getSelection()) {
@@ -353,9 +359,7 @@ public class GameService {
 				}
 				
 			}
-			
-			
-			
+						
 		}
 		
 		return null;
