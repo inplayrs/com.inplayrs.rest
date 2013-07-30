@@ -61,7 +61,7 @@ public class GameEntry {
 	
 	@Column(name = "entry_state")
 	@JsonIgnore
-	private int entry_state;
+	private Integer entry_state;
 	
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "gameEntry")
 	@Cascade({CascadeType.DELETE})
@@ -194,15 +194,14 @@ public class GameEntry {
 	}
 
 
-	public int getEntry_state() {
+	public Integer getEntry_state() {
 		return entry_state;
 	}
 
 
-	public void setEntry_state(int entry_state) {
+	public void setEntry_state(Integer entry_state) {
 		this.entry_state = entry_state;
 	}
-
 
 	
 }
