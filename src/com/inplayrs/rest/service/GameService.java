@@ -243,7 +243,7 @@ public class GameService {
 			// Create a new GameEntry
 			Game g;
 			try {
-				g = (Game) session.load(Game.class, game_id);	
+				g = (Game) session.get(Game.class, game_id);	
 			}
 			catch (Exception e) {
 				throw new DBException(new RestError(1001, "Failed to get game with ID "+game_id));
