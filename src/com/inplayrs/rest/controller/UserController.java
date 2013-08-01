@@ -76,9 +76,11 @@ public class UserController {
 	public @ResponseBody User registerUser(
 		   @RequestParam(value="username", required=true) String username,
 		   @RequestParam(value="password", required=true) String password,
-		   @RequestParam(value="email", required=false) String email) {
+		   @RequestParam(value="email", required=false) String email,
+		   @RequestParam(value="timezone", required=false) String timezone,
+		   @RequestParam(value="deviceID", required=false) String deviceID) {
 
-		return userService.registerUser(username, password, email);
+		return userService.registerUser(username, password, email, timezone, deviceID);
 		 	
 	}
 	
@@ -91,9 +93,11 @@ public class UserController {
 	@ResponseStatus( HttpStatus.CREATED )
 	public @ResponseBody User updateAccount(
 		   @RequestParam(value="password", required=false) String password,
-		   @RequestParam(value="email", required=false) String email) {
+		   @RequestParam(value="email", required=false) String email,
+		   @RequestParam(value="timezone", required=false) String timezone,
+		   @RequestParam(value="deviceID", required=false) String deviceID) {
 
-		if (password == null && email == null) {
+		if (password == null && email == null && timezone == null && deviceID == null) {
 			// No account details specified to update
 			return null;
 		}
@@ -101,7 +105,7 @@ public class UserController {
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
 		
-		return userService.updateAccount(username, password, email);
+		return userService.updateAccount(username, password, email, timezone, deviceID);
 		 	
 	}
 	

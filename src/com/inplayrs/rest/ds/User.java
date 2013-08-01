@@ -33,6 +33,14 @@ public class User implements Serializable {
 	@JsonIgnore
 	private String password_hash;
 	
+	@Column(name = "timezone")
+	@JsonIgnore
+	private String timezone;
+	
+	@Column(name = "device_id")
+	@JsonIgnore
+	private String deviceID;
+	
 	
 	/*
 	 * Default constructor - required by Hibernate
@@ -89,6 +97,26 @@ public class User implements Serializable {
 
 	public void setPassword_hash(String password_hash) {
 		this.password_hash = password_hash;
+	}
+	
+	
+	public String getTimezone() {
+		return timezone;
+	}
+
+
+	public void setTimezone(String timezone) {
+		this.timezone = timezone;
+	}
+
+
+	public String getDeviceID() {
+		return deviceID;
+	}
+
+
+	public void setDeviceID(String deviceID) {
+		this.deviceID = deviceID;
 	}
 
 

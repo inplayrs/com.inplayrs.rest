@@ -40,7 +40,7 @@ public class UserService {
 	/*
 	 * POST user/register
 	 */
-	public User registerUser(String username, String password, String email) {
+	public User registerUser(String username, String password, String email, String timezone, String deviceID) {
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 				
@@ -70,6 +70,14 @@ public class UserService {
 				}
 			}
 			
+			if (timezone != null) {
+				usr.setTimezone(timezone);
+			}
+			
+			if (deviceID != null) {
+				usr.setDeviceID(deviceID);
+			}
+			
 			session.save(usr);
 			return usr;
 			
@@ -83,7 +91,7 @@ public class UserService {
 	/*
 	 * POST user/account/update
 	 */
-	public User updateAccount(String username, String password, String email) {
+	public User updateAccount(String username, String password, String email, String timezone, String deviceID) {
 
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
@@ -116,6 +124,14 @@ public class UserService {
 			} else {
 				usr.setEmail(email);
 			}
+		}
+		
+		if (timezone != null) {
+			usr.setTimezone(timezone);
+		}
+		
+		if (deviceID != null) {
+			usr.setDeviceID(deviceID);
 		}
 		
 		session.update(usr);
