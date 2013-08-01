@@ -400,7 +400,7 @@ public class CompetitionService {
 		StringBuffer queryString = new StringBuffer("select ");
 		queryString.append("gcl.competition.comp_id as comp_id, ");
 		queryString.append("gcl.competition.name as competition, ");
-		queryString.append("gcl.competition.category.name as category, ");
+		queryString.append("gcl.competition.category.cat_id, ");
 		queryString.append("gcl.competition.end_date as comp_end_date, ");
 		queryString.append("gcl.user.username as user from GlobalCompLeaderboard gcl where gcl.rank = 1");
 		
@@ -433,7 +433,7 @@ public class CompetitionService {
 			Object[] row = (Object[]) compWinners.next();
 			Integer competition_id = (Integer) row[0];
 			String competition = (String) row[1];
-			String category = (String) row[2];
+			Integer cat_id = (Integer) row[2];
 			LocalDateTime compEndDate = (LocalDateTime) row[3];
 			String user = (String) row[4];
 		
@@ -457,7 +457,7 @@ public class CompetitionService {
 				
 				// Set the new winner response object
 				cwr.setComp_id(competition_id);
-				cwr.setCategory(category);
+				cwr.setCategory_id(cat_id);
 				cwr.setCompetition(competition);
 				cwr.setCompEndDate(compEndDate);
 				

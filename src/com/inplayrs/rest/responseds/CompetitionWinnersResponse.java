@@ -20,7 +20,7 @@ public class CompetitionWinnersResponse {
 	private String competition;
 	
 	@JsonProperty
-	private String category;
+	private Integer category_id;
 	
 	@JsonSerialize(using = CustomDateTimeSerializer.class)
 	@JsonDeserialize(using = CustomDateTimeDeserializer.class)
@@ -39,7 +39,6 @@ public class CompetitionWinnersResponse {
 	}
 
 
-
 	public Integer getComp_id() {
 		return comp_id;
 	}
@@ -47,8 +46,6 @@ public class CompetitionWinnersResponse {
 	public void setComp_id(Integer comp_id) {
 		this.comp_id = comp_id;
 	}
-
-
 
 
 	public String getCompetition() {
@@ -61,13 +58,13 @@ public class CompetitionWinnersResponse {
 	}
 
 
-	public String getCategory() {
-		return category;
+	public Integer getCategory_id() {
+		return category_id;
 	}
 
 
-	public void setCategory(String category) {
-		this.category = category;
+	public void setCategory_id(Integer category_id) {
+		this.category_id = category_id;
 	}
 
 
@@ -76,11 +73,9 @@ public class CompetitionWinnersResponse {
 	}
 
 
-
 	public void setCompEndDate(LocalDateTime compEndDate) {
 		this.compEndDate = compEndDate;
 	}
-
 
 
 	public List<String> getWinners() {
@@ -92,10 +87,5 @@ public class CompetitionWinnersResponse {
 		this.winners = winners;
 	}
 
-
-
-	
-	
-	
 	
 }
