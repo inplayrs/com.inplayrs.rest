@@ -120,7 +120,13 @@ public class GameService {
 		queryString.append("uifgl.rank as user_in_fangroup_rank, ");
 		queryString.append("g.num_players as global_pool_size, ");
 		queryString.append("num_fangroups.num_fangroups_entered, ");
-		queryString.append("fangroup_pool.fangroup_pool_size ");
+		queryString.append("fangroup_pool.fangroup_pool_size, ");
+		queryString.append("CASE ");
+		queryString.append("WHEN ge.entry_state = -1 THEN false ");
+		queryString.append("WHEN ge.entry_state = 0 THEN false ");
+		queryString.append("WHEN ge.entry_state IS NULL THEN false ");
+		queryString.append("ELSE true ");
+		queryString.append("END 'late_entry' ");
 
 		queryString.append("from  ");
 		queryString.append("game_entry ge ");
@@ -192,6 +198,7 @@ public class GameService {
 		query.addScalar("global_pool_size");
 		query.addScalar("num_fangroups_entered", org.hibernate.type.IntegerType.INSTANCE);
 		query.addScalar("fangroup_pool_size",  org.hibernate.type.IntegerType.INSTANCE);
+		query.addScalar("late_entry", org.hibernate.type.BooleanType.INSTANCE);
 		query.setResultTransformer(Transformers.aliasToBean(GamePointsResponse.class));
 				
 		@SuppressWarnings("unchecked")

@@ -94,6 +94,12 @@ public class GamePointsResponse {
 	@JsonProperty
 	private Integer fangroup_pool_size;
 	
+
+	@Column(name = "late_entry")
+	@JsonProperty
+	private boolean late_entry;
+	
+	
 	// Only include periodSelections in JSON response when not null
 	@JsonProperty
 	@JsonInclude(Include.NON_NULL) 
@@ -282,6 +288,16 @@ public class GamePointsResponse {
 
 	public void setFangroup_pool_size(Integer fangroup_pool_size) {
 		this.fangroup_pool_size = fangroup_pool_size;
+	}
+
+
+	public boolean isLate_entry() {
+		return late_entry;
+	}
+
+
+	public void setLate_entry(boolean late_entry) {
+		this.late_entry = late_entry;
 	}
 
 
