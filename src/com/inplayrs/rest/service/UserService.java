@@ -40,7 +40,7 @@ public class UserService {
 	/*
 	 * POST user/register
 	 */
-	public User registerUser(String username, String password, String email, String timezone, String deviceID) {
+	public User registerUser(String username, String password, String email, String timezone, String deviceID, Boolean pushActive) {
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 				
@@ -78,6 +78,13 @@ public class UserService {
 				usr.setDeviceID(deviceID);
 			}
 			
+			// Default push_active to true if not specified when registering
+			if (pushActive != null) {
+				usr.setPushActive(pushActive);
+			} else {
+				usr.setPushActive(true);
+			}
+			
 			session.save(usr);
 			return usr;
 			
@@ -91,7 +98,7 @@ public class UserService {
 	/*
 	 * POST user/account/update
 	 */
-	public User updateAccount(String username, String password, String email, String timezone, String deviceID) {
+	public User updateAccount(String username, String password, String email, String timezone, String deviceID, Boolean pushActive) {
 
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
@@ -132,6 +139,10 @@ public class UserService {
 		
 		if (deviceID != null) {
 			usr.setDeviceID(deviceID);
+		}
+		
+		if (pushActive != null) {
+			usr.setPushActive(pushActive);
 		}
 		
 		session.update(usr);

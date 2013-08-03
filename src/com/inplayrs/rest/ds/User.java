@@ -14,7 +14,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name = "user")
 public class User implements Serializable {
-
 	
 	@Id
 	@Column(name = "username")
@@ -40,6 +39,10 @@ public class User implements Serializable {
 	@Column(name = "device_id")
 	@JsonIgnore
 	private String deviceID;
+	
+	@Column(name = "push_active")
+	@JsonIgnore
+	private boolean pushActive;
 	
 	
 	/*
@@ -117,6 +120,16 @@ public class User implements Serializable {
 
 	public void setDeviceID(String deviceID) {
 		this.deviceID = deviceID;
+	}
+
+	
+	public boolean isPushActive() {
+		return pushActive;
+	}
+
+
+	public void setPushActive(boolean pushActive) {
+		this.pushActive = pushActive;
 	}
 
 

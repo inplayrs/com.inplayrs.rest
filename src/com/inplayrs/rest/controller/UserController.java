@@ -78,9 +78,10 @@ public class UserController {
 		   @RequestParam(value="password", required=true) String password,
 		   @RequestParam(value="email", required=false) String email,
 		   @RequestParam(value="timezone", required=false) String timezone,
-		   @RequestParam(value="deviceID", required=false) String deviceID) {
+		   @RequestParam(value="deviceID", required=false) String deviceID,
+		   @RequestParam(value="pushActive", required=false) Boolean pushActive) {
 
-		return userService.registerUser(username, password, email, timezone, deviceID);
+		return userService.registerUser(username, password, email, timezone, deviceID, pushActive);
 		 	
 	}
 	
@@ -95,9 +96,10 @@ public class UserController {
 		   @RequestParam(value="password", required=false) String password,
 		   @RequestParam(value="email", required=false) String email,
 		   @RequestParam(value="timezone", required=false) String timezone,
-		   @RequestParam(value="deviceID", required=false) String deviceID) {
+		   @RequestParam(value="deviceID", required=false) String deviceID,
+		   @RequestParam(value="pushActive", required=false) Boolean pushActive) {
 
-		if (password == null && email == null && timezone == null && deviceID == null) {
+		if (password == null && email == null && timezone == null && deviceID == null && pushActive == null) {
 			// No account details specified to update
 			return null;
 		}
@@ -105,7 +107,7 @@ public class UserController {
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
 		
-		return userService.updateAccount(username, password, email, timezone, deviceID);
+		return userService.updateAccount(username, password, email, timezone, deviceID, pushActive);
 		 	
 	}
 	
