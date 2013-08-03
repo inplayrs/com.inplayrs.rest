@@ -190,34 +190,34 @@ public class CompetitionService {
 		// Build query string based on type of leaderboard
 		switch(type) {
 			case "global":
-				queryString.append("gcl.rank, ");
-				queryString.append("gcl.user as name, ");
-				queryString.append("gcl.games_played, ");
-				queryString.append("gcl.winnings ");
-				queryString.append("from global_comp_leaderboard gcl ");
-				queryString.append("where competition = ");
+				queryString.append("lb.rank, ");
+				queryString.append("lb.user as name, ");
+				queryString.append("lb.games_played, ");
+				queryString.append("lb.winnings ");
+				queryString.append("from global_comp_leaderboard lb ");
+				queryString.append("where lb.competition = ");
 				queryString.append(comp_id);
 				break;
 				
 			case "fangroup":
-				queryString.append("fcl.rank, ");
-				queryString.append("fcl.fangroup_name as name, ");
-				queryString.append("fcl.games_played, ");
-				queryString.append("fcl.winnings ");
-				queryString.append("from fangroup_comp_leaderboard fcl ");
-				queryString.append("where competition = ");
+				queryString.append("lb.rank, ");
+				queryString.append("lb.fangroup_name as name, ");
+				queryString.append("lb.games_played, ");
+				queryString.append("lb.winnings ");
+				queryString.append("from fangroup_comp_leaderboard lb ");
+				queryString.append("where lb.competition = ");
 				queryString.append(comp_id);
 				break;
 				
 			case "userinfangroup":					
-				queryString.append("uifcl.rank, ");
-				queryString.append("uifcl.user as name, ");
-				queryString.append("uifcl.games_played, ");
-				queryString.append("uifcl.winnings ");
-				queryString.append("from user_in_fangroup_comp_leaderboard uifcl ");
-				queryString.append("where competition = ");
+				queryString.append("lb.rank, ");
+				queryString.append("lb.user as name, ");
+				queryString.append("lb.games_played, ");
+				queryString.append("lb.winnings ");
+				queryString.append("from user_in_fangroup_comp_leaderboard lb ");
+				queryString.append("where lb.competition = ");
 				queryString.append(comp_id);
-				queryString.append(" and fangroup_id = ");
+				queryString.append(" and lb.fangroup_id = ");
 				
 				// Get fangroup of  user
 				StringBuffer fanQueryString = new StringBuffer("from Fan f where f.fangroup.competition = ");
@@ -240,6 +240,10 @@ public class CompetitionService {
 			default: return null;	
 		}
 
+		// Only return top 100 users 
+		queryString.append(" and lb.rank >= 1 ORDER BY lb.rank LIMIT 100");
+		
+		
 		SQLQuery query = session.createSQLQuery(queryString.toString());
 		query.addScalar("rank");
 		query.addScalar("name");
@@ -248,8 +252,6 @@ public class CompetitionService {
 		query.setResultTransformer(Transformers.aliasToBean(CompetitionLeaderboardResponse.class));
 		
 		return query.list();
-		
-		
 	
 	}
 

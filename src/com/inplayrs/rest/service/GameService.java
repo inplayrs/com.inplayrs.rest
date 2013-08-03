@@ -464,34 +464,34 @@ public class GameService {
 		// Build query string based on type of leaderboard
 		switch(type) {
 			case "global":
-				queryString.append("ggl.rank, ");
-				queryString.append("ggl.user as name, ");
-				queryString.append("ggl.points, ");
-				queryString.append("ggl.potential_winnings ");
-				queryString.append("from global_game_leaderboard ggl ");
-				queryString.append("where game = ");
+				queryString.append("lb.rank, ");
+				queryString.append("lb.user as name, ");
+				queryString.append("lb.points, ");
+				queryString.append("lb.potential_winnings ");
+				queryString.append("from global_game_leaderboard lb ");
+				queryString.append("where lb.game = ");
 				queryString.append(game_id);
 				break;
 				
 			case "fangroup":
-				queryString.append("fgl.rank, ");
-				queryString.append("fgl.fangroup_name as name, ");
-				queryString.append("fgl.avg_points as points, ");
-				queryString.append("fgl.potential_winnings ");
-				queryString.append("from fangroup_game_leaderboard fgl ");
-				queryString.append("where game = ");
+				queryString.append("lb.rank, ");
+				queryString.append("lb.fangroup_name as name, ");
+				queryString.append("lb.avg_points as points, ");
+				queryString.append("lb.potential_winnings ");
+				queryString.append("from fangroup_game_leaderboard lb ");
+				queryString.append("where lb.game = ");
 				queryString.append(game_id);
 				break;
 				
 			case "userinfangroup":					
-				queryString.append("uifgl.rank, ");
-				queryString.append("uifgl.user as name, ");
-				queryString.append("uifgl.points, ");
-				queryString.append("uifgl.potential_winnings ");
-				queryString.append("from user_in_fangroup_game_leaderboard uifgl ");
-				queryString.append("where game = ");
+				queryString.append("lb.rank, ");
+				queryString.append("lb.user as name, ");
+				queryString.append("lb.points, ");
+				queryString.append("lb.potential_winnings ");
+				queryString.append("from user_in_fangroup_game_leaderboard lb ");
+				queryString.append("where lb.game = ");
 				queryString.append(game_id);
-				queryString.append(" and fangroup_id = ");
+				queryString.append(" and lb.fangroup_id = ");
 				
 				// Get fangroup of  user
 				StringBuffer fanQueryString = new StringBuffer("from Fan f where f.fangroup.competition = ");
@@ -515,6 +515,9 @@ public class GameService {
 			default: return null;	
 		}
 
+		// Only return top 100 users 
+		queryString.append(" and lb.rank >= 1 ORDER BY lb.rank LIMIT 100");
+		
 		SQLQuery query = session.createSQLQuery(queryString.toString());
 		query.addScalar("rank");
 		query.addScalar("name");
