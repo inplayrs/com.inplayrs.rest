@@ -82,6 +82,10 @@ public class Game {
 	@Column(name = "banner_image_url")
 	private String banner_image_url;
 	
+	@Column(name = "hidden")
+	@JsonIgnore
+	private boolean hidden;
+	
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "game")
 	@JsonIgnore
 	private Set<GameEntry> gameEntries;
@@ -284,6 +288,15 @@ public class Game {
 		this.banner_image_url = banner_image_url;
 	}
 
-	
+
+	public boolean isHidden() {
+		return hidden;
+	}
+
+
+	public void setHidden(boolean hidden) {
+		this.hidden = hidden;
+	}
+
 	
 }

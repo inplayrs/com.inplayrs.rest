@@ -74,6 +74,10 @@ public class Period {
 	@Column(name = "points2")
 	private int points2;
 	
+	@Column(name = "hidden")
+	@JsonIgnore
+	private boolean hidden;
+	
 	/*
 	 * Default constructor - required by Hibernate
 	 */
@@ -211,6 +215,14 @@ public class Period {
 	}
 
 
+	public boolean isHidden() {
+		return hidden;
+	}
+
+
+	public void setHidden(boolean hidden) {
+		this.hidden = hidden;
+	}
 
 	
 }

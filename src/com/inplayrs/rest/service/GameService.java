@@ -66,7 +66,14 @@ public class GameService {
 	   
 		// Retrieve session from Hibernate, create query (HQL) and return a list of Periods
 		Session session = sessionFactory.getCurrentSession(); 
-		Query query = session.createQuery("FROM Period p where p.game.game_id = ".concat(game_id.toString()));
+		
+		StringBuffer queryString = new StringBuffer("FROM Period p where p.game.game_id = ");
+		queryString.append(game_id);
+		
+		// Do not show hidden games
+		queryString.append(" and p.hidden = false");
+		
+		Query query = session.createQuery(queryString.toString());
 		return  query.list();
 	 }
 	

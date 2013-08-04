@@ -58,6 +58,10 @@ public class Competition implements Serializable {
 	@Column(name = "state")
 	private int state;
 	
+	@Column(name = "hidden")
+	@JsonIgnore
+	private boolean hidden;
+	
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "competition")
 	@JsonIgnore
 	private Set <Game> games;
@@ -137,6 +141,16 @@ public class Competition implements Serializable {
 
 	public void setCategory_id(int category_id) {
 		this.category_id = category_id;
+	}
+
+
+	public boolean isHidden() {
+		return hidden;
+	}
+
+
+	public void setHidden(boolean hidden) {
+		this.hidden = hidden;
 	}
 
 

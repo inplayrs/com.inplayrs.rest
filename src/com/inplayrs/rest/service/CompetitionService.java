@@ -62,10 +62,12 @@ public class CompetitionService {
 		queryString.append("left join c.games g ");
 		queryString.append("left join g.gameEntries ge ");
 		queryString.append("with ge.user.username = '").append(username).append("'");
-		
+
+		// Do not show hidden competitions
+		queryString.append(" where c.hidden = false");
 		
 		if (state != null) {
-			queryString.append(" where c.state ");
+			queryString.append(" and c.state ");
 			queryString.append(Operators.opMap.get(stateOP));
 			queryString.append(" ");
 			queryString.append(state);
@@ -131,21 +133,16 @@ public class CompetitionService {
 		queryString.append("left join game_entry ge on (ge.game = g.game_id and ge.user = '");
 		queryString.append(username).append("') ");
 		
-		
-		boolean hasWhereClause = false;
-	
+		// Do not show hidden games
+		queryString.append(" where g.hidden = false");
+			
 		if (comp_id != null) {
-			queryString.append("where g.competition = ");
+			queryString.append(" and g.competition = ");
 			queryString.append(comp_id);
-			hasWhereClause = true;
 		}
 		
 		if (state != null) {
-			if (!hasWhereClause) {
-				queryString.append(" where g.state ");
-			} else {
-				queryString.append(" and g.state ");				
-			}
+			queryString.append(" and g.state ");				
 			queryString.append(Operators.opMap.get(stateOP));
 			queryString.append(" ");
 			queryString.append(state);
@@ -405,6 +402,9 @@ public class CompetitionService {
 		queryString.append("gcl.competition.category.cat_id, ");
 		queryString.append("gcl.competition.end_date as comp_end_date, ");
 		queryString.append("gcl.user.username as user from GlobalCompLeaderboard gcl where gcl.rank = 1");
+		
+		// Do not show hidden competitions
+		queryString.append(" and gcl.competition.hidden = false");
 		
 		// Filter by competition ID if specified
 		if (comp_id != null) {
