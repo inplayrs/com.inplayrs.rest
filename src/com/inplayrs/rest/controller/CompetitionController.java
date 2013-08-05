@@ -59,22 +59,15 @@ public class CompetitionController {
     	   @RequestParam(value="state", required=false) Integer state,
     	   @RequestParam(value="stateOP", required=false) String stateOP) {
     	
-		// Validate stateOP parameter
-		Map<String, Integer> validStateOperators = new HashMap<String, Integer>();
-		validStateOperators.put(null, 1);
-		validStateOperators.put("eq", 1);
-		validStateOperators.put("ne", 1);
-		validStateOperators.put("lt", 1);
-		validStateOperators.put("gt", 1);
 		
-		if (!validStateOperators.containsKey(stateOP)) {
-			throw new RuntimeException("Invalid stateOP value passed");
-		}
+		/*
+		 * TODO: Deco state and stateOP parameters, as the logic is now in the API
+		 */
 		
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
 		  
-		return competitionService.getCompetitions(state, stateOP, username);	
+		return competitionService.getCompetitions(username);	
     }
 	
 	
@@ -88,23 +81,15 @@ public class CompetitionController {
     	   @RequestParam(value="state", required=false) Integer state,
     	   @RequestParam(value="stateOP", required=false) String stateOP){
 		
-		// Validate stateOP parameter
-		Map<String, Integer> validStateOperators = new HashMap<String, Integer>();
-		validStateOperators.put(null, 1);
-		validStateOperators.put("eq", 1);
-		validStateOperators.put("ne", 1);
-		validStateOperators.put("lt", 1);
-		validStateOperators.put("gt", 1);
-		
-		if (!validStateOperators.containsKey(stateOP)) {
-			throw new RuntimeException("Invalid stateOP value passed");
-		}
+		/*
+		 * TODO: Deco state and stateOP parameters, as the logic is now in the API
+		 */
 		
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
 		
 		// Get list of games
-		return competitionService.getGames(comp_id, state, stateOP, username);
+		return competitionService.getGames(comp_id, username);
     }
 	
 	
@@ -154,17 +139,10 @@ public class CompetitionController {
 	@RequestMapping(value = "/winners", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
     public @ResponseBody List<CompetitionWinnersResponse> getCompetitionWinners(
-    	   @RequestParam(value="comp_id", required=false) Integer comp_id, 
-    	   @RequestParam(value="state", required=false) Integer state,
-    	   @RequestParam(value="stateOP", required=false) String stateOP){
-		
-		// Validate stateOP parameter	
-		if (!Operators.opMap.containsKey(stateOP)) {
-			throw new RuntimeException("Invalid stateOP value passed");
-		}
+    	   @RequestParam(value="comp_id", required=false) Integer comp_id){
 		
 		// Get list of competition winners
-		return competitionService.getCompetitionWinners(comp_id, state, stateOP);
+		return competitionService.getCompetitionWinners(comp_id);
     }
 	
 	

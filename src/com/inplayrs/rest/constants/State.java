@@ -9,5 +9,6 @@ public class State {
 	public final static int COMPLETE = 2;
 	public final static int SUSPENDED = 3;
 	public final static int NEVERINPLAY = 4;
-	
+	public final static int ARCHIVED = 5;
+	public final static int DELETED = 6;
 }

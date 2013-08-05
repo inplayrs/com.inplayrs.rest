@@ -146,7 +146,9 @@ public class UserService {
 		}
 		
 		session.update(usr);
-		return usr;
+		
+		// Return null on success
+		return null;
 	}
 	
 	

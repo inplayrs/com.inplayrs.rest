@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.inplayrs.rest.constants.Operators;
+import com.inplayrs.rest.constants.State;
 import com.inplayrs.rest.ds.Competition;
 import com.inplayrs.rest.ds.Fan;
 import com.inplayrs.rest.ds.FanGroup;
@@ -56,24 +57,23 @@ public class CompetitionService {
 	/*
 	 * GET competition/list
 	 */
-	public List<CompetitionResponse> getCompetitions(Integer state, String stateOP, String username) {
+	public List<CompetitionResponse> getCompetitions(String username) {
 				
 		StringBuffer queryString = new StringBuffer("select c, max(ge.game_entry_id) from Competition c ");
 		queryString.append("left join c.games g ");
 		queryString.append("left join g.gameEntries ge ");
-		queryString.append("with ge.user.username = '").append(username).append("'");
+		queryString.append("with ge.user.username = '").append(username).append("' ");
 
-		// Do not show hidden competitions
-		queryString.append(" where c.hidden = false");
+		// Filter competitions by state
+		queryString.append("where c.state in (");
+		queryString.append(State.PREPLAY).append(", ");
+		queryString.append(State.TRANSITION).append(", ");
+		queryString.append(State.INPLAY).append(", ");
+		queryString.append(State.COMPLETE).append(", ");
+		queryString.append(State.SUSPENDED).append(", ");
+		queryString.append(State.NEVERINPLAY).append(") ");
 		
-		if (state != null) {
-			queryString.append(" and c.state ");
-			queryString.append(Operators.opMap.get(stateOP));
-			queryString.append(" ");
-			queryString.append(state);
-		}
-		
-		queryString.append(" group by c.comp_id");
+		queryString.append("group by c.comp_id");
 		
 		// Retrieve session from Hibernate, create query (HQL) and return a list of competitions
 		Session session = sessionFactory.getCurrentSession();
@@ -107,7 +107,7 @@ public class CompetitionService {
 	 * GET competition/games
 	 */
 	@SuppressWarnings("unchecked")
-	public List<GameResponse> getGames(Integer comp_id, Integer state, String stateOP, String username) {
+	public List<GameResponse> getGames(Integer comp_id, String username) {
 			
 		StringBuffer queryString = new StringBuffer("select ");
 		queryString.append("g.game_id, ");
@@ -133,20 +133,20 @@ public class CompetitionService {
 		queryString.append("left join game_entry ge on (ge.game = g.game_id and ge.user = '");
 		queryString.append(username).append("') ");
 		
-		// Do not show hidden games
-		queryString.append(" where g.hidden = false");
-			
+		// Filter games by state
+		queryString.append("where g.state in (");
+		queryString.append(State.PREPLAY).append(", ");
+		queryString.append(State.TRANSITION).append(", ");
+		queryString.append(State.INPLAY).append(", ");
+		queryString.append(State.COMPLETE).append(", ");
+		queryString.append(State.SUSPENDED).append(", ");
+		queryString.append(State.NEVERINPLAY).append(") ");
+	
 		if (comp_id != null) {
 			queryString.append(" and g.competition = ");
 			queryString.append(comp_id);
 		}
 		
-		if (state != null) {
-			queryString.append(" and g.state ");				
-			queryString.append(Operators.opMap.get(stateOP));
-			queryString.append(" ");
-			queryString.append(state);
-		}
 		
 		// Retrieve session from Hibernate, create query (HQL) and return a list of games
 		Session session = sessionFactory.getCurrentSession();
@@ -390,7 +390,7 @@ public class CompetitionService {
 	/*
 	 * GET competition/winners
 	 */
-	public List<CompetitionWinnersResponse> getCompetitionWinners(Integer comp_id, Integer state, String stateOP) {
+	public List<CompetitionWinnersResponse> getCompetitionWinners(Integer comp_id) {
 		
 		// Retrieve session from Hibernate, create query (HQL) and return a list of fangroups
 		Session session = sessionFactory.getCurrentSession();
@@ -403,23 +403,22 @@ public class CompetitionService {
 		queryString.append("gcl.competition.end_date as comp_end_date, ");
 		queryString.append("gcl.user.username as user from GlobalCompLeaderboard gcl where gcl.rank = 1");
 		
-		// Do not show hidden competitions
-		queryString.append(" and gcl.competition.hidden = false");
+		// Filter competitions by state
+		queryString.append(" and gcl.competition.state in (");
+		queryString.append(State.PREPLAY).append(", ");
+		queryString.append(State.TRANSITION).append(", ");
+		queryString.append(State.INPLAY).append(", ");
+		queryString.append(State.COMPLETE).append(", ");
+		queryString.append(State.SUSPENDED).append(", ");
+		queryString.append(State.NEVERINPLAY).append(", ");
+		queryString.append(State.ARCHIVED).append(")");
 		
 		// Filter by competition ID if specified
 		if (comp_id != null) {
 			queryString.append(" and gcl.competition.comp_id = ");
 			queryString.append(comp_id);
 		}
-		
-		// Filter by state of competition if specified
-		if (state != null) {
-			queryString.append(" and gcl.competition.state ");
-			queryString.append(Operators.opMap.get(stateOP));
-			queryString.append(" ");
-			queryString.append(state);
-		}
-		
+			
 		
 		Query query = session.createQuery(queryString.toString());
 			

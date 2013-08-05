@@ -70,8 +70,14 @@ public class GameService {
 		StringBuffer queryString = new StringBuffer("FROM Period p where p.game.game_id = ");
 		queryString.append(game_id);
 		
-		// Do not show hidden games
-		queryString.append(" and p.hidden = false");
+		// Filter periods by state
+		queryString.append(" and p.state in (");
+		queryString.append(State.PREPLAY).append(", ");
+		queryString.append(State.TRANSITION).append(", ");
+		queryString.append(State.INPLAY).append(", ");
+		queryString.append(State.COMPLETE).append(", ");
+		queryString.append(State.SUSPENDED).append(", ");
+		queryString.append(State.NEVERINPLAY).append(") ");
 		
 		Query query = session.createQuery(queryString.toString());
 		return  query.list();
