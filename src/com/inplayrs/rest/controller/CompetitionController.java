@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.http.HttpStatus;
 
-import com.inplayrs.rest.constants.Operators;
 import com.inplayrs.rest.ds.FanGroup;
 import com.inplayrs.rest.responseds.CompetitionPointsResponse;
 import com.inplayrs.rest.responseds.CompetitionResponse;
@@ -19,9 +18,7 @@ import com.inplayrs.rest.responseds.GameResponse;
 import com.inplayrs.rest.responseds.CompetitionLeaderboardResponse;
 import com.inplayrs.rest.service.CompetitionService;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Resource;
 

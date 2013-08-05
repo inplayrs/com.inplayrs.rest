@@ -16,7 +16,6 @@ import org.joda.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.inplayrs.rest.constants.Operators;
 import com.inplayrs.rest.constants.State;
 import com.inplayrs.rest.ds.Competition;
 import com.inplayrs.rest.ds.Fan;
