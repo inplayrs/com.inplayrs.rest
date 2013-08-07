@@ -404,12 +404,7 @@ public class CompetitionService {
 		
 		// Filter competitions by state
 		queryString.append(" and gcl.competition.state in (");
-		queryString.append(State.PREPLAY).append(", ");
-		queryString.append(State.TRANSITION).append(", ");
-		queryString.append(State.INPLAY).append(", ");
 		queryString.append(State.COMPLETE).append(", ");
-		queryString.append(State.SUSPENDED).append(", ");
-		queryString.append(State.NEVERINPLAY).append(", ");
 		queryString.append(State.ARCHIVED).append(")");
 		
 		// Filter by competition ID if specified
