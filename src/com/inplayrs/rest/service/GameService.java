@@ -299,7 +299,11 @@ public class GameService {
 			// Increment num players, global pot size & fangroup pot size in game and update
 			g.setNum_players(g.getNum_players()+1);
 			g.setGlobal_pot_size(g.getGlobal_pot_size() + g.getStake());
-			g.setFangroup_pot_size(g.getFangroup_pot_size() + g.getStake());
+			
+			// Only increase fangroup pot size if it's not a late entry
+			if (g.getState() == State.PREPLAY  || g.getState() == State.TRANSITION) {
+				g.setFangroup_pot_size(g.getFangroup_pot_size() + g.getStake());
+			}
 			
 			session.update(g);	
 
