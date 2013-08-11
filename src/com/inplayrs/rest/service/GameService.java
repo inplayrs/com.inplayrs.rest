@@ -152,45 +152,32 @@ public class GameService {
 		queryString.append("left join game_entry h2h_ge ON (h2h_ge.game = ge.game and h2h_ge.user = ");
 		queryString.append("(CASE WHEN h2h.game_entry_1 = ge.game_entry_id then h2h.user_2 ");
 		queryString.append(" WHEN h2h.game_entry_2 = ge.game_entry_id then h2h.user_1 ELSE null END) ) ");
+		
 		queryString.append("left join (");
 		queryString.append("select fg.name, fg.fangroup_id, fg.competition, f.user ");
 		queryString.append("from fangroup fg ");
 		queryString.append("left join fan f on f.fangroup = fg.fangroup_id ");
 		queryString.append("where f.user = '").append(username).append("'");
-		queryString.append(") as fangrp	on fangrp.competition = g.competition ");		
+		queryString.append(") as fangrp	on fangrp.competition = g.competition ");
+		
 		queryString.append("left join ( ");
 		queryString.append("select ");
-		queryString.append("g.game_id, ");
-		queryString.append("count(distinct fg.fangroup_id) as num_fangroups_entered ");
-		queryString.append("from  ");
-		queryString.append("game_entry ge ");
-		queryString.append("left join game g on g.game_id = ge.game ");
-		queryString.append("left join fan f on ge.user = f.user ");
-		queryString.append("left join fangroup fg on fg.fangroup_id = f.fangroup ");
-		queryString.append("where  ");
-		queryString.append("ge.game = ").append(game_id);
-		queryString.append(" and fg.competition = g.competition ");
-		queryString.append("and ge.user != 'Monkey' ");
+		queryString.append("fgl.game as game_id, ");
+		queryString.append("count(distinct fgl.fangroup_id) as num_fangroups_entered ");
+		queryString.append("from fangroup_game_leaderboard fgl ");
+		queryString.append("where fgl.game = ").append(game_id);	
 		queryString.append(") as num_fangroups on num_fangroups.game_id = g.game_id ");
+		
 		queryString.append("left join ( ");
 		queryString.append("select ");
-		queryString.append("f.fangroup as fangroup_id, ");
-		queryString.append("fg.name as fangroup_name, ");
-		queryString.append("count(fg.fangroup_id) as fangroup_pool_size ");
-		queryString.append("from  ");
-		queryString.append("game_entry ge ");
-		queryString.append("left join game g on g.game_id = ge.game ");
-		queryString.append("left join fan f on ge.user = f.user ");
-		queryString.append("left join fangroup fg on fg.fangroup_id = f.fangroup ");
-		queryString.append("where  ");
-		queryString.append("ge.game = ").append(game_id);
-		queryString.append(" and fg.competition = g.competition ");
-		queryString.append("group by fg.fangroup_id  ");
+		queryString.append("uifgl.fangroup_id, ");
+		queryString.append("count(uifgl.user) as fangroup_pool_size ");
+		queryString.append("from user_in_fangroup_game_leaderboard uifgl ");
+		queryString.append("where uifgl.game = ").append(game_id);
 		queryString.append(") as fangroup_pool on fangroup_pool.fangroup_id = fangrp.fangroup_id ");
 
 		queryString.append("where ge.game = ").append(game_id.toString());
 		queryString.append(" and ge.user = '").append(username).append("'");
-		
 		
 		SQLQuery query = session.createSQLQuery(queryString.toString());
 		
