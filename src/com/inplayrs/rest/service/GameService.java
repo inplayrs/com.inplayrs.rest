@@ -174,6 +174,7 @@ public class GameService {
 		queryString.append("count(uifgl.user) as fangroup_pool_size ");
 		queryString.append("from user_in_fangroup_game_leaderboard uifgl ");
 		queryString.append("where uifgl.game = ").append(game_id);
+		queryString.append(" group by uifgl.fangroup_id");
 		queryString.append(") as fangroup_pool on fangroup_pool.fangroup_id = fangrp.fangroup_id ");
 
 		queryString.append("where ge.game = ").append(game_id.toString());
