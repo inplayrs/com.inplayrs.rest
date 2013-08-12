@@ -279,6 +279,7 @@ public class CompetitionService {
 		queryString.append("(fcl.competition = gcl.competition and fcl.fangroup_id = gcl.fangroup_id) ");
 		queryString.append("left join user_in_fangroup_comp_leaderboard uifcl on  ");
 		queryString.append("(uifcl.competition = gcl.competition and uifcl.user = gcl.user) ");
+		
 		queryString.append("left join ( ");
 		queryString.append("select ");
 		queryString.append("g.competition, ");
@@ -290,6 +291,7 @@ public class CompetitionService {
 		queryString.append("g.competition = ").append(comp_id).append(" and ");
 		queryString.append("ge.user != 'Monkey' ");
 		queryString.append(") as global_pool on global_pool.competition = gcl.competition ");
+		
 		queryString.append("left join ( ");
 		queryString.append("select ");
 		queryString.append("g.competition, ");
@@ -304,6 +306,7 @@ public class CompetitionService {
 		queryString.append(" and fg.competition = ").append(comp_id);
 		queryString.append(" and f.user != 'Monkey' ");
 		queryString.append(") as num_fangroups on num_fangroups.competition = gcl.competition ");
+		
 		queryString.append("left join ( ");
 		queryString.append("select ");
 		queryString.append("g.competition, ");
@@ -320,6 +323,7 @@ public class CompetitionService {
 		queryString.append(" and f.user != 'Monkey'  ");
 		queryString.append("group by fg.fangroup_id ");
 		queryString.append(") as fangroup_pool on fangroup_pool.fangroup_id = gcl.fangroup_id ");
+		
 		queryString.append("left join ( ");
 		queryString.append("select ");
 		queryString.append("gcl.competition, ");
@@ -329,6 +333,7 @@ public class CompetitionService {
 		queryString.append("where  ");
 		queryString.append("gcl.competition = ").append(comp_id);
 		queryString.append(" ) as global_winnings on global_winnings.competition = gcl.competition ");
+		
 		queryString.append("left join ( ");
 		queryString.append("select ");
 		queryString.append("fcl.competition, ");
@@ -338,6 +343,7 @@ public class CompetitionService {
 		queryString.append("where  ");
 		queryString.append("fcl.competition = ").append(comp_id);
 		queryString.append(" ) as fangroup_winnings on fangroup_winnings.competition = gcl.competition ");
+		
 		queryString.append("left join ( ");
 		queryString.append("select ");
 		queryString.append("uifcl.competition, ");
@@ -350,6 +356,7 @@ public class CompetitionService {
 		queryString.append(" group by uifcl.fangroup_id ");
 		queryString.append(") as userinfangroup_winnings on (userinfangroup_winnings.competition = gcl.competition and ");
 		queryString.append("userinfangroup_winnings.fangroup_id = gcl.fangroup_id) ");
+		
 		queryString.append("where ");
 		queryString.append("gcl.user = '").append(username).append("' ");
 		queryString.append("and gcl.competition = ").append(comp_id);
