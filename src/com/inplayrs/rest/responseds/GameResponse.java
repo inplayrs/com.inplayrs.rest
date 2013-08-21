@@ -29,10 +29,6 @@ public class GameResponse {
 	@Column(name = "category_id")
 	@JsonProperty
 	private int category_id;
-
-	@Column(name = "competition_id")
-	@JsonProperty
-	private int competition_id;
 	
 	@Column(name = "game_type")
 	@JsonProperty
@@ -48,21 +44,9 @@ public class GameResponse {
 	@JsonProperty
 	private int state;
 	
-	@Column(name = "stake")
-	@JsonProperty
-	private int stake;
-	
 	@Column(name = "num_players")
 	@JsonProperty
 	private int num_players;
-	
-	@Column(name = "global_pot_size")
-	@JsonProperty
-	private int global_pot_size;
-
-	@Column(name = "fangroup_pot_size")
-	@JsonProperty
-	private int fangroup_pot_size;
 
 	@Column(name = "entered")
 	@JsonProperty
@@ -120,19 +104,6 @@ public class GameResponse {
 	}
 
 
-
-	public int getCompetition_id() {
-		return competition_id;
-	}
-
-
-
-	public void setCompetition_id(int competition_id) {
-		this.competition_id = competition_id;
-	}
-
-
-
 	public int getGame_type() {
 		return game_type;
 	}
@@ -172,18 +143,6 @@ public class GameResponse {
 
 
 
-	public int getStake() {
-		return stake;
-	}
-
-
-
-	public void setStake(int stake) {
-		this.stake = stake;
-	}
-
-
-
 	public int getNum_players() {
 		return num_players;
 	}
@@ -192,30 +151,6 @@ public class GameResponse {
 
 	public void setNum_players(int num_players) {
 		this.num_players = num_players;
-	}
-
-
-
-	public int getGlobal_pot_size() {
-		return global_pot_size;
-	}
-
-
-
-	public void setGlobal_pot_size(int global_pot_size) {
-		this.global_pot_size = global_pot_size;
-	}
-
-
-
-	public int getFangroup_pot_size() {
-		return fangroup_pot_size;
-	}
-
-
-
-	public void setFangroup_pot_size(int fangroup_pot_size) {
-		this.fangroup_pot_size = fangroup_pot_size;
 	}
 
 
