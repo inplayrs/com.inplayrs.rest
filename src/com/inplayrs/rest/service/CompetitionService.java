@@ -294,34 +294,19 @@ public class CompetitionService {
 		
 		queryString.append("left join ( ");
 		queryString.append("select ");
-		queryString.append("g.competition, ");
-		queryString.append("count(distinct fg.name) as num_fangroups_entered ");
-		queryString.append("from ");
-		queryString.append("game_entry ge ");
-		queryString.append("left join game g on g.game_id = ge.game ");
-		queryString.append("left join fan f on f.user = ge.user ");
-		queryString.append("left join fangroup fg on fg.fangroup_id = f.fangroup ");
-		queryString.append("where ");
-		queryString.append("g.competition = ").append(comp_id);
-		queryString.append(" and fg.competition = ").append(comp_id);
-		queryString.append(" and f.user != 'Monkey' ");
+		queryString.append("fcl.competition, ");
+		queryString.append("count(distinct fcl.fangroup_id) as num_fangroups_entered ");
+		queryString.append("from fangroup_comp_leaderboard fcl ");
+		queryString.append("where fcl.competition = ").append(comp_id);
 		queryString.append(") as num_fangroups on num_fangroups.competition = gcl.competition ");
 		
 		queryString.append("left join ( ");
 		queryString.append("select ");
-		queryString.append("g.competition, ");
-		queryString.append("fg.fangroup_id, ");
-		queryString.append("count(distinct ge.user) as fangroup_pool_size ");
-		queryString.append("from ");
-		queryString.append("game_entry ge ");
-		queryString.append("left join game g on g.game_id = ge.game ");
-		queryString.append("left join fan f on f.user = ge.user ");
-		queryString.append("left join fangroup fg on fg.fangroup_id = f.fangroup ");
-		queryString.append("where ");
-		queryString.append("g.competition = ").append(comp_id);
-		queryString.append(" and fg.competition = ").append(comp_id);
-		queryString.append(" and f.user != 'Monkey'  ");
-		queryString.append("group by fg.fangroup_id ");
+		queryString.append("uifcl.fangroup_id, ");
+		queryString.append("count(uifcl.user) as fangroup_pool_size ");
+		queryString.append("from user_in_fangroup_comp_leaderboard uifcl ");
+		queryString.append("where uifcl.competition = ").append(comp_id);
+		queryString.append(" group by uifcl.fangroup_id ");
 		queryString.append(") as fangroup_pool on fangroup_pool.fangroup_id = gcl.fangroup_id ");
 		
 		queryString.append("left join ( ");
