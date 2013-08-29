@@ -274,14 +274,10 @@ public class CompetitionService {
 		
 		queryString.append("left join ( ");
 		queryString.append("select ");
-		queryString.append("g.competition, ");
-		queryString.append("count(distinct ge.user) as global_pool_size ");
-		queryString.append("from ");
-		queryString.append("game_entry ge ");
-		queryString.append("left join game g on g.game_id = ge.game ");
-		queryString.append("where ");
-		queryString.append("g.competition = ").append(comp_id).append(" and ");
-		queryString.append("ge.user != 'Monkey' ");
+		queryString.append("gcl.competition, ");
+		queryString.append("count(gcl.user) as global_pool_size ");
+		queryString.append("from global_comp_leaderboard gcl ");
+		queryString.append("where gcl.competition = ").append(comp_id);
 		queryString.append(") as global_pool on global_pool.competition = gcl.competition ");
 		
 		queryString.append("left join ( ");
