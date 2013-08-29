@@ -44,6 +44,14 @@ public class UserService {
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 				
+		// Verify whether the requested username is in the list of bad words
+		String badWordQuery = "select count(*) from BadWord where word = '"+username.toLowerCase()+"'";
+		
+		if (( (Long) session.createQuery(badWordQuery).iterate().next() ).intValue() > 0) {
+			throw new InvalidStateException(new RestError(2302, "Username "+username+" is not available"));
+			
+		}	
+		
 		// See if user already exists
 		User usr = (User) session.get(User.class, username);
 		
@@ -89,7 +97,7 @@ public class UserService {
 			return usr;
 			
 		} else {
-			throw new InvalidStateException(new RestError(2300, "Username "+username+" is already taken"));
+			throw new InvalidStateException(new RestError(2300, "Username "+username+" is not available"));
 		}
 		
 	}
