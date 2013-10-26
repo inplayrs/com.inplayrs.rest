@@ -6,11 +6,13 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.apache.log4j.Logger;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,11 +38,17 @@ public class UserService {
 	@Resource(name="sessionFactory")
 	private SessionFactory sessionFactory;
 	
+	//get log4j handler
+	private static final Logger log = Logger.getLogger("APILog");
 	
 	/*
 	 * POST user/register
 	 */
 	public User registerUser(String username, String password, String email, String timezone, String deviceID, Boolean pushActive) {
+		
+		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
+		log.debug(authed_user+" | Registering new user: "+username);
+		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 				
@@ -48,8 +56,8 @@ public class UserService {
 		String badWordQuery = "select count(*) from BadWord where word = '"+username.toLowerCase()+"'";
 		
 		if (( (Long) session.createQuery(badWordQuery).iterate().next() ).intValue() > 0) {
+			log.debug(authed_user+" | Username "+username+" is not available");
 			throw new InvalidStateException(new RestError(2302, "Username "+username+" is not available"));
-			
 		}	
 		
 		// See if user already exists
@@ -61,6 +69,7 @@ public class UserService {
 			try {
 				usr.setPassword_hash(PasswordHash.createHash(password));
 			} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+				log.error(authed_user+" | Unable to create password hash");
 				e.printStackTrace();
 				throw new RuntimeException("Unable to create password hash");
 			}
@@ -72,6 +81,7 @@ public class UserService {
 				Integer usersWithSameEmail = ( (Long) session.createQuery(queryString.toString()).iterate().next() ).intValue();
 				
 				if (usersWithSameEmail > 0) {
+					log.error(authed_user+" | Email address "+email+" is already registered");
 					throw new InvalidStateException(new RestError(2301, "Email address "+email+" is already registered"));
 				} else {
 					usr.setEmail(email);
@@ -97,6 +107,7 @@ public class UserService {
 			return usr;
 			
 		} else {
+			log.error(authed_user+" | Username "+username+" is not available");
 			throw new InvalidStateException(new RestError(2300, "Username "+username+" is not available"));
 		}
 		
@@ -108,6 +119,8 @@ public class UserService {
 	 */
 	public User updateAccount(String username, String password, String email, String timezone, String deviceID, Boolean pushActive) {
 
+		log.debug(username+" | Updating user account");
+		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 
@@ -115,6 +128,7 @@ public class UserService {
 		User usr = (User) session.get(User.class, username);
 		
 		if (usr == null) {
+			log.error(username+" | User "+username+" does not exist");
 			throw new InvalidStateException(new RestError(2400, "User "+username+" does not exist"));
 		}
 		
@@ -122,6 +136,7 @@ public class UserService {
 			try {
 				usr.setPassword_hash(PasswordHash.createHash(password));
 			} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+				log.error(username+" | Unable to create password hash");
 				e.printStackTrace();
 				throw new RuntimeException("Unable to create password hash");
 			}
@@ -135,6 +150,7 @@ public class UserService {
 			Integer usersWithSameEmail = ( (Long) session.createQuery(queryString.toString()).iterate().next() ).intValue();
 		
 			if (usersWithSameEmail > 0) {
+				log.error(username+" | Email address "+email+" is already registered");
 				throw new InvalidStateException(new RestError(2401, "Email address "+email+" is already registered"));
 			} else {
 				usr.setEmail(email);
@@ -188,6 +204,9 @@ public class UserService {
 	 * GET user/account
 	 */
 	public User getUser(String username) {
+		
+		log.debug(username+" | Getting user account");
+		
 	    // Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 		   
@@ -203,6 +222,8 @@ public class UserService {
 	 */
 	public Integer setUserFan(Integer comp_id, Integer fangroup_id, String username) {
 
+		log.debug(username+" | Selecting fangroup "+fangroup_id+" for competition "+comp_id);
+		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 		
@@ -211,11 +232,13 @@ public class UserService {
 			fangroup = (FanGroup) session.get(FanGroup.class, fangroup_id);
 		}
 		catch(Exception e) {
-			throw new InvalidStateException(new RestError(2103, "Fangroup with ID "+fangroup_id+" does not exist"));
+			log.error(username+" | Fangroup "+fangroup_id+" does not exist");
+			throw new InvalidStateException(new RestError(2103, "Fangroup "+fangroup_id+" does not exist"));
 		}
 		
 		if (fangroup == null || fangroup.getComp_id() != comp_id) {
-			throw new InvalidStateException(new RestError(2102, "Fangroup with ID "+fangroup_id+" does not exist in competition with ID "+comp_id));
+			log.error(username+" | Fangroup "+fangroup_id+" does not exist in competition "+comp_id);
+			throw new InvalidStateException(new RestError(2102, "Fangroup "+fangroup_id+" does not exist in competition "+comp_id));
 		}
 		
 		
@@ -231,7 +254,7 @@ public class UserService {
 		List<Fan> result = query.list();
 		
 		if (result.isEmpty()) {
-			System.out.println("XXX User has not yet selected fangroup for this competition");
+			log.debug(username+" | User has not yet selected fangroup for competition "+comp_id+", therefore making new selection");
 			
 			// User has not yet selected fangroup for this competition, 
 			// so we can set the fangroup			
@@ -248,6 +271,7 @@ public class UserService {
 		} else {
 			Fan currentFan = result.get(0);
 			if (currentFan.getFangroup_id() == fangroup_id) {
+				log.error(username+" | User has already selected fangroup "+fangroup_id+" for competition "+comp_id);
 				throw new InvalidStateException(new RestError(2100, "You have already selected this fangroup for this competition"));
 			} else {
 				// Do not allow user to change fangroup if they already have 
@@ -259,12 +283,14 @@ public class UserService {
 				Query gameEntryQuery = session.createQuery(gameEntryQueryString.toString());
 				int numEntriesInComp = gameEntryQuery.list().size();
 				if (numEntriesInComp > 0) {
+					log.error(username+" | Unable to set a new fangroup, user has already played a game in competition "+comp_id);
 					throw new InvalidStateException(new RestError(2101, "Unable to set new fangroup, you have already played a game in this competition"));
 				}
 							
 				// Set fangroup as user has not yet entered any games in this competition
 				currentFan.setFangroup((FanGroup) session.load(FanGroup.class, fangroup_id));
 				session.update(currentFan);
+				log.debug(username+" | Fangroup selection updated to "+fangroup_id+" for competition "+comp_id);
 				return null;
 			}
 			
@@ -278,9 +304,11 @@ public class UserService {
 	 */
 	@SuppressWarnings("unchecked")
 	public List <FanGroup> getUserFangroups(String username) {
-		 // Retrieve session from Hibernate
+		
+		log.debug(username+" | Getting users fangroups");
+		
+		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
-		   
 
 		// Check to see if the user already has a fangroup selected for this competition
 		StringBuffer queryString = new StringBuffer("select fangroup from Fan f ");

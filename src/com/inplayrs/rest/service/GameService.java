@@ -26,6 +26,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.transform.Transformers;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,13 +42,18 @@ public class GameService {
 	private SessionFactory sessionFactory;
 	
 	//get log4j handler
-	private static final Logger log = Logger.getLogger(GameService.class);
+	private static final Logger log = Logger.getLogger("APILog");
 	
 	
 	/*
 	  * Retrieves a single period by the period_id
 	  */
 	public Period getPeriod(int period_id) {
+		
+		// Get username of player
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		log.debug(username+" | Getting period "+period_id);
+		
 	    // Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 		   
@@ -63,7 +69,11 @@ public class GameService {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<Period> getPeriodsInGame(Integer game_id) {
-	   
+		
+		// Get username of player
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		log.debug(username+" | Getting periods in game "+game_id);
+		
 		// Retrieve session from Hibernate, create query (HQL) and return a list of Periods
 		Session session = sessionFactory.getCurrentSession(); 
 		
@@ -88,6 +98,8 @@ public class GameService {
 	@SuppressWarnings("unchecked")
 	public List<PeriodSelection> getPeriodSelections(Integer game_id, String username) {
 		
+		log.debug(username+" | Getting period selections for game "+game_id);
+		
 		// Retrieve session from Hibernate, create query (HQL) and return a GamePointsResponse
 		Session session = sessionFactory.getCurrentSession(); 
 		
@@ -107,6 +119,8 @@ public class GameService {
 	 * GET game/points
 	 */
 	public GamePointsResponse getGamePoints(Integer game_id, String username, Boolean includeSelections) {
+		
+		log.debug(username+" | Getting points for game "+game_id);
 		
 		// Default includeSelections to true
 		if (includeSelections == null) { 
@@ -206,6 +220,7 @@ public class GameService {
 		List<GamePointsResponse> result = query.list();
 		
 		if (result.isEmpty()) {
+			log.debug(username+" | No points found for game "+game_id);
 			return null;
 		} else {	
 			GamePointsResponse gpr = (GamePointsResponse) result.get(0);
@@ -224,6 +239,9 @@ public class GameService {
 	 */
 	@SuppressWarnings("unchecked")
 	public Integer addGamePeriodSelections(Integer game_id, String username, PeriodSelection[] periodSelections) {
+		
+		log.debug(username+" | Posting selections for game "+game_id);
+		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();		
 
@@ -242,10 +260,14 @@ public class GameService {
 			result = gameEntryQuery.list();
 		}
 		catch (Exception e) {
+			log.error(username+" | Failed to find user's entries for game "+game_id);
 			throw new DBException(new RestError(1001, "Failed to find user's game entries"));
 		}
 		
 		if (result.isEmpty()) {
+			
+			log.debug(username+" | This is user's initial submit for game "+game_id+", creating a new game entry");
+			
 			isInitialSubmit = true;
 			
 			// Create a new GameEntry
@@ -254,7 +276,8 @@ public class GameService {
 				g = (Game) session.get(Game.class, game_id);	
 			}
 			catch (Exception e) {
-				throw new DBException(new RestError(1001, "Failed to get game with ID "+game_id));
+				log.error(username+" | Failed to get game "+game_id);
+				throw new DBException(new RestError(1001, "Failed to get game "+game_id));
 			}
 			
 			// Check that user has a fangroup before creating a game entry
@@ -265,12 +288,14 @@ public class GameService {
 				fangroupQueryString.append(g.getCompetition_id());
 			}
 			catch (ObjectNotFoundException e) {
-				throw new InvalidParameterException(new RestError(2200, "Game with ID "+game_id.toString()+" does not exist"));
+				log.error(username+" | Game "+game_id+" does not exist");
+				throw new InvalidParameterException(new RestError(2200, "Game "+game_id+" does not exist"));
 			}
 			
 			Query fangroupQuery = session.createQuery(fangroupQueryString.toString());
 			List <Fan> fan = fangroupQuery.list();
 			if (fan.isEmpty()) {
+				log.error(username+" | Cannot post selections, no fangroup selected for competition "+g.getCompetition_id());
 				throw new InvalidStateException(new RestError(2201, "Please select a fangroup for this competition before entering!"));
 			}
 			
@@ -289,6 +314,7 @@ public class GameService {
 			
 			// Only increase fangroup pot size if it's not a late entry
 			if (g.getState() == State.PREPLAY  || g.getState() == State.TRANSITION) {
+				log.debug(username+" | Increasing fangroup_pot_size for game "+game_id);
 				g.setFangroup_pot_size(g.getFangroup_pot_size() + g.getStake());
 			}
 			
@@ -313,6 +339,7 @@ public class GameService {
 			
 			// Do not allow user to perform their initial submit of selections if a period is suspended
 			if (isInitialSubmit && period.getState() == State.SUSPENDED) {
+				log.error(username+" | Cannot post initial selections, one or more events are currently suspended for game "+game_id);
 				session.delete(gameEntry);
 				throw new InvalidStateException(new RestError(2202, "One or more events are currently suspended, please try again later!"));
 			}
@@ -339,15 +366,15 @@ public class GameService {
 				// Add the new period selection if state is preplay/transition
 				int period_state = ps.getPeriod().getState();
 				if (period_state == State.PREPLAY || period_state == State.TRANSITION) {
-					log.debug("adding new selection");
 					try {
 						session.save(ps);
 					}
 					catch (Exception e) {
+						log.error(username+" | Failed to create period selection for period "+ps.getPeriod_id());
 						throw new DBException(new RestError(1000, "Failed to create new period selection"));
 					}
 				} else {
-					log.debug("Could not update Period Selection, Period is no longer in preplay/transition");
+					log.debug(username+" | Could not update period selection, period "+ps.getPeriod_id()+" is no longer in preplay/transition");
 				}
 			} else {
 				// Update if pre-play/transition and not cashed out
@@ -355,21 +382,22 @@ public class GameService {
 				int period_state = currentSelection.getPeriod().getState();
 				if (period_state == State.PREPLAY || period_state == State.TRANSITION) {
 					if (currentSelection.isCashed_out()) {
-						log.debug("Could not update Period Selection, user has already banked their points");
+						log.debug(username+" | User has already banked their points for period "+ps.getPeriod_id());
 					} else {
-						log.debug("updating existing selection");
+						log.debug(username+" | Updating selection for period "+ps.getPeriod_id());
 						currentSelection.setSelection(ps.getSelection());
 						currentSelection.setPotential_points(ps.getPotential_points());
 						try {
 							session.update(currentSelection);
 						}
 						catch (Exception e) {
+							log.error(username+" | Failed to update period selection for period "+ps.getPeriod_id());
 							throw new DBException(new RestError(1000, "Failed to update period selection"));
 						}
 					}
 					
 				} else {
-					log.debug("Could not update Period Selection, Period is no longer in preplay/transition/inplay");
+					log.debug(username+" | Could not update period selection, period "+ps.getPeriod_id()+" is no longer in preplay/transition/inplay");
 				}
 				
 			}
@@ -386,6 +414,8 @@ public class GameService {
 	 */
 	public PeriodSelection bankPeriodPoints(Integer period_id, String username) {
 		
+		log.debug(username+" | Banking points for period "+period_id);
+		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 		
@@ -401,11 +431,13 @@ public class GameService {
 		List<PeriodSelection> result = query.list();
 		
 		if (result.isEmpty()) {		
+			log.error(username+" | Cannot bank points as no selection yet made for period "+period_id);
 			throw new InvalidStateException(new RestError(2000, "You have not made a selection for this event yet. Cannot bank points.")); 
 		} else {
 			PeriodSelection ps = result.get(0);
 			// Can't bank points if already banked
 			if (ps.isCashed_out()) {
+				log.error(username+" | Cannot bank points for period "+period_id+", user has already banked");
 				throw new InvalidStateException(new RestError(2001, "You have already banked your points for this event"));
 			}
 			
@@ -441,12 +473,16 @@ public class GameService {
 				
 			} else {	
 				if (period_state == State.PREPLAY || period_state == State.TRANSITION) {
+					log.error(username+" | Cannot bank points for period "+period_id+", event has not started");
 					throw new InvalidStateException(new RestError(2002, "Cannot bank points, event has not started yet"));
 				} else if (period_state == State.COMPLETE) {
+					log.error(username+" | Cannot bank points for period "+period_id+", event has now completed");
 					throw new InvalidStateException(new RestError(2003, "Cannot bank points, event has now completed"));
 				} else if (period_state == State.SUSPENDED) {
+					log.error(username+" | Cannot bank points for period "+period_id+", event is currently suspended");
 					throw new InvalidStateException(new RestError(2004, "Cannot bank points, event is currently suspended. Please try again later!"));
 				} else {
+					log.error(username+" | Cannot bank points for period "+period_id+", unknown period_state: "+period_state);
 					throw new InvalidStateException(new RestError(2005, "Cannot bank points, unknown period_state: "+period_state));
 				}
 			}
@@ -463,6 +499,8 @@ public class GameService {
 	public List<GameLeaderboardResponse> getLeaderboard(Integer game_id,
 			String type, String username) {
 
+		log.debug(username+" | Getting "+type+" leaderboard for game "+game_id);
+		
 		// Retrieve session from Hibernate, create query (HQL) and return a GamePointsResponse
 		Session session = sessionFactory.getCurrentSession(); 
 		
@@ -511,6 +549,7 @@ public class GameService {
 				
 				List<Fan> result = fanQuery.list();
 				if (result.isEmpty()) {
+					log.error(username+" | User has not selected a fangroup for the competition for game "+game_id);
 					return null;
 				} else {
 					Fan fan = result.get(0);
