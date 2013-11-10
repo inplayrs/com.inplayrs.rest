@@ -41,6 +41,7 @@ public class UserService {
 	//get log4j handler
 	private static final Logger log = Logger.getLogger("APILog");
 	
+	
 	/*
 	 * POST user/register
 	 */
@@ -61,7 +62,11 @@ public class UserService {
 		}	
 		
 		// See if user already exists
-		User usr = (User) session.get(User.class, username);
+		Query query = session.createQuery("FROM User u WHERE u.username = '"+username+"'");
+		query.setCacheable(true);
+		query.setCacheRegion("user");
+		User usr = (User) query.uniqueResult();
+		
 		
 		if (usr == null) {
 			usr = new User();
@@ -125,7 +130,11 @@ public class UserService {
 		Session session = sessionFactory.getCurrentSession();
 
 		// Get details of the user
-		User usr = (User) session.get(User.class, username);
+		Query query = session.createQuery("FROM User u WHERE u.username = '"+username+"'");
+		query.setCacheable(true);
+		query.setCacheRegion("user");
+		User usr = (User) query.uniqueResult();
+		
 		
 		if (usr == null) {
 			log.error(username+" | User "+username+" does not exist");
@@ -185,14 +194,16 @@ public class UserService {
 		Session session = sessionFactory.getCurrentSession();
 		
 		// Get details of the requested user
-		User usr = (User) session.load(User.class, user);
+		Query query = session.createQuery("FROM User u WHERE u.username = '"+user+"'");
+		query.setCacheable(true);
+		query.setCacheRegion("user");
+		User usr = (User) query.uniqueResult();
 		
 		boolean isValid = false;
 		
 		try {
 			isValid = PasswordHash.validatePassword(pass, usr.getPassword_hash());
 		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -210,10 +221,13 @@ public class UserService {
 	    // Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 		   
-		// Retrieve existing user first
-		User user = (User) session.get(User.class, username);
+		// Get user's record
+		Query query = session.createQuery("FROM User u WHERE u.username = '"+username+"'");
+		query.setCacheable(true);
+		query.setCacheRegion("user");
+		User usr = (User) query.uniqueResult();
 		   
-		return user;
+		return usr;
 	}
 
 
@@ -243,7 +257,7 @@ public class UserService {
 		
 		
 		// Check to see if the user already has a fangroup selected for this competition
-		StringBuffer queryString = new StringBuffer("from Fan f where f.user = '");
+		StringBuffer queryString = new StringBuffer("from Fan f where f.user.username = '");
 		queryString.append(username);
 		queryString.append("' and f.fangroup.competition = ");
 		queryString.append(comp_id);
@@ -256,12 +270,20 @@ public class UserService {
 		if (result.isEmpty()) {
 			log.debug(username+" | User has not yet selected fangroup for competition "+comp_id+", therefore making new selection");
 			
+			
+			// Get user's record
+			Query usrQuery = session.createQuery("FROM User u WHERE u.username = '"+username+"'");
+			usrQuery.setCacheable(true);
+			usrQuery.setCacheRegion("user");
+			User usr = (User) usrQuery.uniqueResult();
+
 			// User has not yet selected fangroup for this competition, 
 			// so we can set the fangroup			
 			Fan f = new Fan();
 			
 			f.setFangroup(fangroup);
-			f.setUser((User) session.load(User.class, username));
+			f.setUser(usr);
+			f.setUser_id(usr.getUser_id());
 
 			session.save(f);
 			
@@ -277,7 +299,7 @@ public class UserService {
 				// Do not allow user to change fangroup if they already have 
 				// a game entry in this competition
 				StringBuffer gameEntryQueryString = new StringBuffer("from GameEntry ge where ge.game.competition_id = ");
-				gameEntryQueryString.append(comp_id).append(" and ge.user = '");
+				gameEntryQueryString.append(comp_id).append(" and ge.user.username = '");
 				gameEntryQueryString.append(username).append("'");
 				
 				Query gameEntryQuery = session.createQuery(gameEntryQueryString.toString());
@@ -312,7 +334,7 @@ public class UserService {
 
 		// Check to see if the user already has a fangroup selected for this competition
 		StringBuffer queryString = new StringBuffer("select fangroup from Fan f ");
-		queryString.append("where f.user = '");
+		queryString.append("where f.user.username = '");
 		queryString.append(username);
 		queryString.append("'");
 		
@@ -326,6 +348,7 @@ public class UserService {
 	
 	/*
 	 * POST user/pat
+	 * TODO: PAT TABLE NO LONGER EXISTS, EITHER DECO CODE OR RECREATE PAT TABLE
 	 */
 	@SuppressWarnings("unchecked")
 	public User pat(String fromUser, String toUser, Integer comp_id, Integer game_id) {

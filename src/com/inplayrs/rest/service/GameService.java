@@ -105,7 +105,7 @@ public class GameService {
 		
 		StringBuffer queryString = new StringBuffer("from PeriodSelection ps where ps.gameEntry.game_id = ");
 		queryString.append(game_id.toString());
-		queryString.append(" and ps.gameEntry.user = '");
+		queryString.append(" and ps.gameEntry.user.username = '");
 		queryString.append(username);
 		queryString.append("'");
 		
@@ -138,7 +138,7 @@ public class GameService {
 		queryString.append("ge.fangroup_winnings, ");
 		queryString.append("ge.h2h_winnings, ");
 		queryString.append("ge.total_winnings, ");
-		queryString.append("h2h_ge.user as h2h_user, ");
+		queryString.append("h2h_user.username as h2h_user, ");
 		queryString.append("h2h_ge.total_points as h2h_points, ");
 		queryString.append("fangrp.name as fangroup_name, ");
 		queryString.append("ge.total_points as points, ");
@@ -157,6 +157,7 @@ public class GameService {
 
 		queryString.append("from  ");
 		queryString.append("game_entry ge ");
+		queryString.append("left join user u on u.user_id = ge.user ");
 		queryString.append("left join game g on g.game_id = ge.game ");
 		queryString.append("left join h2h_pool h2h on ( (h2h.game_entry_1 = ge.game_entry_id) or ");
 		queryString.append("(h2h.game_entry_2 = ge.game_entry_id) ) ");
@@ -166,12 +167,14 @@ public class GameService {
 		queryString.append("left join game_entry h2h_ge ON (h2h_ge.game = ge.game and h2h_ge.user = ");
 		queryString.append("(CASE WHEN h2h.game_entry_1 = ge.game_entry_id then h2h.user_2 ");
 		queryString.append(" WHEN h2h.game_entry_2 = ge.game_entry_id then h2h.user_1 ELSE null END) ) ");
+		queryString.append("left join user h2h_user ON h2h_user.user_id = h2h_ge.user ");
 		
 		queryString.append("left join (");
 		queryString.append("select fg.name, fg.fangroup_id, fg.competition, f.user ");
 		queryString.append("from fangroup fg ");
 		queryString.append("left join fan f on f.fangroup = fg.fangroup_id ");
-		queryString.append("where f.user = '").append(username).append("'");
+		queryString.append("left join user u on u.user_id = f.user ");
+		queryString.append("where u.username = '").append(username).append("'");
 		queryString.append(") as fangrp	on fangrp.competition = g.competition ");
 		
 		queryString.append("left join ( ");
@@ -192,7 +195,7 @@ public class GameService {
 		queryString.append(") as fangroup_pool on fangroup_pool.fangroup_id = fangrp.fangroup_id ");
 
 		queryString.append("where ge.game = ").append(game_id.toString());
-		queryString.append(" and ge.user = '").append(username).append("'");
+		queryString.append(" and u.username = '").append(username).append("'");
 		
 		SQLQuery query = session.createSQLQuery(queryString.toString());
 		
@@ -253,7 +256,7 @@ public class GameService {
 		
 		// Create game entry if we don't already have one
 		Query gameEntryQuery = session.createQuery("from GameEntry ge where ge.game = "+game_id.toString()+
-										   " and ge.user = '"+username+"'");
+										   " and ge.user.username = '"+username+"'");
 		
 		List<GameEntry> result = null;
 		try {
@@ -280,17 +283,15 @@ public class GameService {
 				throw new DBException(new RestError(1001, "Failed to get game "+game_id));
 			}
 			
-			// Check that user has a fangroup before creating a game entry
-			StringBuffer fangroupQueryString = new StringBuffer("from Fan f where f.user = '");
-			fangroupQueryString.append(username).append("' and f.fangroup.competition = ");
-			
-			try {
-				fangroupQueryString.append(g.getCompetition_id());
-			}
-			catch (ObjectNotFoundException e) {
+			if (g == null) {
 				log.error(username+" | Game "+game_id+" does not exist");
 				throw new InvalidParameterException(new RestError(2200, "Game "+game_id+" does not exist"));
 			}
+			
+			// Check that user has a fangroup before creating a game entry
+			StringBuffer fangroupQueryString = new StringBuffer("from Fan f where f.user.username = '");
+			fangroupQueryString.append(username).append("' and f.fangroup.competition = ");
+			fangroupQueryString.append(g.getCompetition_id());
 			
 			Query fangroupQuery = session.createQuery(fangroupQueryString.toString());
 			List <Fan> fan = fangroupQuery.list();
@@ -300,12 +301,18 @@ public class GameService {
 			}
 			
 			
+			Query userQuery = session.createQuery("FROM User u WHERE u.username = '"+username+"'");
+			userQuery.setCacheable(true);
+			userQuery.setCacheRegion("user");
+			User usr = (User) userQuery.uniqueResult();
+			
+			
 			// Update game entry with game details and save
 			gameEntry.setGame_id(game_id);
-			gameEntry.setUsername(username);
+			gameEntry.setUser_id(usr.getUser_id());
 			gameEntry.setGame(g);
 			gameEntry.setEntry_state(g.getState());
-			gameEntry.setUser((User) session.load(User.class, username));
+			gameEntry.setUser(usr);
 			
 			session.save(gameEntry);
 		
@@ -397,7 +404,7 @@ public class GameService {
 					}
 					
 				} else {
-					log.debug(username+" | Could not update period selection, period "+ps.getPeriod_id()+" is no longer in preplay/transition/inplay");
+					log.debug(username+" | Could not update period selection, period "+ps.getPeriod_id()+" is no longer in preplay/transition");
 				}
 				
 			}
@@ -421,7 +428,7 @@ public class GameService {
 		
 		StringBuffer queryString = new StringBuffer("from PeriodSelection ps where ps.period = ");
 		queryString.append(period_id);
-		queryString.append(" and ps.gameEntry.user = '");
+		queryString.append(" and ps.gameEntry.user.username = '");
 		queryString.append(username);
 		queryString.append("'");
 		
@@ -510,10 +517,11 @@ public class GameService {
 		switch(type) {
 			case "global":
 				queryString.append("lb.rank, ");
-				queryString.append("lb.user as name, ");
+				queryString.append("u.username as name, ");
 				queryString.append("lb.points, ");
 				queryString.append("lb.potential_winnings ");
 				queryString.append("from global_game_leaderboard lb ");
+				queryString.append("left join user u on u.user_id = lb.user ");
 				queryString.append("where lb.game = ");
 				queryString.append(game_id);
 				break;
@@ -530,10 +538,11 @@ public class GameService {
 				
 			case "userinfangroup":					
 				queryString.append("lb.rank, ");
-				queryString.append("lb.user as name, ");
+				queryString.append("u.username as name, ");
 				queryString.append("lb.points, ");
 				queryString.append("lb.potential_winnings ");
 				queryString.append("from user_in_fangroup_game_leaderboard lb ");
+				queryString.append("left join user u on u.user_id = lb.user ");
 				queryString.append("where lb.game = ");
 				queryString.append(game_id);
 				queryString.append(" and lb.fangroup_id = ");
@@ -542,7 +551,7 @@ public class GameService {
 				StringBuffer fanQueryString = new StringBuffer("from Fan f where f.fangroup.competition = ");
 				fanQueryString.append("(select competition_id from Game g where g.game_id = ");
 				fanQueryString.append(game_id);
-				fanQueryString.append(") and f.user = '");
+				fanQueryString.append(") and f.user.username = '");
 				fanQueryString.append(username);
 				fanQueryString.append("'");
 				Query fanQuery = session.createQuery(fanQueryString.toString());

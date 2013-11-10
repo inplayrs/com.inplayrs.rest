@@ -27,7 +27,7 @@ public class Fan {
 	
 	@JsonIgnore
 	@Column(name = "user", insertable=false, updatable = false)
-	private String username;
+	private Integer user_id;
 	
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "fangroup", nullable = false)
@@ -112,13 +112,13 @@ public class Fan {
 	}
 
 
-	public String getUsername() {
-		return username;
+	public Integer getUser_id() {
+		return user_id;
 	}
 
 
-	public void setUsername(String username) {
-		this.username = username;
+	public void setUser_id(Integer user_id) {
+		this.user_id = user_id;
 	}
 
 	

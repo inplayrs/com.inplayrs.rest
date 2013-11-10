@@ -70,7 +70,8 @@ public class CompetitionService {
 		StringBuffer queryString = new StringBuffer("select c, max(ge.game_entry_id) from Competition c ");
 		queryString.append("left join c.games g ");
 		queryString.append("left join g.gameEntries ge ");
-		queryString.append("with ge.user.username = '").append(username).append("' ");
+		queryString.append("left join ge.user u ");
+		queryString.append("with u.username = '").append(username).append("' ");
 
 		// Filter competitions by state
 		queryString.append("where c.state in (");
@@ -136,8 +137,8 @@ public class CompetitionService {
 		queryString.append("from ");
 		queryString.append("game g ");
 		queryString.append("left join competition c on c.comp_id = g.competition ");
-		queryString.append("left join game_entry ge on (ge.game = g.game_id and ge.user = '");
-		queryString.append(username).append("') ");
+		queryString.append("left join game_entry ge on ge.game = g.game_id ");
+		queryString.append("left join user u on u.user_id = ge.user ");
 		
 		// Filter games by state
 		queryString.append("where g.state in (");
@@ -147,7 +148,9 @@ public class CompetitionService {
 		queryString.append(State.COMPLETE).append(", ");
 		queryString.append(State.SUSPENDED).append(", ");
 		queryString.append(State.NEVERINPLAY).append(") ");
-	
+		
+		queryString.append("and u.username = '").append(username).append("'");
+
 		if (comp_id != null) {
 			queryString.append(" and g.competition = ");
 			queryString.append(comp_id);
@@ -192,10 +195,11 @@ public class CompetitionService {
 		switch(type) {
 			case "global":
 				queryString.append("lb.rank, ");
-				queryString.append("lb.user as name, ");
+				queryString.append("u.username as name, ");
 				queryString.append("lb.games_played, ");
 				queryString.append("lb.winnings ");
 				queryString.append("from global_comp_leaderboard lb ");
+				queryString.append("left join user u on u.user_id = lb.user ");
 				queryString.append("where lb.competition = ");
 				queryString.append(comp_id);
 				break;
@@ -212,10 +216,11 @@ public class CompetitionService {
 				
 			case "userinfangroup":					
 				queryString.append("lb.rank, ");
-				queryString.append("lb.user as name, ");
+				queryString.append("u.username as name, ");
 				queryString.append("lb.games_played, ");
 				queryString.append("lb.winnings ");
 				queryString.append("from user_in_fangroup_comp_leaderboard lb ");
+				queryString.append("left join user u on u.user_id = lb.user ");
 				queryString.append("where lb.competition = ");
 				queryString.append(comp_id);
 				queryString.append(" and lb.fangroup_id = ");
@@ -223,7 +228,7 @@ public class CompetitionService {
 				// Get fangroup of  user
 				StringBuffer fanQueryString = new StringBuffer("from Fan f where f.fangroup.competition = ");
 				fanQueryString.append(comp_id);
-				fanQueryString.append(" and f.user = '");
+				fanQueryString.append(" and f.user.username = '");
 				fanQueryString.append(username);
 				fanQueryString.append("'");
 				Query fanQuery = session.createQuery(fanQueryString.toString());
@@ -282,6 +287,7 @@ public class CompetitionService {
 		queryString.append("userinfangroup_winnings.total_userinfangroup_winnings ");
 		queryString.append("from  ");
 		queryString.append("global_comp_leaderboard gcl ");
+		queryString.append("left join user u on u.user_id = gcl.user ");
 		queryString.append("left join fangroup_comp_leaderboard fcl on  ");
 		queryString.append("(fcl.competition = gcl.competition and fcl.fangroup_id = gcl.fangroup_id) ");
 		queryString.append("left join user_in_fangroup_comp_leaderboard uifcl on  ");
@@ -346,7 +352,7 @@ public class CompetitionService {
 		queryString.append("userinfangroup_winnings.fangroup_id = gcl.fangroup_id) ");
 		
 		queryString.append("where ");
-		queryString.append("gcl.user = '").append(username).append("' ");
+		queryString.append("u.username = '").append(username).append("' ");
 		queryString.append("and gcl.competition = ").append(comp_id);
 
 		SQLQuery query = session.createSQLQuery(queryString.toString());

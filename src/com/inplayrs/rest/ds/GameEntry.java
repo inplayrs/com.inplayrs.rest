@@ -42,7 +42,7 @@ public class GameEntry {
 	private User user;
 	
 	@Column(name = "user", insertable=false, updatable = false)
-	private String username;
+	private Integer user_id;
 	
 	@Column(name = "total_points")
 	private int total_points;
@@ -78,9 +78,9 @@ public class GameEntry {
 	}
 	
 	
-	public GameEntry(int game_id, String username) {
+	public GameEntry(int game_id, int user_id) {
 		this.game_id = game_id;
-		this.username = username;
+		this.user_id = user_id;
 	}
 
 
@@ -184,13 +184,13 @@ public class GameEntry {
 	}
 
 
-	public String getUsername() {
-		return username;
+	public Integer getUser_id() {
+		return user_id;
 	}
 
 
-	public void setUsername(String username) {
-		this.username = username;
+	public void setUser_id(Integer user_id) {
+		this.user_id = user_id;
 	}
 
 

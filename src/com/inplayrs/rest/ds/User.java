@@ -16,6 +16,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class User implements Serializable {
 	
 	@Id
+	@Column(name = "user_id")
+	private int user_id;
+	
 	@Column(name = "username")
 	private String username;
 	
@@ -50,6 +53,16 @@ public class User implements Serializable {
 	 */
 	public User() {
 		
+	}
+
+	
+	public int getUser_id() {
+		return user_id;
+	}
+
+
+	public void setUser_id(int user_id) {
+		this.user_id = user_id;
 	}
 
 
@@ -160,6 +173,14 @@ public class User implements Serializable {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		StringBuffer str = new StringBuffer("user_id: ");
+		str.append(this.getUser_id());
+		str.append(", username: ").append(this.getUsername());
+		str.append(", email: ").append(this.getEmail());
+		return str.toString();
+	}
 	
 	
 }
