@@ -129,7 +129,7 @@ public class CompetitionService {
 		queryString.append("g.state, ");
 		queryString.append("g.num_players, ");
 		queryString.append("(CASE  ");
-		queryString.append("WHEN ge.game_entry_id is NULL THEN false ");
+		queryString.append("WHEN game_entries.game_entry_id is NULL THEN false ");
 		queryString.append("ELSE true ");
 		queryString.append("END) as entered, ");
 		queryString.append("g.banner_position, ");
@@ -137,8 +137,10 @@ public class CompetitionService {
 		queryString.append("from ");
 		queryString.append("game g ");
 		queryString.append("left join competition c on c.comp_id = g.competition ");
-		queryString.append("left join game_entry ge on ge.game = g.game_id ");
-		queryString.append("left join user u on u.user_id = ge.user ");
+		queryString.append("left join (select ge.game_entry_id, ge.game, u.username ");
+		queryString.append("from game_entry ge left join user u on ge.user = u.user_id) as game_entries ");	
+		queryString.append("on game_entries.game = g.game_id and game_entries.username = '");
+		queryString.append(username).append("' ");
 		
 		// Filter games by state
 		queryString.append("where g.state in (");
@@ -149,8 +151,6 @@ public class CompetitionService {
 		queryString.append(State.SUSPENDED).append(", ");
 		queryString.append(State.NEVERINPLAY).append(") ");
 		
-		queryString.append("and u.username = '").append(username).append("'");
-
 		if (comp_id != null) {
 			queryString.append(" and g.competition = ");
 			queryString.append(comp_id);
