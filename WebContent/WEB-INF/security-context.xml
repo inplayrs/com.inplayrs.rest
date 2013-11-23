@@ -14,7 +14,7 @@
 	<http create-session="stateless" entry-point-ref="authenticationEntryPoint"
 		authentication-manager-ref="authenticationManager">
 		<custom-filter ref="customRestFilter" position="BASIC_AUTH_FILTER" />
-		<intercept-url pattern="/" access="IS_AUTHENTICATED_ANONYMOUSLY" /> 
+		<intercept-url pattern="/" access="IS_AUTHENTICATED_ANONYMOUSLY" />
 		<intercept-url pattern="/**" access="ROLE_USER" />
 	</http>
 
