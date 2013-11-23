@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.inplayrs.rest</groupId>
-  <artifactId>inplayrs-rest-api</artifactId>
+  <artifactId>com.inplayrs.rest</artifactId>
   <version>1.0.0</version>
   <packaging>war</packaging>
 
@@ -55,12 +55,6 @@
 		<version>4.2.7.SP1</version>
 		<scope>compile</scope>
 	</dependency>
-	<dependency>
-		<groupId>org.hibernate</groupId>
-		<artifactId>hibernate-annotations</artifactId>
-		<version>3.5.6-Final</version>
-		<scope>compile</scope>
-	</dependency>
 	
 	<!-- Joda Time -->
 	<dependency>
@@ -83,18 +77,32 @@
 		<groupId>org.apache.tomcat</groupId>
 		<artifactId>servlet-api</artifactId>
 		<version>6.0.37</version>
-		<scope>compile</scope>
+		<scope>provided</scope>
 	</dependency>
           
           
-          
+    <!-- Logging -->
     <dependency>
 		<groupId>log4j</groupId>
 		<artifactId>log4j</artifactId>
 		<version>1.2.17</version>
 		<scope>compile</scope>
 	</dependency>
+	
+	<dependency>
+		<groupId>org.slf4j</groupId>
+		<artifactId>slf4j-api</artifactId>
+		<version>1.7.5</version>
+	</dependency>
+         
+    <dependency>
+		<groupId>ch.qos.logback</groupId>
+		<artifactId>logback-classic</artifactId>
+		<version>1.0.13</version>
+	</dependency>
             
+            
+    <!-- JSON parsing -->
     <dependency>
 		<groupId>com.fasterxml.jackson.core</groupId>
 		<artifactId>jackson-core</artifactId>
