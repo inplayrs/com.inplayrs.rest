@@ -47,6 +47,30 @@ public class User implements Serializable {
 	@JsonIgnore
 	private boolean pushActive;
 	
+	@Column(name = "gamecenter_id")
+	@JsonIgnore
+	private String gamecenter_id;
+	
+	@Column(name = "gamecenter_username")
+	@JsonIgnore
+	private String gamecenter_username;
+	
+	@Column(name = "facebook_id")
+	@JsonIgnore
+	private String facebook_id;
+	
+	@Column(name = "facebook_username")
+	@JsonIgnore
+	private String facebook_username;
+	
+	@Column(name = "facebook_full_name")
+	@JsonIgnore
+	private String facebook_full_name;
+	
+	@Column(name = "facebook_email")
+	@JsonIgnore
+	private String facebook_email;
+	
 	
 	/*
 	 * Default constructor - required by Hibernate
@@ -143,6 +167,66 @@ public class User implements Serializable {
 
 	public void setPushActive(boolean pushActive) {
 		this.pushActive = pushActive;
+	}
+	
+
+	public String getGamecenter_id() {
+		return gamecenter_id;
+	}
+
+
+	public void setGamecenter_id(String gamecenter_id) {
+		this.gamecenter_id = gamecenter_id;
+	}
+
+
+	public String getGamecenter_username() {
+		return gamecenter_username;
+	}
+
+
+	public void setGamecenter_username(String gamecenter_username) {
+		this.gamecenter_username = gamecenter_username;
+	}
+
+
+	public String getFacebook_id() {
+		return facebook_id;
+	}
+
+
+	public void setFacebook_id(String facebook_id) {
+		this.facebook_id = facebook_id;
+	}
+
+
+	public String getFacebook_username() {
+		return facebook_username;
+	}
+
+
+	public void setFacebook_username(String facebook_username) {
+		this.facebook_username = facebook_username;
+	}
+
+
+	public String getFacebook_full_name() {
+		return facebook_full_name;
+	}
+
+
+	public void setFacebook_full_name(String facebook_full_name) {
+		this.facebook_full_name = facebook_full_name;
+	}
+
+
+	public String getFacebook_email() {
+		return facebook_email;
+	}
+
+
+	public void setFacebook_email(String facebook_email) {
+		this.facebook_email = facebook_email;
 	}
 
 

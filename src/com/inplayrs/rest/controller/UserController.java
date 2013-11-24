@@ -23,6 +23,8 @@ import com.inplayrs.rest.exception.RestError;
 import com.inplayrs.rest.responseds.FangroupResponse;
 import com.inplayrs.rest.service.UserService;
 
+import org.apache.log4j.Logger;
+
 
 /*
  * Handles user data requests
@@ -34,6 +36,9 @@ public class UserController {
 	@Autowired
 	@Resource(name="userService")
 	private UserService userService;
+	
+	//get log4j handler
+	private static final Logger log = Logger.getLogger("APILog");
 	
     
 	/*
@@ -74,15 +79,56 @@ public class UserController {
 	@RequestMapping(value = "/register", method = RequestMethod.POST, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.CREATED )
 	public @ResponseBody User registerUser(
-		   @RequestParam(value="username", required=true) String username,
+		   @RequestParam(value="username", required=false) String username,
 		   @RequestParam(value="password", required=true) String password,
 		   @RequestParam(value="email", required=false) String email,
 		   @RequestParam(value="timezone", required=false) String timezone,
 		   @RequestParam(value="deviceID", required=false) String deviceID,
-		   @RequestParam(value="pushActive", required=false) Boolean pushActive) {
+		   @RequestParam(value="pushActive", required=false) Boolean pushActive,
+		   @RequestParam(value="gcID", required=false) String gcID,
+		   @RequestParam(value="gcUsername", required=false) String gcUsername,
+		   @RequestParam(value="fbID", required=false) String fbID,
+		   @RequestParam(value="fbUsername", required=false) String fbUsername,
+		   @RequestParam(value="fbEmail", required=false) String fbEmail,
+		   @RequestParam(value="fbFullName", required=false) String fbFullName ) {
 
+		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
+		
+		// Check if Game Center registration
+		if (gcID != null) {
+			if (fbID != null || username != null) {
+				log.error(authed_user+" | Cannot specify fbID or username as well as gcID when registering");		
+				throw new InvalidParameterException(new RestError(2303, 
+						"Cannot specify fbID or username as well as gcID when registering"));
+			}
+			
+			return userService.registerGCUser(gcID, gcUsername, password, email, timezone, deviceID, pushActive);
+			
+		}
+		
+		// Check if FB registration
+		if (fbID != null) {
+			if (gcID != null || username != null) {
+				log.error(authed_user+" | Cannot specify gcID or username as well as fbID when registering");		
+				throw new InvalidParameterException(new RestError(2304, 
+						"Cannot specify gcID or username as well as fbID when registering"));
+			}
+			
+			return userService.registerFBUser(fbID, fbUsername, fbEmail, fbFullName, password, email, timezone, deviceID, pushActive);
+		}
+		
+		
+		// Must be username registration
+		if (username == null) {
+			log.error(authed_user+" | Must specify either username, gcID or fbID when registering");
+			throw new InvalidParameterException(new RestError(2305, 
+					"Must specify either username, gcID or fbID when registering"));
+		}
+		
+		// Regular username & password registration
 		return userService.registerUser(username, password, email, timezone, deviceID, pushActive);
-		 	
+	
+		
 	}
 	
 	

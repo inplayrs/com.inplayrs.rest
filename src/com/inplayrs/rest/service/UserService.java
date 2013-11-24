@@ -43,9 +43,10 @@ public class UserService {
 	
 	
 	/*
-	 * POST user/register
+	 * POST user/register (Username & Password registration)
 	 */
-	public User registerUser(String username, String password, String email, String timezone, String deviceID, Boolean pushActive) {
+	public User registerUser(String username, String password, String email, String timezone, 
+							 String deviceID, Boolean pushActive) {
 		
 		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
 		log.debug(authed_user+" | Registering new user: "+username);
@@ -116,6 +117,60 @@ public class UserService {
 			throw new InvalidStateException(new RestError(2300, "Username "+username+" is not available"));
 		}
 		
+	}
+	
+	
+	/*
+	 * POST user/register (Game Center registration)
+	 */
+	public User registerGCUser(String gcID, String gcUsername, String password, String email, 
+								String timezone, String deviceID, Boolean pushActive) {
+		
+		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
+		log.debug(authed_user+" | Registering new user with gamecenter_id: "+gcID);
+		
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+		
+		// Check if someone is already registered with that gamecenter_id
+		Query query = session.createQuery("select 1 from User u WHERE u.gamecenter_id = '"+gcID+"'");
+		if (query.uniqueResult() != null) {
+			throw new InvalidParameterException(
+					new RestError(2306, "User with gamecenter_id "+gcID+" is already registered")
+			);
+		}
+		
+		String username = _getNextAvailableUsername(gcUsername, 0);
+		
+		// Check if we can use the gamecenter_id as the username
+		Query usrQuery = session.createQuery("select 1 from User u WHERE u.username = '"+username+"'");
+		
+		User usr = new User();
+		
+		return usr;
+	}
+	
+	
+	/*
+	 * POST user/register (Facebook registration)
+	 */
+	public User registerFBUser(String fbID, String fbUsername, String fbEmail, String fbFullName, String password, 
+			String email, String timezone, String deviceID, Boolean pushActive) {
+		
+		User usr = new User();
+		
+		return usr;
+	}
+	
+	
+	public String _getNextAvailableUsername(String username, int attempt) {
+		// TODO - code this
+		if (attempt > 0) {
+			
+		} else {
+			
+		}
+		return null;
 	}
 	
 	
