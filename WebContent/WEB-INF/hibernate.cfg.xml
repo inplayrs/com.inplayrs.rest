@@ -17,8 +17,8 @@
 
 		<property name="hibernate.c3p0.driverClass">${app.jdbc.driverClassName}</property>
 		<property name="hibernate.c3p0.jdbcUrl">${app.jdbc.url}</property>
-		<property name="hibernate.c3p0.user">${app.jdbc.username}</property> 
-		<property name="hibernate.c3p0.password">${app.jdbc.password}</property> 
+		<property name="hibernate.c3p0.user">${app.jdbc.username}</property>
+		<property name="hibernate.c3p0.password">${app.jdbc.password}</property>
 		<property name="hibernate.c3p0.acquireIncrement">5</property>
 		<property name="hibernate.c3p0.idleConnectionTestPeriod">60</property>
 		<property name="hibernate.c3p0.maxPoolSize">100</property>
