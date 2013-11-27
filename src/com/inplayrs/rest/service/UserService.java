@@ -46,18 +46,17 @@ public class UserService {
 	 * POST user/register (Username & Password registration)
 	 */
 	public User registerUser(String username, String password, String email, String timezone, 
-							 String deviceID, Boolean pushActive) {
+							 String deviceID, Boolean pushActive, String gcID, String gcUsername, 
+							 String fbID, String fbUsername, String fbEmail, String fbFullName) {
 		
 		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
 		log.debug(authed_user+" | Registering new user: "+username);
 		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
-				
-		// Verify whether the requested username is in the list of bad words
-		String badWordQuery = "select count(*) from BadWord where word = '"+username.toLowerCase()+"'";
 		
-		if (( (Long) session.createQuery(badWordQuery).iterate().next() ).intValue() > 0) {
+		// Check if username is a banned word 
+		if (_isBadWord(username)) {
 			log.debug(authed_user+" | Username "+username+" is not available");
 			throw new InvalidStateException(new RestError(2302, "Username "+username+" is not available"));
 		}	
@@ -67,7 +66,6 @@ public class UserService {
 		query.setCacheable(true);
 		query.setCacheRegion("user");
 		User usr = (User) query.uniqueResult();
-		
 		
 		if (usr == null) {
 			usr = new User();
@@ -109,6 +107,30 @@ public class UserService {
 				usr.setPushActive(true);
 			}
 			
+			if (gcID != null) {
+				usr.setGamecenter_id(gcID);
+			}
+			
+			if (gcUsername != null) {
+				usr.setGamecenter_username(gcUsername);
+			}
+			
+			if (fbID != null) {
+				usr.setFacebook_id(fbID);
+			}
+			
+			if (fbUsername != null) {
+				usr.setFacebook_username(fbUsername);
+			}
+			
+			if (fbEmail != null) {
+				usr.setFacebook_email(fbEmail);
+			}
+			
+			if (fbFullName != null) {
+				usr.setFacebook_full_name(fbFullName);
+			}
+				
 			session.save(usr);
 			return usr;
 			
@@ -140,14 +162,19 @@ public class UserService {
 			);
 		}
 		
-		String username = _getNextAvailableUsername(gcUsername, 0);
+		// Check if we can use the gamecenter_id as the username (take first 14 characters)
+		String shortenedGCusername;
+		if (gcUsername.length() > 14) {
+			shortenedGCusername = gcUsername.substring(0, 14);
+		} else {
+			shortenedGCusername = gcUsername;
+		}
+		String username = _getNextAvailableUsername(shortenedGCusername, 0);
 		
-		// Check if we can use the gamecenter_id as the username
-		Query usrQuery = session.createQuery("select 1 from User u WHERE u.username = '"+username+"'");
+		log.debug(authed_user+" | GC Username provided: "+gcUsername+", next available username: "+username);
 		
-		User usr = new User();
-		
-		return usr;
+		return registerUser(username, password, email, timezone, deviceID, pushActive, gcID, gcUsername, 
+							null, null, null, null);
 	}
 	
 	
@@ -157,20 +184,107 @@ public class UserService {
 	public User registerFBUser(String fbID, String fbUsername, String fbEmail, String fbFullName, String password, 
 			String email, String timezone, String deviceID, Boolean pushActive) {
 		
-		User usr = new User();
+		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
+		log.debug(authed_user+" | Registering new user with facebook_id: "+fbID);
 		
-		return usr;
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+		
+		// Check if someone is already registered with that facebook_id
+		Query query = session.createQuery("select 1 from User u WHERE u.facebook_id = '"+fbID+"'");
+		if (query.uniqueResult() != null) {
+			throw new InvalidParameterException(
+					new RestError(2309, "User with facebook_id "+fbID+" is already registered")
+			);
+		}
+
+		String username = null;
+		
+		if (fbUsername != null) {
+			// Take first 14 characters of username and check if available
+			String shortenedFBusername;
+			if (fbUsername.length() > 14) {
+				shortenedFBusername = fbUsername.substring(0, 14);
+			} else {
+				shortenedFBusername = fbUsername;
+			}
+			username = _getNextAvailableUsername(shortenedFBusername, 0);
+		} else {
+			// Take first 14 characters of full name and check if available
+			String fbFullNameNoSpaces = fbFullName.replaceAll("\\s+", "");
+			String shortenedFBName;
+			if (fbFullNameNoSpaces.length() > 14) {
+				shortenedFBName = fbFullNameNoSpaces.substring(0, 14);
+			} else {
+				shortenedFBName = fbFullNameNoSpaces;
+			}
+			username = _getNextAvailableUsername(shortenedFBName, 0);
+		}
+				
+		return registerUser(username, password, email, timezone, deviceID, pushActive, null, null, 
+							fbID, fbUsername, fbEmail, fbFullName);
 	}
 	
 	
-	public String _getNextAvailableUsername(String username, int attempt) {
-		// TODO - code this
-		if (attempt > 0) {
-			
+	/*
+	 * Checks if given word is in list of banned words
+	 */
+	public boolean _isBadWord(String word) {
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+				
+		// Verify whether the requested username is in the list of bad words
+		String badWordQuery = "select count(*) from BadWord where word = '"+word.toLowerCase()+"'";
+		
+		if (( (Long) session.createQuery(badWordQuery).iterate().next() ).intValue() > 0) {
+			return true;
 		} else {
-			
+			return false;
 		}
-		return null;
+	}
+	
+	
+	
+	/*
+	 * Get the next available username based on input name
+	 */
+	public String _getNextAvailableUsername(String username, int attempt) {
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+		
+		// Cannot have a negative value for attempt
+		if (attempt < 0) {
+			log.error("_getNextAvailableUsername - Attempt must be >= 0");
+			throw new InvalidParameterException(new RestError(2307, "Attempt must be >= 0"));
+		}
+		
+		// Allow max 9 attempts to find an alternative username
+		if (attempt > 9) {
+			log.error("_getNextAvailableUsername - Maximum of 9 attempts reached to find an available username!");
+			throw new InvalidParameterException(new RestError(2308, "Maximum of 9 attempts reached to find an available username! Please try creating a username manually"));
+		}
+		
+		if (attempt > 0) {
+			// Append attempt number to username to see if that name is available
+			Query usrQuery = session.createQuery("select count(*) from User u WHERE u.username = '"+username+attempt+"'");
+			Long exists = (Long) usrQuery.uniqueResult();
+			if (exists > 0) {
+				return _getNextAvailableUsername(username, attempt+1);
+			} else {
+				return username + attempt;
+			}
+		} else {
+			// First attempt, see if that username is available
+			Query usrQuery = session.createQuery("select count(*) from User u WHERE u.username = '"+username+"'");
+			Long exists = (Long) usrQuery.uniqueResult();
+			if (exists > 0) {
+				return _getNextAvailableUsername(username, attempt+1);
+			} else {
+				return username;
+			}
+	
+		}
+		
 	}
 	
 	

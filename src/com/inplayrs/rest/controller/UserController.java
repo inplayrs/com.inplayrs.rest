@@ -108,10 +108,18 @@ public class UserController {
 		
 		// Check if FB registration
 		if (fbID != null) {
+			// Must only contain FB parameters
 			if (gcID != null || username != null) {
 				log.error(authed_user+" | Cannot specify gcID or username as well as fbID when registering");		
 				throw new InvalidParameterException(new RestError(2304, 
 						"Cannot specify gcID or username as well as fbID when registering"));
+			}
+			
+			// Check that either username or full name is present
+			if (fbUsername == null && fbFullName == null) {
+				log.error(authed_user+" | Must specify either fbUsername or fbFullName with FB login");		
+				throw new InvalidParameterException(new RestError(2310, 
+						"Must specify either fbUsername or fbFullName with FB login"));
 			}
 			
 			return userService.registerFBUser(fbID, fbUsername, fbEmail, fbFullName, password, email, timezone, deviceID, pushActive);
@@ -126,7 +134,8 @@ public class UserController {
 		}
 		
 		// Regular username & password registration
-		return userService.registerUser(username, password, email, timezone, deviceID, pushActive);
+		return userService.registerUser(username, password, email, timezone, deviceID, pushActive,
+										null, null, null, null, null, null);
 	
 		
 	}
