@@ -383,19 +383,32 @@ public class UserService {
 	/*
 	 * GET user/account
 	 */
-	public User getUser(String username) {
+	public User getUser(String username, String gcID, String fbID) {
 		
 		log.debug(username+" | Getting user account");
 		
 	    // Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 		   
-		// Get user's record
-		Query query = session.createQuery("FROM User u WHERE u.username = '"+username+"'");
-		query.setCacheable(true);
-		query.setCacheRegion("user");
-		User usr = (User) query.uniqueResult();
-		   
+		User usr = null;
+		
+		if (username != null) {
+			Query query = session.createQuery("FROM User u WHERE u.username = '"+username+"'");
+			query.setCacheable(true);
+			query.setCacheRegion("user");
+			usr = (User) query.uniqueResult();
+		} else if (gcID != null) {
+			Query query = session.createQuery("FROM User u WHERE u.gamecenter_id = '"+gcID+"'");
+			query.setCacheable(true);
+			query.setCacheRegion("user");
+			usr = (User) query.uniqueResult();
+		} else if (fbID != null) {
+			Query query = session.createQuery("FROM User u WHERE u.facebook_id = '"+fbID+"'");
+			query.setCacheable(true);
+			query.setCacheRegion("user");
+			usr = (User) query.uniqueResult();
+		}
+		
 		return usr;
 	}
 

@@ -47,11 +47,25 @@ public class UserController {
 	@RequestMapping(value = "/account", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
     public @ResponseBody User getUser(
-    	   @RequestParam(value="username", required=true) String username) {
-    	
-		User user = userService.getUser(username);
+    	   @RequestParam(value="username", required=false) String username,
+    	   @RequestParam(value="gcID", required=false) String gcID,
+    	   @RequestParam(value="fbID", required=false) String fbID) {
+		
+		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
+		
+		if (username == null && gcID == null && fbID == null) {
+			log.error(authed_user+" | Must specify username / gcID / fbID when getting user account");		
+			throw new InvalidParameterException(new RestError(2600, 
+					"Must specify username / gcID / fbID when getting user account"));
+		}
+		
+		if ((username != null && (gcID != null || fbID != null)) || gcID != null && fbID != null) {
+			log.error(authed_user+" | Only specify one of username / gcID / fbID when getting user account");		
+			throw new InvalidParameterException(new RestError(2600, 
+					"Only specify one of username / gcID / fbID when getting user account"));
+		}
 		 
-		return user;
+		return userService.getUser(username, gcID, fbID);
     }
 	
 		
