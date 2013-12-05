@@ -2,6 +2,7 @@ package com.inplayrs.rest.service;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -25,6 +26,7 @@ import com.inplayrs.rest.ds.User;
 import com.inplayrs.rest.exception.InvalidParameterException;
 import com.inplayrs.rest.exception.InvalidStateException;
 import com.inplayrs.rest.exception.RestError;
+import com.inplayrs.rest.responseds.UserStatsResponse;
 import com.inplayrs.rest.security.PasswordHash;
 
 
@@ -261,7 +263,7 @@ public class UserService {
 		// Allow max 9 attempts to find an alternative username
 		if (attempt > 9) {
 			log.error("_getNextAvailableUsername - Maximum of 9 attempts reached to find an available username!");
-			throw new InvalidParameterException(new RestError(2308, "Maximum of 9 attempts reached to find an available username! Please try creating a username manually"));
+			throw new InvalidParameterException(new RestError(2308, "Your username is already taken, please try registering via email instead"));
 		}
 		
 		if (attempt > 0) {
@@ -291,7 +293,8 @@ public class UserService {
 	/*
 	 * POST user/account/update
 	 */
-	public User updateAccount(String username, String password, String email, String timezone, String deviceID, Boolean pushActive) {
+	public User updateAccount(String username, String password, String email, String timezone, String deviceID, 
+							  Boolean pushActive, String newUsername) {
 
 		log.debug(username+" | Updating user account");
 		
@@ -347,10 +350,36 @@ public class UserService {
 			usr.setPushActive(pushActive);
 		}
 		
+		if (newUsername != null) {
+			// Check that a different username has been supplied
+			if (newUsername.equals(username)) {
+				log.error(username+" | New username provided is same as your current username!");
+				throw new InvalidParameterException(new RestError(2404, "New username provided is same as your current username!"));
+			}
+			
+			// Check if username is a banned word 
+			if (_isBadWord(newUsername)) {
+				log.debug(username+" | Username "+newUsername+" is not available");
+				throw new InvalidStateException(new RestError(2402, "Username "+newUsername+" is not available"));
+			}	
+			
+			// Check if username is available
+			Query usrQuery = session.createQuery("select count(*) from User u WHERE u.username = '"+newUsername+"'");
+			Long exists = (Long) usrQuery.uniqueResult();
+			if (exists > 0) {
+				log.error(username+" | Cannot change username, user "+newUsername+" already exists");
+				throw new InvalidStateException(new RestError(2403, "Username "+newUsername+" is not available"));
+			} else {
+				log.debug(username+" | Changing username to "+newUsername);
+				usr.setUsername(newUsername);
+			}
+			
+		}
+		
 		session.update(usr);
 		
 		// Return null on success
-		return null;
+		return usr;
 	}
 	
 	
@@ -526,6 +555,86 @@ public class UserService {
 		
 	}
 
+	
+	/*
+	 * GET user/stats
+	 */
+	public UserStatsResponse getUserStats(String username) {
+		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
+		log.debug(authed_user+" | Getting user stats for user: "+username);
+		
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+		
+		StringBuffer queryString = new StringBuffer("select ");
+		queryString.append("us.user.username, ");
+		queryString.append("us.total_winnings, ");
+		queryString.append("us.total_rank, ");
+		queryString.append("us.total_games_played, ");
+		queryString.append("us.total_pc_correct, ");
+		queryString.append("us.total_user_rating, ");
+		queryString.append("us.global_winnings, ");
+		queryString.append("us.fangroup_winnings, ");
+		queryString.append("us.h2h_winnings, ");
+		queryString.append("us.global_games_won, ");
+		queryString.append("us.fangroup_pools_won, ");
+		queryString.append("us.h2h_won, ");
+		queryString.append("us.h2h_pc_correct, ");	
+		queryString.append("(select count(*) as num_users_in_system from User) ");
+		queryString.append("from UserStats us ");
+		//queryString.append("left join (select count(*) as num_users_in_system from User) as num_users");
+		queryString.append("where us.user.username = '").append(username).append("'");
+		
+		Query query = session.createQuery(queryString.toString());
+
+		UserStatsResponse response = null;
+		
+		@SuppressWarnings("rawtypes")
+		Iterator userStats = query.list().iterator();
+		while(userStats.hasNext()) {
+
+			response = new UserStatsResponse();
+			
+			Object[] row = (Object[]) userStats.next();
+			String user = (String) row[0];
+			Integer total_winnings = (Integer) row[1];
+			Integer total_rank = (Integer) row[2];
+			Integer total_games_played = (Integer) row[3];
+			Double total_pc_correct = (Double) row[4];
+			String total_user_rating = (String) row[5];
+			Integer global_winnings = (Integer) row[6];
+			Integer fangroup_winnings = (Integer) row[7];
+			Integer h2h_winnings = (Integer) row[8];
+			Integer global_games_won = (Integer) row[9];			
+			Integer fangroup_pools_won = (Integer) row[10];
+			Integer h2h_won = (Integer) row[11];
+			Double h2h_pc_correct = (Double) row[12];
+			Integer num_users_in_system = ((Number) row[13]).intValue();
+			
+			response.setUsername(user);
+			response.setTotal_winnings(total_winnings);
+			response.setTotal_rank(total_rank);
+			response.setTotal_games_played(total_games_played);
+			response.setTotal_pc_correct(total_pc_correct);
+			response.setTotal_user_rating(total_user_rating);
+			response.setGlobal_winnings(global_winnings);
+			response.setFangroup_winnings(fangroup_winnings);
+			response.setH2h_winnings(h2h_winnings);
+			response.setGlobal_games_won(global_games_won);
+			response.setFangroup_pools_won(fangroup_pools_won);
+			response.setH2h_won(h2h_won);
+			response.setH2h_pc_correct(h2h_pc_correct);
+			response.setNum_users_in_system(num_users_in_system);
+		}
+
+		if (response != null) {
+			return response;
+		} else {
+			log.error(authed_user+" | No stats found for user "+username);
+			throw new InvalidStateException(new RestError(2700, "No stats found for user "+username));
+		}
+		
+	}
 	
 	
 	/*

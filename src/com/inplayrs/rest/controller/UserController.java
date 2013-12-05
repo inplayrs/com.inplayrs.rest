@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
-
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,6 +20,7 @@ import com.inplayrs.rest.ds.User;
 import com.inplayrs.rest.exception.InvalidParameterException;
 import com.inplayrs.rest.exception.RestError;
 import com.inplayrs.rest.responseds.FangroupResponse;
+import com.inplayrs.rest.responseds.UserStatsResponse;
 import com.inplayrs.rest.service.UserService;
 
 import org.apache.log4j.Logger;
@@ -166,9 +166,11 @@ public class UserController {
 		   @RequestParam(value="email", required=false) String email,
 		   @RequestParam(value="timezone", required=false) String timezone,
 		   @RequestParam(value="deviceID", required=false) String deviceID,
-		   @RequestParam(value="pushActive", required=false) Boolean pushActive) {
+		   @RequestParam(value="pushActive", required=false) Boolean pushActive,
+		   @RequestParam(value="newUsername", required=false) String newUsername) {
 
-		if (password == null && email == null && timezone == null && deviceID == null && pushActive == null) {
+		if (password == null && email == null && timezone == null && deviceID == null 
+				&& pushActive == null && newUsername == null) {
 			// No account details specified to update
 			return null;
 		}
@@ -176,7 +178,7 @@ public class UserController {
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
 		
-		return userService.updateAccount(username, password, email, timezone, deviceID, pushActive);
+		return userService.updateAccount(username, password, email, timezone, deviceID, pushActive, newUsername);
 		 	
 	}
 	
@@ -232,6 +234,16 @@ public class UserController {
 		 	
 	}
 	
+	
+	/*
+	 * GET user/stats
+	 */
+	@RequestMapping(value = "/stats", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+	public @ResponseBody UserStatsResponse getUserStats(@RequestParam(value="user", required=true) String user) {
+		
+		return userService.getUserStats(user);
+	}
 	
 	
 }

@@ -410,7 +410,7 @@ public class CompetitionService {
 		
 		// Filter competitions by state
 		queryString.append(" and gcl.competition.state in (");
-		queryString.append(State.COMPLETE).append(", ");
+		//queryString.append(State.COMPLETE).append(", ");
 		queryString.append(State.ARCHIVED).append(")");
 		
 		// Filter by competition ID if specified
