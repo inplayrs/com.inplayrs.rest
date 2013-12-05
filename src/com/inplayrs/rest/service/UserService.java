@@ -633,7 +633,7 @@ public class UserService {
 			log.error(authed_user+" | No stats found for user "+username);
 			throw new InvalidStateException(new RestError(2700, "No stats found for user "+username));
 		}
-		
+	
 	}
 	
 	

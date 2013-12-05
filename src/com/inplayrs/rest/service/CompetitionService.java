@@ -473,7 +473,7 @@ public class CompetitionService {
 		}
 		
 		return  response;
-		
+	
 	}
 	
 	
