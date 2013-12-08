@@ -395,7 +395,11 @@ public class CompetitionService {
 		
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
-		log.debug(username+" | Getting winners of competition "+comp_id);
+		if (comp_id != null) {
+			log.debug(username+" | Getting winners of competition "+comp_id);
+		} else {
+			log.debug(username+" | Getting competition winners");
+		}
 		
 		// Retrieve session from Hibernate, create query (HQL) and return a list of fangroups
 		Session session = sessionFactory.getCurrentSession();

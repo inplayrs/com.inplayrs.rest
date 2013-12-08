@@ -167,7 +167,13 @@ public class UserController {
 		   @RequestParam(value="timezone", required=false) String timezone,
 		   @RequestParam(value="deviceID", required=false) String deviceID,
 		   @RequestParam(value="pushActive", required=false) Boolean pushActive,
-		   @RequestParam(value="newUsername", required=false) String newUsername) {
+		   @RequestParam(value="username", required=false) String newUsername,
+		   @RequestParam(value="gcID", required=false) String gcID,
+		   @RequestParam(value="gcUsername", required=false) String gcUsername,
+		   @RequestParam(value="fbID", required=false) String fbID,
+		   @RequestParam(value="fbUsername", required=false) String fbUsername,
+		   @RequestParam(value="fbEmail", required=false) String fbEmail,
+		   @RequestParam(value="fbFullName", required=false) String fbFullName) {
 
 		if (password == null && email == null && timezone == null && deviceID == null 
 				&& pushActive == null && newUsername == null) {
@@ -178,7 +184,8 @@ public class UserController {
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
 		
-		return userService.updateAccount(username, password, email, timezone, deviceID, pushActive, newUsername);
+		return userService.updateAccount(username, password, email, timezone, deviceID, pushActive, newUsername,
+										 gcID, gcUsername, fbID, fbUsername, fbEmail, fbFullName);
 		 	
 	}
 	
@@ -240,9 +247,9 @@ public class UserController {
 	 */
 	@RequestMapping(value = "/stats", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
-	public @ResponseBody UserStatsResponse getUserStats(@RequestParam(value="user", required=true) String user) {
+	public @ResponseBody UserStatsResponse getUserStats(@RequestParam(value="username", required=true) String username) {
 		
-		return userService.getUserStats(user);
+		return userService.getUserStats(username);
 	}
 	
 	

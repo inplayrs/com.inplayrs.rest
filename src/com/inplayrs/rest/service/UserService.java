@@ -127,6 +127,9 @@ public class UserService {
 			
 			if (fbEmail != null) {
 				usr.setFacebook_email(fbEmail);
+				if (usr.getEmail() != null) {
+					usr.setEmail(fbEmail);
+				}
 			}
 			
 			if (fbFullName != null) {
@@ -294,7 +297,8 @@ public class UserService {
 	 * POST user/account/update
 	 */
 	public User updateAccount(String username, String password, String email, String timezone, String deviceID, 
-							  Boolean pushActive, String newUsername) {
+							  Boolean pushActive, String newUsername, String gcID, String gcUsername, 
+							  String fbID, String fbUsername, String fbEmail, String fbFullName) {
 
 		log.debug(username+" | Updating user account");
 		
@@ -376,9 +380,53 @@ public class UserService {
 			
 		}
 		
+		
+		// Check if new game center login provided
+		if (gcID != null) {
+			// Check if someone is already registered with that gamecenter_id
+			Query gcQuery = session.createQuery("select 1 from User u WHERE u.gamecenter_id = '"+gcID+"'");
+			if (gcQuery.uniqueResult() != null) {
+				throw new InvalidParameterException(
+						new RestError(2404, "User with gamecenter_id "+gcID+" is already registered")
+				);
+			} 
+			
+			usr.setGamecenter_id(gcID);
+		}
+		
+		if (gcUsername != null) {
+			usr.setGamecenter_username(gcUsername);
+		}
+		
+		
+		// Check if new facebook login provided
+		if (fbID != null) {
+			Query fbQuery = session.createQuery("select 1 from User u WHERE u.facebook_id = '"+fbID+"'");
+			if (fbQuery.uniqueResult() != null) {
+				throw new InvalidParameterException(
+						new RestError(2405, "User with facebook_id "+fbID+" is already registered")
+				);
+			}
+		}
+		
+		if (fbUsername != null) {
+			usr.setFacebook_username(fbUsername);
+		}
+		
+		if (fbEmail != null) {
+			usr.setFacebook_email(fbEmail);
+			if (usr.getEmail() == null) {
+				usr.setEmail(fbEmail);
+			}
+		}
+		
+		if (fbFullName != null) {
+			usr.setFacebook_full_name(fbFullName);
+		}		
+		
 		session.update(usr);
 		
-		// Return null on success
+		// Return user on success
 		return usr;
 	}
 	

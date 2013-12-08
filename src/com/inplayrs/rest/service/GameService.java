@@ -14,8 +14,12 @@ import com.inplayrs.rest.exception.InvalidStateException;
 import com.inplayrs.rest.exception.RestError;
 import com.inplayrs.rest.responseds.GameLeaderboardResponse;
 import com.inplayrs.rest.responseds.GamePointsResponse;
+import com.inplayrs.rest.responseds.GameWinnersResponse;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+
 import javax.annotation.Resource;
 
 import org.apache.log4j.Logger;
@@ -24,7 +28,7 @@ import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.transform.Transformers;
-
+import org.joda.time.LocalDateTime;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -584,5 +588,102 @@ public class GameService {
 	}
 	 
 	
+	
+	/*
+	 * GET game/winners
+	 */
+	public List<GameWinnersResponse> getGameWinners(Integer game_id) {
+		// Get username of player
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		if (game_id != null) {
+			log.debug(username+" | Getting winners of game "+game_id);
+		} else {
+			log.debug(username+" | Getting game winners");
+		}
+				
+		// Retrieve session from Hibernate, create query (HQL) and return a list of fangroups
+		Session session = sessionFactory.getCurrentSession();
+		
+		// Get winners of competitions
+		StringBuffer queryString = new StringBuffer("select ");
+		queryString.append("ggl.game.game_id as game_id, ");
+		queryString.append("ggl.game.name as game, ");
+		queryString.append("ggl.game.competition.category.cat_id, ");
+		queryString.append("ggl.game.end_date as game_end_date, ");
+		queryString.append("ggl.user.username as user from GlobalGameLeaderboard ggl where ggl.rank = 1");
+		
+		// Filter competitions by state
+		queryString.append(" and ggl.game.state in (");
+		queryString.append(State.COMPLETE).append(", ");
+		queryString.append(State.ARCHIVED).append(")");
+		
+		// Filter by game ID if specified
+		if (game_id != null) {
+			queryString.append(" and ggl.game.game_id = ");
+			queryString.append(game_id);
+		}
+		
+		// order by game end date
+		queryString.append(" ORDER BY ggl.game.end_date DESC");
+		
+		Query query = session.createQuery(queryString.toString());
+		
+		//return first 100
+		query.setMaxResults(100);
+		
+		List<GameWinnersResponse> response = new ArrayList<>();
+		
+		GameWinnersResponse gwr = new GameWinnersResponse();
+		
+		// Iterate over result set
+		@SuppressWarnings("rawtypes")
+		Iterator gameWinners = query.list().iterator();
+		while(gameWinners.hasNext()) {
+			// Process each competition winner and add to response object
+			Object[] row = (Object[]) gameWinners.next();
+			Integer gameID = (Integer) row[0];
+			String game = (String) row[1];
+			Integer cat_id = (Integer) row[2];
+			LocalDateTime gameEndDate = (LocalDateTime) row[3];
+			String user = (String) row[4];
+		
+			// If this winner is for the same game that we're processing, 
+			// add to the list of winners
+			if (gameID == gwr.getGame_id()) {
+				List<String> winners = new ArrayList<String>();
+				
+				if (!gwr.getWinners().isEmpty()) {
+					winners = gwr.getWinners();	
+				}
+				winners.add(user);
+				gwr.setWinners(winners);
+			} 
+			else {
+				// Add the previous winner response object to the result set
+				if (gwr.getGame_id() != null) {
+					response.add(gwr);
+					gwr = new GameWinnersResponse();
+				}
+				
+				// Set the new winner response object
+				gwr.setGame_id(gameID);
+				gwr.setGame(game);
+				gwr.setCategory_id(cat_id);
+				gwr.setGameEndDate(gameEndDate);
+				
+				List<String> winners = new ArrayList<String>();
+				winners.add(user);
+				gwr.setWinners(winners);
+			}
+		}
+		// Add final result to response
+		if (gwr.getGame_id() != null) {
+			response.add(gwr);
+		}
+		
+		return  response;
+		
+				
+	}
 	
 }

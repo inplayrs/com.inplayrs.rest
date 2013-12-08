@@ -14,6 +14,7 @@ import com.inplayrs.rest.ds.Period;
 import com.inplayrs.rest.ds.PeriodSelection;
 import com.inplayrs.rest.responseds.GameLeaderboardResponse;
 import com.inplayrs.rest.responseds.GamePointsResponse;
+import com.inplayrs.rest.responseds.GameWinnersResponse;
 import com.inplayrs.rest.responseds.PeriodResponse;
 import com.inplayrs.rest.service.GameService;
 
@@ -135,6 +136,16 @@ public class GameController {
     }
 	
 	
-	
+	/*
+	 * GET game/winners
+	 */
+	@RequestMapping(value = "/winners", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+    public @ResponseBody List<GameWinnersResponse> getGameWinners(
+    	   @RequestParam(value="game_id", required=false) Integer game_id){
+		
+		// Get list of game winners
+		return gameService.getGameWinners(game_id);
+    }
 	
 }
