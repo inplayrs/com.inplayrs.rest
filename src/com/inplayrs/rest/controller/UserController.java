@@ -20,6 +20,7 @@ import com.inplayrs.rest.ds.User;
 import com.inplayrs.rest.exception.InvalidParameterException;
 import com.inplayrs.rest.exception.RestError;
 import com.inplayrs.rest.responseds.FangroupResponse;
+import com.inplayrs.rest.responseds.UserLeaderboardResponse;
 import com.inplayrs.rest.responseds.UserStatsResponse;
 import com.inplayrs.rest.service.UserService;
 
@@ -252,6 +253,16 @@ public class UserController {
 		return userService.getUserStats(username);
 	}
 	
+	
+	/*
+	 * GET user/leaderboard
+	 */
+	@RequestMapping(value = "/leaderboard", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+	public @ResponseBody List<UserLeaderboardResponse> getUserLeaderboard() {
+		
+		return userService.getUserLeaderboard();
+	}
 	
 }
 

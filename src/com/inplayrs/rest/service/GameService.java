@@ -123,7 +123,13 @@ public class GameService {
 	 */
 	public GamePointsResponse getGamePoints(Integer game_id, String username, Boolean includeSelections) {
 		
-		log.debug(username+" | Getting points for game "+game_id);
+		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
+		
+		if (authed_user.equals(username)) {
+			log.debug(authed_user+" | Getting points for game "+game_id);
+		} else {
+			log.debug(authed_user+" | Getting points for game "+game_id+" and user "+username);
+		}
 		
 		// Default includeSelections to true
 		if (includeSelections == null) { 

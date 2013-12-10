@@ -2,6 +2,7 @@ package com.inplayrs.rest.service;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -26,6 +27,7 @@ import com.inplayrs.rest.ds.User;
 import com.inplayrs.rest.exception.InvalidParameterException;
 import com.inplayrs.rest.exception.InvalidStateException;
 import com.inplayrs.rest.exception.RestError;
+import com.inplayrs.rest.responseds.UserLeaderboardResponse;
 import com.inplayrs.rest.responseds.UserStatsResponse;
 import com.inplayrs.rest.security.PasswordHash;
 
@@ -682,6 +684,51 @@ public class UserService {
 			throw new InvalidStateException(new RestError(2700, "No stats found for user "+username));
 		}
 	
+	}
+	
+	
+	/*
+	 * GET user/leaderboard
+	 */
+	public List<UserLeaderboardResponse> getUserLeaderboard() {
+		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
+		log.debug(authed_user+" | Getting user leaderboard");
+		
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+		
+		StringBuffer queryString = new StringBuffer("select ");
+		queryString.append("us.total_rank as rank, ");
+		queryString.append("us.user.username, ");
+		queryString.append("us.total_winnings as winnings ");
+		queryString.append("from UserStats us ");
+		queryString.append("where us.total_rank > 0 ");
+		queryString.append("order by us.total_rank asc ");
+		
+		Query query = session.createQuery(queryString.toString());
+		query.setMaxResults(100);
+		
+		List <UserLeaderboardResponse> response = new ArrayList<>();
+		
+		@SuppressWarnings("rawtypes")
+		Iterator userLeaders = query.list().iterator();
+		while(userLeaders.hasNext()) {
+			// Process each competition winner and add to response object
+			Object[] row = (Object[]) userLeaders.next();
+			Integer rank = (Integer) row[0];
+			String username = (String) row[1];
+			Integer winnings = (Integer) row[2];
+			
+			UserLeaderboardResponse ulbr = new UserLeaderboardResponse();
+			ulbr.setRank(rank);
+			ulbr.setUsername(username);
+			ulbr.setWinnings(winnings);
+			
+			response.add(ulbr);
+		}
+		
+		return response;
+		
 	}
 	
 	

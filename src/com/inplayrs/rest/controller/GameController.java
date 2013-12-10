@@ -69,10 +69,14 @@ public class GameController {
 	@ResponseStatus( HttpStatus.OK )
     public @ResponseBody GamePointsResponse getGamePoints(
     	   @RequestParam(value="game_id", required=true) Integer game_id,
-    	   @RequestParam(value="includeSelections", required=false) Boolean includeSelections) {
+    	   @RequestParam(value="includeSelections", required=false) Boolean includeSelections,
+    	   @RequestParam(value="username", required=false) String username) {
     		
-		// Get username of player
-		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		// Get points for logged in user if no username provided
+		if (username == null) {
+			username = SecurityContextHolder.getContext().getAuthentication().getName();
+		}
+		
 			
 		// Get game points
 		GamePointsResponse gamePoints = gameService.getGamePoints(game_id, username, includeSelections);
