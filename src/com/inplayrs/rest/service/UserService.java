@@ -384,7 +384,7 @@ public class UserService {
 		
 		
 		// Check if new game center login provided
-		if (gcID != null) {
+		if (gcID != null && !gcID.equals(usr.getGamecenter_id())) {
 			// Check if someone is already registered with that gamecenter_id
 			Query gcQuery = session.createQuery("select 1 from User u WHERE u.gamecenter_id = '"+gcID+"'");
 			if (gcQuery.uniqueResult() != null) {
@@ -402,12 +402,15 @@ public class UserService {
 		
 		
 		// Check if new facebook login provided
-		if (fbID != null) {
+		if (fbID != null && !fbID.equals(usr.getFacebook_id())) {
+			// Check if user already exists with this facebook ID
 			Query fbQuery = session.createQuery("select 1 from User u WHERE u.facebook_id = '"+fbID+"'");
 			if (fbQuery.uniqueResult() != null) {
 				throw new InvalidParameterException(
 						new RestError(2405, "User with facebook_id "+fbID+" is already registered")
 				);
+			} else {
+				usr.setFacebook_id(fbID);
 			}
 		}
 		
@@ -797,7 +800,7 @@ public class UserService {
 		Query updateQuery = session.createQuery(updateQueryString.toString());
 		updateQuery.executeUpdate();
 		
-		return null;
+		return null; 
 	}
 	
 	

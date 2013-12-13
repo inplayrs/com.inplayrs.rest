@@ -176,14 +176,17 @@ public class UserController {
 		   @RequestParam(value="fbEmail", required=false) String fbEmail,
 		   @RequestParam(value="fbFullName", required=false) String fbFullName) {
 
-		if (password == null && email == null && timezone == null && deviceID == null 
-				&& pushActive == null && newUsername == null) {
-			// No account details specified to update
-			return null;
-		}
-		
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		
+		if (password == null && email == null && timezone == null && deviceID == null 
+				&& pushActive == null && newUsername == null && gcID == null && gcUsername == null
+				&& fbID == null && fbUsername == null && fbEmail == null && fbFullName == null) {
+			
+			// No account details specified to update
+			log.error(username+" | Must specify at least one account parameter to update");
+			throw new InvalidParameterException(new RestError(2406, "Must specify at least one account parameter to update"));
+		}
 		
 		return userService.updateAccount(username, password, email, timezone, deviceID, pushActive, newUsername,
 										 gcID, gcUsername, fbID, fbUsername, fbEmail, fbFullName);
