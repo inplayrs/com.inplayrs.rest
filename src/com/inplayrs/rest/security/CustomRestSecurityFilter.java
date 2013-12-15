@@ -15,13 +15,14 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 
 public class CustomRestSecurityFilter  extends GenericFilterBean {
 
-	 private AuthenticationManager authenticationManager;
+	 	private AuthenticationManager authenticationManager;
 	    private AuthenticationEntryPoint authenticationEntryPoint;
 
 	    public CustomRestSecurityFilter(AuthenticationManager authenticationManager) {
@@ -53,7 +54,7 @@ public class CustomRestSecurityFilter  extends GenericFilterBean {
 	        assert credentials.length == 2;
 	        Authentication authentication = new RestToken(credentials[0], credentials[1]);
 
-	        try {
+	        try {	
 	            //Request the authentication manager to authenticate the token
 	            Authentication successfulAuthentication = authenticationManager.authenticate(authentication);
 	            //Pass the successful token to the SecurityHolder where it can be retrieved by this thread at any stage.

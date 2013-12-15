@@ -19,21 +19,19 @@
 	</http>
 
 	<beans:bean id="authenticationEntryPoint"
-		class="org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint">
-		<beans:property name="realmName" value="Not Authorized" />
+		class="com.inplayrs.rest.security.RestAuthenticationEntryPoint">
 	</beans:bean>
 
 	<beans:bean id="customRestFilter"
 		class="com.inplayrs.rest.security.CustomRestSecurityFilter">
-		<beans:constructor-arg name="authenticationManager"
-			ref="authenticationManager" />
+		<beans:constructor-arg name="authenticationManager" ref="authenticationManager" />	
+		<beans:constructor-arg name="authenticationEntryPoint" ref="authenticationEntryPoint" />
 	</beans:bean>
 
 	<authentication-manager alias="authenticationManager">
 		<authentication-provider ref="restAuthenticationProvider" />
 	</authentication-manager>
 
-	<beans:bean id="restAuthenticationProvider"
-		class="com.inplayrs.rest.security.RestAuthenticationProvider" />
+	<beans:bean id="restAuthenticationProvider"	class="com.inplayrs.rest.security.RestAuthenticationProvider" />	
 
 </beans:beans>

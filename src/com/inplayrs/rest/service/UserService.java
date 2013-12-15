@@ -129,7 +129,7 @@ public class UserService {
 			
 			if (fbEmail != null) {
 				usr.setFacebook_email(fbEmail);
-				if (usr.getEmail() != null) {
+				if (usr.getEmail() == null) {
 					usr.setEmail(fbEmail);
 				}
 			}
