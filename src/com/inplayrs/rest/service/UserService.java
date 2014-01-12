@@ -66,7 +66,8 @@ public class UserService {
 		}	
 		
 		// See if user already exists
-		Query query = session.createQuery("FROM User u WHERE u.username = '"+username+"'");
+		Query query = session.createQuery("FROM User u WHERE u.username = :username");
+		query.setParameter("username", username);
 		query.setCacheable(true);
 		query.setCacheRegion("user");
 		User usr = (User) query.uniqueResult();
@@ -83,10 +84,10 @@ public class UserService {
 			}
 			if (email != null) {
 				// Check that an existing user doesn't have the same email
-				StringBuffer queryString = new StringBuffer("select count(*) from User where email = '");
-				queryString.append(email).append("'");
+				Query emailQuery = session.createQuery("select count(*) from User where email = :email");
+				emailQuery.setParameter("email", email);
 				
-				Integer usersWithSameEmail = ( (Long) session.createQuery(queryString.toString()).iterate().next() ).intValue();
+				Integer usersWithSameEmail = ( (Long) emailQuery.iterate().next() ).intValue();
 				
 				if (usersWithSameEmail > 0) {
 					log.error(authed_user+" | Email address "+email+" is already registered");
@@ -162,7 +163,9 @@ public class UserService {
 		Session session = sessionFactory.getCurrentSession();
 		
 		// Check if someone is already registered with that gamecenter_id
-		Query query = session.createQuery("select 1 from User u WHERE u.gamecenter_id = '"+gcID+"'");
+		Query query = session.createQuery("select 1 from User u WHERE u.gamecenter_id = :gcID");
+		query.setParameter("gcID", gcID);
+		
 		if (query.uniqueResult() != null) {
 			throw new InvalidParameterException(
 					new RestError(2306, "User with gamecenter_id "+gcID+" is already registered")
@@ -198,7 +201,8 @@ public class UserService {
 		Session session = sessionFactory.getCurrentSession();
 		
 		// Check if someone is already registered with that facebook_id
-		Query query = session.createQuery("select 1 from User u WHERE u.facebook_id = '"+fbID+"'");
+		Query query = session.createQuery("select 1 from User u WHERE u.facebook_id = :fbID");
+		query.setParameter("fbID", fbID);
 		if (query.uniqueResult() != null) {
 			throw new InvalidParameterException(
 					new RestError(2309, "User with facebook_id "+fbID+" is already registered")
@@ -273,7 +277,8 @@ public class UserService {
 		
 		if (attempt > 0) {
 			// Append attempt number to username to see if that name is available
-			Query usrQuery = session.createQuery("select count(*) from User u WHERE u.username = '"+username+attempt+"'");
+			Query usrQuery = session.createQuery("select count(*) from User u WHERE u.username = :username_attempt");
+			usrQuery.setParameter("username_attempt", username+attempt);
 			Long exists = (Long) usrQuery.uniqueResult();
 			if (exists > 0) {
 				return _getNextAvailableUsername(username, attempt+1);
@@ -282,7 +287,8 @@ public class UserService {
 			}
 		} else {
 			// First attempt, see if that username is available
-			Query usrQuery = session.createQuery("select count(*) from User u WHERE u.username = '"+username+"'");
+			Query usrQuery = session.createQuery("select count(*) from User u WHERE u.username = :username");
+			usrQuery.setParameter("username", username);
 			Long exists = (Long) usrQuery.uniqueResult();
 			if (exists > 0) {
 				return _getNextAvailableUsername(username, attempt+1);
@@ -308,7 +314,8 @@ public class UserService {
 		Session session = sessionFactory.getCurrentSession();
 
 		// Get details of the user
-		Query query = session.createQuery("FROM User u WHERE u.username = '"+username+"'");
+		Query query = session.createQuery("FROM User u WHERE u.username = :username");
+		query.setParameter("username", username);
 		query.setCacheable(true);
 		query.setCacheRegion("user");
 		User usr = (User) query.uniqueResult();
@@ -331,10 +338,10 @@ public class UserService {
 		
 		if (email != null && !email.equals(usr.getEmail())) {
 			// Check that an existing user doesn't have the same email
-			StringBuffer queryString = new StringBuffer("select count(*) from User where email = '");
-			queryString.append(email).append("'");;
+			Query emailQuery = session.createQuery("select count(*) from User where email = :email");
+			emailQuery.setParameter("email", email);
 			
-			Integer usersWithSameEmail = ( (Long) session.createQuery(queryString.toString()).iterate().next() ).intValue();
+			Integer usersWithSameEmail = ( (Long) emailQuery.iterate().next() ).intValue();
 		
 			if (usersWithSameEmail > 0) {
 				log.error(username+" | Email address "+email+" is already registered");
@@ -370,7 +377,8 @@ public class UserService {
 			}	
 			
 			// Check if username is available
-			Query usrQuery = session.createQuery("select count(*) from User u WHERE u.username = '"+newUsername+"'");
+			Query usrQuery = session.createQuery("select count(*) from User u WHERE u.username = :newUsername");
+			usrQuery.setParameter("newUsername", newUsername);
 			Long exists = (Long) usrQuery.uniqueResult();
 			if (exists > 0) {
 				log.error(username+" | Cannot change username, user "+newUsername+" already exists");
@@ -386,7 +394,8 @@ public class UserService {
 		// Check if new game center login provided
 		if (gcID != null && !gcID.equals(usr.getGamecenter_id())) {
 			// Check if someone is already registered with that gamecenter_id
-			Query gcQuery = session.createQuery("select 1 from User u WHERE u.gamecenter_id = '"+gcID+"'");
+			Query gcQuery = session.createQuery("select 1 from User u WHERE u.gamecenter_id = :gcID");
+			gcQuery.setParameter("gcID", gcID);
 			if (gcQuery.uniqueResult() != null) {
 				throw new InvalidParameterException(
 						new RestError(2404, "User with gamecenter_id "+gcID+" is already registered")
@@ -404,7 +413,8 @@ public class UserService {
 		// Check if new facebook login provided
 		if (fbID != null && !fbID.equals(usr.getFacebook_id())) {
 			// Check if user already exists with this facebook ID
-			Query fbQuery = session.createQuery("select 1 from User u WHERE u.facebook_id = '"+fbID+"'");
+			Query fbQuery = session.createQuery("select 1 from User u WHERE u.facebook_id = :fbID");
+			fbQuery.setParameter("fbID", fbID);
 			if (fbQuery.uniqueResult() != null) {
 				throw new InvalidParameterException(
 						new RestError(2405, "User with facebook_id "+fbID+" is already registered")
@@ -439,13 +449,14 @@ public class UserService {
 	/*
 	 * Authenticate a user based on their password
 	 */
-	public boolean authenticate(String user, String pass) {
+	public boolean authenticate(String username, String pass) {
 				
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 		
 		// Get details of the requested user
-		Query query = session.createQuery("FROM User u WHERE u.username = '"+user+"'");
+		Query query = session.createQuery("FROM User u WHERE u.username = :username");
+		query.setParameter("username", username);
 		query.setCacheable(true);
 		query.setCacheRegion("user");
 		User usr = (User) query.uniqueResult();
@@ -475,17 +486,20 @@ public class UserService {
 		User usr = null;
 		
 		if (username != null) {
-			Query query = session.createQuery("FROM User u WHERE u.username = '"+username+"'");
+			Query query = session.createQuery("FROM User u WHERE u.username = :username");
+			query.setParameter("username", username);
 			query.setCacheable(true);
 			query.setCacheRegion("user");
 			usr = (User) query.uniqueResult();
 		} else if (gcID != null) {
-			Query query = session.createQuery("FROM User u WHERE u.gamecenter_id = '"+gcID+"'");
+			Query query = session.createQuery("FROM User u WHERE u.gamecenter_id = :gcID");
+			query.setParameter("gcID", gcID);
 			query.setCacheable(true);
 			query.setCacheRegion("user");
 			usr = (User) query.uniqueResult();
 		} else if (fbID != null) {
-			Query query = session.createQuery("FROM User u WHERE u.facebook_id = '"+fbID+"'");
+			Query query = session.createQuery("FROM User u WHERE u.facebook_id = :fbID");
+			query.setParameter("fbID", fbID);
 			query.setCacheable(true);
 			query.setCacheRegion("user");
 			usr = (User) query.uniqueResult();
@@ -521,12 +535,12 @@ public class UserService {
 		
 		
 		// Check to see if the user already has a fangroup selected for this competition
-		StringBuffer queryString = new StringBuffer("from Fan f where f.user.username = '");
-		queryString.append(username);
-		queryString.append("' and f.fangroup.competition = ");
-		queryString.append(comp_id);
+		StringBuffer queryString = new StringBuffer("from Fan f where f.user.username = :username ");
+		queryString.append("and f.fangroup.competition = :comp_id");
 		
 		Query query = session.createQuery(queryString.toString());
+		query.setParameter("username", username);
+		query.setParameter("comp_id", comp_id);
 		
 		@SuppressWarnings("unchecked")
 		List<Fan> result = query.list();
@@ -534,9 +548,9 @@ public class UserService {
 		if (result.isEmpty()) {
 			log.debug(username+" | User has not yet selected fangroup for competition "+comp_id+", therefore making new selection");
 			
-			
 			// Get user's record
-			Query usrQuery = session.createQuery("FROM User u WHERE u.username = '"+username+"'");
+			Query usrQuery = session.createQuery("FROM User u WHERE u.username = :username");
+			usrQuery.setParameter("username", username);
 			usrQuery.setCacheable(true);
 			usrQuery.setCacheRegion("user");
 			User usr = (User) usrQuery.uniqueResult();
@@ -562,11 +576,13 @@ public class UserService {
 			} else {
 				// Do not allow user to change fangroup if they already have 
 				// a game entry in this competition
-				StringBuffer gameEntryQueryString = new StringBuffer("from GameEntry ge where ge.game.competition_id = ");
-				gameEntryQueryString.append(comp_id).append(" and ge.user.username = '");
-				gameEntryQueryString.append(username).append("'");
+				StringBuffer gameEntryQueryString = new StringBuffer("from GameEntry ge where ge.game.competition_id = :comp_id ");
+				gameEntryQueryString.append("and ge.user.username = :username");
 				
 				Query gameEntryQuery = session.createQuery(gameEntryQueryString.toString());
+				gameEntryQuery.setParameter("username", username);
+				gameEntryQuery.setParameter("comp_id", comp_id);
+				
 				int numEntriesInComp = gameEntryQuery.list().size();
 				if (numEntriesInComp > 0) {
 					log.error(username+" | Unable to set a new fangroup, user has already played a game in competition "+comp_id);
@@ -598,14 +614,12 @@ public class UserService {
 
 		// Check to see if the user already has a fangroup selected for this competition
 		StringBuffer queryString = new StringBuffer("select fangroup from Fan f ");
-		queryString.append("where f.user.username = '");
-		queryString.append(username);
-		queryString.append("'");
+		queryString.append("where f.user.username = :username");
 		
 		Query query = session.createQuery(queryString.toString());
+		query.setParameter("username", username);
 		
 		return query.list();
-		
 	}
 
 	
@@ -636,9 +650,10 @@ public class UserService {
 		queryString.append("(select count(*) as num_users_in_system from User) ");
 		queryString.append("from UserStats us ");
 		//queryString.append("left join (select count(*) as num_users_in_system from User) as num_users");
-		queryString.append("where us.user.username = '").append(username).append("'");
+		queryString.append("where us.user.username = :username");
 		
 		Query query = session.createQuery(queryString.toString());
+		query.setParameter("username", username);
 
 		UserStatsResponse response = null;
 		

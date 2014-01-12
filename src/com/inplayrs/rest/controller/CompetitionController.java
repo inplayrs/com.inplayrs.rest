@@ -74,7 +74,7 @@ public class CompetitionController {
 	@RequestMapping(value = "/games", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )
     public @ResponseBody List<GameResponse> getGames(
-    	   @RequestParam(value="comp_id", required=false) Integer comp_id, 
+    	   @RequestParam(value="comp_id", required=true) Integer comp_id, 
     	   @RequestParam(value="state", required=false) Integer state,
     	   @RequestParam(value="stateOP", required=false) String stateOP){
 		

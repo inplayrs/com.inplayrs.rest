@@ -80,8 +80,7 @@ public class GameService {
 		// Retrieve session from Hibernate, create query (HQL) and return a list of Periods
 		Session session = sessionFactory.getCurrentSession(); 
 		
-		StringBuffer queryString = new StringBuffer("FROM Period p where p.game.game_id = ");
-		queryString.append(game_id);
+		StringBuffer queryString = new StringBuffer("FROM Period p where p.game.game_id = :game_id");
 		
 		// Filter periods by state
 		queryString.append(" and p.state in (");
@@ -93,6 +92,8 @@ public class GameService {
 		queryString.append(State.NEVERINPLAY).append(") ");
 		
 		Query query = session.createQuery(queryString.toString());
+		query.setParameter("game_id", game_id);
+		
 		return  query.list();
 	 }
 	
@@ -106,13 +107,12 @@ public class GameService {
 		// Retrieve session from Hibernate, create query (HQL) and return a GamePointsResponse
 		Session session = sessionFactory.getCurrentSession(); 
 		
-		StringBuffer queryString = new StringBuffer("from PeriodSelection ps where ps.gameEntry.game_id = ");
-		queryString.append(game_id.toString());
-		queryString.append(" and ps.gameEntry.user.username = '");
-		queryString.append(username);
-		queryString.append("'");
+		StringBuffer queryString = new StringBuffer("from PeriodSelection ps where ps.gameEntry.game_id = :game_id ");
+		queryString.append("and ps.gameEntry.user.username = :username");
 		
 		Query query = session.createQuery(queryString.toString());
+		query.setParameter("game_id", game_id);
+		query.setParameter("username", username);
 		
 		return query.list();
 	}
@@ -183,7 +183,7 @@ public class GameService {
 		queryString.append("from fangroup fg ");
 		queryString.append("left join fan f on f.fangroup = fg.fangroup_id ");
 		queryString.append("left join user u on u.user_id = f.user ");
-		queryString.append("where u.username = '").append(username).append("'");
+		queryString.append("where u.username = :username");
 		queryString.append(") as fangrp	on fangrp.competition = g.competition ");
 		
 		queryString.append("left join ( ");
@@ -191,7 +191,7 @@ public class GameService {
 		queryString.append("fgl.game as game_id, ");
 		queryString.append("count(distinct fgl.fangroup_id) as num_fangroups_entered ");
 		queryString.append("from fangroup_game_leaderboard fgl ");
-		queryString.append("where fgl.game = ").append(game_id);	
+		queryString.append("where fgl.game = :game_id");	
 		queryString.append(") as num_fangroups on num_fangroups.game_id = g.game_id ");
 		
 		queryString.append("left join ( ");
@@ -199,14 +199,16 @@ public class GameService {
 		queryString.append("uifgl.fangroup_id, ");
 		queryString.append("count(uifgl.user) as fangroup_pool_size ");
 		queryString.append("from user_in_fangroup_game_leaderboard uifgl ");
-		queryString.append("where uifgl.game = ").append(game_id);
+		queryString.append("where uifgl.game = :game_id");
 		queryString.append(" group by uifgl.fangroup_id");
 		queryString.append(") as fangroup_pool on fangroup_pool.fangroup_id = fangrp.fangroup_id ");
 
-		queryString.append("where ge.game = ").append(game_id.toString());
-		queryString.append(" and u.username = '").append(username).append("'");
+		queryString.append("where ge.game = :game_id ");
+		queryString.append("and u.username = :username");
 		
 		SQLQuery query = session.createSQLQuery(queryString.toString());
+		query.setParameter("game_id", game_id);
+		query.setParameter("username", username);
 		
 		query.addScalar("global_pot_size");
 		query.addScalar("fangroup_pot_size");
@@ -264,8 +266,11 @@ public class GameService {
 		boolean isInitialSubmit = false;
 		
 		// Create game entry if we don't already have one
-		Query gameEntryQuery = session.createQuery("from GameEntry ge where ge.game = "+game_id.toString()+
-										   " and ge.user.username = '"+username+"'");
+		Query gameEntryQuery = session.createQuery("from GameEntry ge where ge.game = :game_id "+
+										   		   "and ge.user.username = :username");
+		
+		gameEntryQuery.setParameter("game_id", game_id);
+		gameEntryQuery.setParameter("username", username);
 		
 		List<GameEntry> result = null;
 		try {
@@ -298,11 +303,13 @@ public class GameService {
 			}
 			
 			// Check that user has a fangroup before creating a game entry
-			StringBuffer fangroupQueryString = new StringBuffer("from Fan f where f.user.username = '");
-			fangroupQueryString.append(username).append("' and f.fangroup.competition = ");
-			fangroupQueryString.append(g.getCompetition_id());
+			StringBuffer fangroupQueryString = new StringBuffer("from Fan f where f.user.username = :username ");
+			fangroupQueryString.append("and f.fangroup.competition = :comp_id");
 			
 			Query fangroupQuery = session.createQuery(fangroupQueryString.toString());
+			fangroupQuery.setParameter("username", username);
+			fangroupQuery.setParameter("comp_id", g.getCompetition_id());
+			
 			List <Fan> fan = fangroupQuery.list();
 			if (fan.isEmpty()) {
 				log.error(username+" | Cannot post selections, no fangroup selected for competition "+g.getCompetition_id());
@@ -310,7 +317,8 @@ public class GameService {
 			}
 			
 			
-			Query userQuery = session.createQuery("FROM User u WHERE u.username = '"+username+"'");
+			Query userQuery = session.createQuery("FROM User u WHERE u.username = :username");
+			userQuery.setParameter("username", username);
 			userQuery.setCacheable(true);
 			userQuery.setCacheRegion("user");
 			User usr = (User) userQuery.uniqueResult();
@@ -371,10 +379,10 @@ public class GameService {
 				default: break;
 			}
 			
-			Query periodSelectionQuery = session.createQuery("from PeriodSelection ps where ps.gameEntry = "+
-															 gameEntry.getGame_entry_id()+
-															 " and ps.period = "+
-															 ps.getPeriod_id());
+			Query periodSelectionQuery = session.createQuery("from PeriodSelection ps where ps.gameEntry = :game_entry_id "+
+															 "and ps.period = :period_id");
+			periodSelectionQuery.setParameter("game_entry_id", gameEntry.getGame_entry_id());
+			periodSelectionQuery.setParameter("period_id", ps.getPeriod_id());
 			
 			List <PeriodSelection> psqResult = periodSelectionQuery.list();
 			
@@ -435,13 +443,12 @@ public class GameService {
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 		
-		StringBuffer queryString = new StringBuffer("from PeriodSelection ps where ps.period = ");
-		queryString.append(period_id);
-		queryString.append(" and ps.gameEntry.user.username = '");
-		queryString.append(username);
-		queryString.append("'");
+		StringBuffer queryString = new StringBuffer("from PeriodSelection ps where ps.period = :period_id ");
+		queryString.append("and ps.gameEntry.user.username = :username");
 		
 		Query query = session.createQuery(queryString.toString());
+		query.setParameter("username", username);
+		query.setParameter("period_id", period_id);
 		
 		@SuppressWarnings("unchecked")
 		List<PeriodSelection> result = query.list();
@@ -531,8 +538,7 @@ public class GameService {
 				queryString.append("lb.potential_winnings ");
 				queryString.append("from global_game_leaderboard lb ");
 				queryString.append("left join user u on u.user_id = lb.user ");
-				queryString.append("where lb.game = ");
-				queryString.append(game_id);
+				queryString.append("where lb.game = :game_id");
 				break;
 				
 			case "fangroup":
@@ -541,8 +547,7 @@ public class GameService {
 				queryString.append("lb.avg_points as points, ");
 				queryString.append("lb.potential_winnings ");
 				queryString.append("from fangroup_game_leaderboard lb ");
-				queryString.append("where lb.game = ");
-				queryString.append(game_id);
+				queryString.append("where lb.game = :game_id");
 				break;
 				
 			case "userinfangroup":					
@@ -552,18 +557,16 @@ public class GameService {
 				queryString.append("lb.potential_winnings ");
 				queryString.append("from user_in_fangroup_game_leaderboard lb ");
 				queryString.append("left join user u on u.user_id = lb.user ");
-				queryString.append("where lb.game = ");
-				queryString.append(game_id);
-				queryString.append(" and lb.fangroup_id = ");
+				queryString.append("where lb.game = :game_id ");;
+				queryString.append("and lb.fangroup_id = ");
 				
 				// Get fangroup of  user
 				StringBuffer fanQueryString = new StringBuffer("from Fan f where f.fangroup.competition = ");
-				fanQueryString.append("(select competition_id from Game g where g.game_id = ");
-				fanQueryString.append(game_id);
-				fanQueryString.append(") and f.user.username = '");
-				fanQueryString.append(username);
-				fanQueryString.append("'");
+				fanQueryString.append("(select competition_id from Game g where g.game_id = :game_id");
+				fanQueryString.append(") and f.user.username = :username");
 				Query fanQuery = session.createQuery(fanQueryString.toString());
+				fanQuery.setParameter("username", username);
+				fanQuery.setParameter("game_id", game_id);
 				
 				List<Fan> result = fanQuery.list();
 				if (result.isEmpty()) {
@@ -583,6 +586,8 @@ public class GameService {
 		queryString.append(" and lb.rank >= 1 ORDER BY lb.rank LIMIT 100");
 		
 		SQLQuery query = session.createSQLQuery(queryString.toString());
+		query.setParameter("username", username);
+		query.setParameter("game_id", game_id);
 		query.addScalar("rank");
 		query.addScalar("name");
 		query.addScalar("points");
@@ -625,14 +630,14 @@ public class GameService {
 		
 		// Filter by game ID if specified
 		if (game_id != null) {
-			queryString.append(" and ggl.game.game_id = ");
-			queryString.append(game_id);
+			queryString.append(" and ggl.game.game_id = :game_id");
 		}
 		
 		// order by game end date
 		queryString.append(" ORDER BY ggl.game.end_date DESC");
 		
 		Query query = session.createQuery(queryString.toString());
+		query.setParameter("game_id", game_id);
 		
 		//return first 100
 		query.setMaxResults(100);
