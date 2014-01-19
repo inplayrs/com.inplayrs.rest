@@ -101,4 +101,14 @@ public class PoolController {
 	}
 	
 	
+	/*
+	 * POST pool/leave
+	 */
+	@RequestMapping(value = "/leave", method = RequestMethod.POST, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+	public @ResponseBody Boolean leavePool(
+			@RequestParam(value="pool_id", required=true) Integer pool_id){
+		
+		return poolService.leavePool(pool_id);
+	}
 }

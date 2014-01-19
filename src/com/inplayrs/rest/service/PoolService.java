@@ -217,4 +217,45 @@ public class PoolService {
 	}
 	
 	
+	/*
+	 * POST pool/leave
+	 */
+	public Boolean leavePool(Integer pool_id) {
+		// Get username of player
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		
+		log.debug(username+" | Leaving pool "+pool_id);
+		
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession(); 
+		
+		// Verify that user is in pool
+		Query query = session.createQuery("from PoolMember pm where pm.user.username = :username and pm.pool.pool_id = :pool_id");
+		query.setParameter("username", username);
+		query.setParameter("pool_id", pool_id);
+		PoolMember poolMember = (PoolMember) query.uniqueResult();
+		
+		if (poolMember == null) {
+			log.error(username+" | Cannot leave pool as user is not a member of pool "+pool_id);
+			throw new InvalidStateException(new RestError(3000, "You are not a member of this pool"));
+		}
+		
+		// Remove game entries for user in that pool
+		log.debug(username+" | Removing pool game entries for user in pool "+pool_id);
+		
+		Query removePoolGameEntriesQuery = session.createQuery("delete from PoolGameEntry pge where pge.poolMember in ("+
+						"select pm.poolMemberID from PoolMember pm where pm.user.username = :username "+
+						"and pm.pool.pool_id = :pool_id)");
+		removePoolGameEntriesQuery.setParameter("username", username);
+		removePoolGameEntriesQuery.setParameter("pool_id", pool_id);
+		int poolGameEntriesDeleted = removePoolGameEntriesQuery.executeUpdate();
+		
+		log.debug(username+" | Removed "+poolGameEntriesDeleted+" pool game entries for user in pool "+pool_id);
+		
+		// Remove user from pool
+		session.delete(poolMember);
+		
+		return true;
+	}
+	
 }
