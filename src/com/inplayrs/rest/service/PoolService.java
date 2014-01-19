@@ -1,5 +1,7 @@
 package com.inplayrs.rest.service;
 
+import java.util.List;
+
 import javax.annotation.Resource;
 
 import org.apache.log4j.Logger;
@@ -7,6 +9,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.exception.ConstraintViolationException;
+import org.hibernate.transform.Transformers;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +20,8 @@ import com.inplayrs.rest.ds.User;
 import com.inplayrs.rest.exception.InvalidParameterException;
 import com.inplayrs.rest.exception.InvalidStateException;
 import com.inplayrs.rest.exception.RestError;
+import com.inplayrs.rest.responseds.MyPoolResponse;
+import com.inplayrs.rest.responseds.PoolMemberResponse;
 
 @Service("poolService")
 @Transactional
@@ -149,6 +154,65 @@ public class PoolService {
 		log.debug(authed_user+" | Successfully added user "+user.getUsername()+" to pool "+pool.getName());
 		
 		return true;
+		
+	}
+	
+	
+	
+	/*
+	 * GET pool/mypools
+	 */
+	@SuppressWarnings("unchecked")
+	public List<MyPoolResponse> getMyPools() {
+		// Get username of player
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		
+		log.debug(username+" | Getting list of pools entered");
+		
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession(); 
+		
+		Query query = session.createQuery("select pm.pool.pool_id as pool_id, pm.pool.name as name from PoolMember pm where pm.user.username = :username");
+		query.setParameter("username", username);
+		query.setResultTransformer(Transformers.aliasToBean(MyPoolResponse.class));
+		
+		List<MyPoolResponse> response = query.list();
+		
+		if (response.isEmpty()) {
+			log.debug(username+" | Not a member of any pools");
+			return null;
+		}
+
+		return response;
+	}
+	
+	
+	/*
+	 * GET pool/members
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PoolMemberResponse> getPoolMembers(Integer pool_id) {
+		// Get username of player
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		
+		log.debug(username+" | Getting list of pool members for pool "+pool_id);
+		
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession(); 
+		
+		Query query = session.createQuery("select pm.user.user_id as user_id, pm.user.username as username, "+
+										  "pm.user.facebook_id as facebook_id from PoolMember pm where pm.pool.pool_id = :pool_id");
+		query.setParameter("pool_id", pool_id);
+		query.setResultTransformer(Transformers.aliasToBean(PoolMemberResponse.class));
+		
+		List <PoolMemberResponse> response = query.list();
+		
+		if (response.isEmpty()) {
+			log.debug(username+" | Pool "+pool_id+" contains no members");
+			return null;
+		}
+
+		return response;
 		
 	}
 	

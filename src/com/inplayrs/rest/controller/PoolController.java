@@ -1,5 +1,7 @@
 package com.inplayrs.rest.controller;
 
+import java.util.List;
+
 import javax.annotation.Resource;
 
 import org.apache.log4j.Logger;
@@ -16,6 +18,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.inplayrs.rest.ds.Pool;
 import com.inplayrs.rest.exception.InvalidParameterException;
 import com.inplayrs.rest.exception.RestError;
+import com.inplayrs.rest.responseds.MyPoolResponse;
+import com.inplayrs.rest.responseds.PoolMemberResponse;
 import com.inplayrs.rest.service.PoolService;
 
 /*
@@ -70,6 +74,30 @@ public class PoolController {
 		}
 		
 		return poolService.addPoolMember(pool_id, username, fbID);	 	
+	}
+	
+	
+	/*
+	 * GET pool/mypools
+	 */
+	@RequestMapping(value = "/mypools", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+	public @ResponseBody List<MyPoolResponse> getMyPools() {
+		
+		return poolService.getMyPools();
+	}
+	
+	
+	
+	/*
+	 * GET pool/members
+	 */
+	@RequestMapping(value = "/members", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+	public @ResponseBody List<PoolMemberResponse> getMyPools(
+			@RequestParam(value="pool_id", required=true) Integer pool_id) {
+		
+		return poolService.getPoolMembers(pool_id);
 	}
 	
 	
