@@ -119,14 +119,14 @@ public class PoolService {
 			}
 		}
 		else if(fbID != null) {
-			Query userQuery = session.createQuery("FROM User u WHERE u.fbID = :fbID");
+			Query userQuery = session.createQuery("FROM User u WHERE u.facebook_id = :fbID");
 			userQuery.setParameter("fbID", fbID);
 			userQuery.setCacheable(true);
 			userQuery.setCacheRegion("user");
 			user = (User) userQuery.uniqueResult();
 			if (user == null) {
-				log.error(authed_user+" | User with fbID "+fbID+" does not exist");
-				throw new InvalidParameterException(new RestError(2904, "User with fbID "+fbID+" does not exist"));
+				log.error(authed_user+" | User with facebook_id "+fbID+" does not exist");
+				throw new InvalidParameterException(new RestError(2904, "User with facebook_id "+fbID+" does not exist"));
 			}
 		}
 		
