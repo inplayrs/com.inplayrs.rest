@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.inplayrs.rest.ds.Pool;
 import com.inplayrs.rest.exception.InvalidParameterException;
 import com.inplayrs.rest.exception.RestError;
+import com.inplayrs.rest.requestds.UserList;
 import com.inplayrs.rest.responseds.MyPoolResponse;
 import com.inplayrs.rest.responseds.PoolMemberResponse;
 import com.inplayrs.rest.service.PoolService;
@@ -50,17 +52,19 @@ public class PoolController {
 	
 	
 	/*
-	 * POST pool/adduser
+	 * POST pool/addusers
 	 */
-	@RequestMapping(value = "/adduser", method = RequestMethod.POST, headers="Accept=application/json")
+	@RequestMapping(value = "/addusers", method = RequestMethod.POST, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.CREATED )
 	public @ResponseBody Boolean addPoolMember(
 		   @RequestParam(value="pool_id", required=true) Integer pool_id,
-		   @RequestParam(value="username", required=false) String username, 
-		   @RequestParam(value="fbID", required=false) String fbID) {
+		   @RequestBody(required = true) UserList userList) {
+		 //  @RequestParam(value="username", required=false) String username, 
+		//   @RequestParam(value="fbID", required=false) String fbID) {
 
 		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
 
+		/*
 		// Must specify either username or fbID of user to be added to pool
 		if (username == null && fbID == null) {
 			log.error(authed_user+" | Must specify username or fbID of user to be added to pool");
@@ -72,8 +76,15 @@ public class PoolController {
 			log.error(authed_user+" | Must specify username or fbID of user to be added to pool, not both");
 			throw new InvalidParameterException(new RestError(2901, "Must specify username or fbID of user to be added to pool, not both"));
 		}
+		*/
 		
-		return poolService.addPoolMember(pool_id, username, fbID);	 	
+		// UserList must contain at least 1 user
+		if (userList.getUsernames().isEmpty() && userList.getFacebookIDs().isEmpty()) {
+			log.error(authed_user+" | Must specify at least 1 user to be added to pool");
+			throw new InvalidParameterException(new RestError(2900, "Must specify at least 1 user to be added to pool"));
+		}
+		
+		return poolService.addPoolMembers(pool_id, userList);	 	
 	}
 	
 	

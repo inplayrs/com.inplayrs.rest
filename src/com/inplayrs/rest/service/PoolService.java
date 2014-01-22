@@ -1,5 +1,6 @@
 package com.inplayrs.rest.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -20,8 +21,10 @@ import com.inplayrs.rest.ds.User;
 import com.inplayrs.rest.exception.InvalidParameterException;
 import com.inplayrs.rest.exception.InvalidStateException;
 import com.inplayrs.rest.exception.RestError;
+import com.inplayrs.rest.requestds.UserList;
 import com.inplayrs.rest.responseds.MyPoolResponse;
 import com.inplayrs.rest.responseds.PoolMemberResponse;
+import com.inplayrs.rest.util.IPUtil;
 
 @Service("poolService")
 @Transactional
@@ -92,10 +95,14 @@ public class PoolService {
 	}
 	
 	
-	public Boolean addPoolMember(Integer pool_id, String username, String fbID) {
-		
+	/*
+	 * POST pool/addusers
+	 */
+	public Boolean addPoolMembers(Integer pool_id, UserList userList) {
 		// Get username of player
 		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
+		
+		log.debug(authed_user+" | Adding pool members to pool "+pool_id);
 		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession(); 
@@ -105,6 +112,76 @@ public class PoolService {
 			log.error(authed_user+" | Pool with ID "+pool_id+" does not exist");
 			throw new InvalidParameterException(new RestError(2902, "Pool with ID "+pool_id+" does not exist"));
 		}
+		
+		List<String> addedUsernames = new ArrayList<>();
+		List<String> failedUsernames = new ArrayList<>();
+		List<String> addedFBIDs = new ArrayList<>();
+		List<String> failedFBIDs = new ArrayList<>();
+		
+		// Process usernames
+		if (!userList.getUsernames().isEmpty()) {
+			for (String username : userList.getUsernames()) {
+				Boolean userAdded = _addPoolMember(pool, username, null);
+				if (userAdded) {
+					addedUsernames.add(username);
+				} else {
+					failedUsernames.add(username);
+				}
+			}
+		}
+		
+		// Process facebookIDs
+		if (!userList.getFacebookIDs().isEmpty()) {
+			for (String fbID : userList.getFacebookIDs()) {
+				Boolean userAdded = _addPoolMember(pool, null, fbID);
+				if (userAdded) {
+					addedFBIDs.add(fbID);
+				} else {
+					failedFBIDs.add(fbID);
+				}
+			}
+		}	
+			
+		// Log users that were added to pool
+		if (!addedUsernames.isEmpty()) {
+			log.debug(authed_user+" | Successfully added following users by username to pool "+pool_id+": "+
+									  IPUtil.listToCommaSeparatedString(addedUsernames));
+		}
+		
+		if (!addedFBIDs.isEmpty()) {
+			log.debug(authed_user+" | Successfully added following users by facebook_id to pool "+pool_id+": "+
+									  IPUtil.listToCommaSeparatedString(addedFBIDs));
+		}
+		
+		// Log users that failed to be added to pool
+		if (!failedUsernames.isEmpty()) {
+			log.error(authed_user+" | Failed to add following users by username to pool "+pool_id+": "+
+									  IPUtil.listToCommaSeparatedString(failedUsernames));
+		}
+		
+		if (!failedFBIDs.isEmpty()) {
+			log.error(authed_user+" | Successfully added following users by facebook_id to pool "+pool_id+": "+
+									  IPUtil.listToCommaSeparatedString(failedFBIDs));
+		}
+		
+		// Return success / failure
+		if (!failedUsernames.isEmpty() || !failedFBIDs.isEmpty()) {
+			return false;
+		} else {
+			return true;
+		}
+		
+		
+	}
+	
+	// Helper method to add an individual pool member
+	public Boolean _addPoolMember(Pool pool, String username, String fbID) {
+		
+		// Get username of player
+		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
+		
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession(); 
 		
 		User user = null;
 		if (username != null) {

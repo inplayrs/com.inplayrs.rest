@@ -1,5 +1,6 @@
 package com.inplayrs.rest.ds;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -16,8 +17,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "pool")
-public class Pool {
+public class Pool implements Serializable {
 	
+	private static final long serialVersionUID = 1L;
+
 	@Id
 	@Column(name = "pool_id")
 	@GeneratedValue
@@ -27,6 +30,7 @@ public class Pool {
 	private String name;
 	
 	@Column(name = "num_players")
+	@JsonIgnore
 	private Integer num_players;
 	
 	@ManyToOne(fetch = FetchType.EAGER)
