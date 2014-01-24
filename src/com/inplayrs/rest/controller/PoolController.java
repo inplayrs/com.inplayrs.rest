@@ -45,7 +45,7 @@ public class PoolController {
 	@ResponseStatus( HttpStatus.CREATED )
 	public @ResponseBody Pool createPool(
 		   @RequestParam(value="name", required=true) String name,
-		   @RequestParam(value="userList", required=false) String userList) {
+		   @RequestBody(required = false) UserList userList) {
 
 		return poolService.createPool(name, userList);	 	
 	}
@@ -59,24 +59,8 @@ public class PoolController {
 	public @ResponseBody Boolean addPoolMember(
 		   @RequestParam(value="pool_id", required=true) Integer pool_id,
 		   @RequestBody(required = true) UserList userList) {
-		 //  @RequestParam(value="username", required=false) String username, 
-		//   @RequestParam(value="fbID", required=false) String fbID) {
 
 		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
-
-		/*
-		// Must specify either username or fbID of user to be added to pool
-		if (username == null && fbID == null) {
-			log.error(authed_user+" | Must specify username or fbID of user to be added to pool");
-			throw new InvalidParameterException(new RestError(2900, "Must specify username or fbID of user to be added to pool"));
-		}
-		
-		// Must specify either username or fbID of user to be added to pool
-		if (username != null && fbID != null) {
-			log.error(authed_user+" | Must specify username or fbID of user to be added to pool, not both");
-			throw new InvalidParameterException(new RestError(2901, "Must specify username or fbID of user to be added to pool, not both"));
-		}
-		*/
 		
 		// UserList must contain at least 1 user
 		if (userList.getUsernames().isEmpty() && userList.getFacebookIDs().isEmpty()) {

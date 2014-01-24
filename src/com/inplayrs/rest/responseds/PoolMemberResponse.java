@@ -7,10 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 public class PoolMemberResponse {
-
-	@Column(name = "user_id")
-	@JsonProperty
-	private Integer user_id;
 	
 	@Column(name = "username")
 	@JsonProperty
@@ -22,14 +18,6 @@ public class PoolMemberResponse {
 	
 	public PoolMemberResponse() {
 		
-	}
-
-	public Integer getUser_id() {
-		return user_id;
-	}
-
-	public void setUser_id(Integer user_id) {
-		this.user_id = user_id;
 	}
 
 	public String getUsername() {
@@ -47,7 +35,5 @@ public class PoolMemberResponse {
 	public void setFacebook_id(String facebook_id) {
 		this.facebook_id = facebook_id;
 	}
-	
-	
 	
 }

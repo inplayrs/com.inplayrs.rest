@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.inplayrs.rest.constants.Result;
 import com.inplayrs.rest.ds.Pool;
 import com.inplayrs.rest.ds.PoolMember;
 import com.inplayrs.rest.ds.User;
@@ -39,7 +40,7 @@ public class PoolService {
 	/*
 	 * POST pool/create
 	 */
-	public Pool createPool(String name, String userList) {
+	public Pool createPool(String name, UserList userList) {
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
 		log.debug(username+" | Creating pool "+name);
@@ -80,13 +81,21 @@ public class PoolService {
 			throw new InvalidStateException(new RestError(2800, "Pool '"+name+"' already exists, please try a different name"));
 		}
 		
+		// Add pool creator to pool
+		log.debug(username+" | Adding creator of pool as pool member");
+		int addUserResult = _addPoolMember(pool, username, null);
+		if (addUserResult != Result.SUCCESS) {
+			throw new InvalidStateException(new RestError(2802, "Failed to add creator of pool as a pool member"));
+		}
+		
+		// Add list of users to pool
 		if (userList != null) {
-			// TODO - Add users to pool
 			log.debug(username+" | Adding users to pool "+name);
 			
-			
-			
-			
+			boolean allPoolMembersAddedSuccessfully = addPoolMembers(pool.getPool_id(), userList);
+			if (!allPoolMembersAddedSuccessfully) {
+				throw new InvalidStateException(new RestError(2803, "Failed to add all specified pool members to pool"));
+			}
 		}
 		
 		// return pool object
@@ -110,22 +119,26 @@ public class PoolService {
 		Pool pool = (Pool) session.get(Pool.class, pool_id);
 		if (pool == null) {
 			log.error(authed_user+" | Pool with ID "+pool_id+" does not exist");
-			throw new InvalidParameterException(new RestError(2902, "Pool with ID "+pool_id+" does not exist"));
+			throw new InvalidParameterException(new RestError(2900, "Pool with ID "+pool_id+" does not exist"));
 		}
 		
 		List<String> addedUsernames = new ArrayList<>();
-		List<String> failedUsernames = new ArrayList<>();
+		List<String> nonExistantUsernames = new ArrayList<>();
+		List<String> usernamesAlreadyInPool = new ArrayList<>();
 		List<String> addedFBIDs = new ArrayList<>();
-		List<String> failedFBIDs = new ArrayList<>();
+		List<String> nonExistantFBIDs = new ArrayList<>();
+		List<String> fbIDsAlreadyInPool = new ArrayList<>();
 		
 		// Process usernames
 		if (!userList.getUsernames().isEmpty()) {
 			for (String username : userList.getUsernames()) {
-				Boolean userAdded = _addPoolMember(pool, username, null);
-				if (userAdded) {
+				int userAdded = _addPoolMember(pool, username, null);
+				if (userAdded == Result.SUCCESS) {
 					addedUsernames.add(username);
-				} else {
-					failedUsernames.add(username);
+				} else if (userAdded == Result.USER_DOES_NOT_EXIST){
+					nonExistantUsernames.add(username);
+				} else if (userAdded == Result.USER_ALREADY_IN_POOL) {
+					usernamesAlreadyInPool.add(username);
 				}
 			}
 		}
@@ -133,49 +146,48 @@ public class PoolService {
 		// Process facebookIDs
 		if (!userList.getFacebookIDs().isEmpty()) {
 			for (String fbID : userList.getFacebookIDs()) {
-				Boolean userAdded = _addPoolMember(pool, null, fbID);
-				if (userAdded) {
+				int userAdded = _addPoolMember(pool, null, fbID);
+				if (userAdded == Result.SUCCESS) {
 					addedFBIDs.add(fbID);
-				} else {
-					failedFBIDs.add(fbID);
+				} else if (userAdded == Result.USER_DOES_NOT_EXIST){
+					nonExistantFBIDs.add(fbID);
+				} else if (userAdded == Result.USER_ALREADY_IN_POOL) {
+					fbIDsAlreadyInPool.add(fbID);
 				}
 			}
 		}	
 			
-		// Log users that were added to pool
-		if (!addedUsernames.isEmpty()) {
-			log.debug(authed_user+" | Successfully added following users by username to pool "+pool_id+": "+
-									  IPUtil.listToCommaSeparatedString(addedUsernames));
+		// Check which users failed to be added to pool
+		StringBuffer errorMsg = new StringBuffer("Could not add all users to pool ").append(pool_id);
+		
+		if (!nonExistantUsernames.isEmpty()) {
+			errorMsg.append(". The following usernames do not exist: "+IPUtil.listToCommaSeparatedString(nonExistantUsernames));
 		}
 		
-		if (!addedFBIDs.isEmpty()) {
-			log.debug(authed_user+" | Successfully added following users by facebook_id to pool "+pool_id+": "+
-									  IPUtil.listToCommaSeparatedString(addedFBIDs));
+		if (!usernamesAlreadyInPool.isEmpty()) {
+			errorMsg.append(". The following users are already in the pool: "+IPUtil.listToCommaSeparatedString(usernamesAlreadyInPool));
 		}
 		
-		// Log users that failed to be added to pool
-		if (!failedUsernames.isEmpty()) {
-			log.error(authed_user+" | Failed to add following users by username to pool "+pool_id+": "+
-									  IPUtil.listToCommaSeparatedString(failedUsernames));
+		if (!nonExistantFBIDs.isEmpty()) {
+			errorMsg.append(". The following users by facebook_id do not exist: "+IPUtil.listToCommaSeparatedString(nonExistantFBIDs));
 		}
 		
-		if (!failedFBIDs.isEmpty()) {
-			log.error(authed_user+" | Successfully added following users by facebook_id to pool "+pool_id+": "+
-									  IPUtil.listToCommaSeparatedString(failedFBIDs));
+		if (!fbIDsAlreadyInPool.isEmpty()) {
+			errorMsg.append(". The following users by facebook_id are already in the pool: "+IPUtil.listToCommaSeparatedString(fbIDsAlreadyInPool));
 		}
 		
 		// Return success / failure
-		if (!failedUsernames.isEmpty() || !failedFBIDs.isEmpty()) {
-			return false;
+		if (!nonExistantUsernames.isEmpty() || !usernamesAlreadyInPool.isEmpty() || 
+			!nonExistantFBIDs.isEmpty() || !fbIDsAlreadyInPool.isEmpty()) {
+			throw new InvalidStateException(new RestError(2901, errorMsg.toString()));
 		} else {
 			return true;
 		}
-		
-		
+
 	}
 	
 	// Helper method to add an individual pool member
-	public Boolean _addPoolMember(Pool pool, String username, String fbID) {
+	public int _addPoolMember(Pool pool, String username, String fbID) {
 		
 		// Get username of player
 		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -191,8 +203,8 @@ public class PoolService {
 			userQuery.setCacheRegion("user");
 			user = (User) userQuery.uniqueResult();
 			if (user == null) {
-				log.error(authed_user+" | User with username "+username+" does not exist");
-				throw new InvalidParameterException(new RestError(2903, "User with username "+username+" does not exist"));
+				log.error(authed_user+" | User with username "+username+" does not exist, cannot add to pool: "+pool.getName());
+				return Result.USER_DOES_NOT_EXIST;
 			}
 		}
 		else if(fbID != null) {
@@ -202,8 +214,8 @@ public class PoolService {
 			userQuery.setCacheRegion("user");
 			user = (User) userQuery.uniqueResult();
 			if (user == null) {
-				log.error(authed_user+" | User with facebook_id "+fbID+" does not exist");
-				throw new InvalidParameterException(new RestError(2904, "User with facebook_id "+fbID+" does not exist"));
+				log.error(authed_user+" | User with facebook_id "+fbID+" does not exist, cannot add to pool: "+pool.getName());
+				return Result.USER_DOES_NOT_EXIST;
 			}
 		}
 		
@@ -217,7 +229,7 @@ public class PoolService {
 		poolMemberQuery.setParameter("user_id", user.getUser_id());
 		if (poolMemberQuery.uniqueResult() != null) {
 			log.error(authed_user+" | User "+user.getUsername()+" is already a member of pool: "+pool.getName());
-			throw new InvalidStateException(new RestError(2905, "User "+user.getUsername()+" is already a member of pool: "+pool.getName()));
+			return Result.USER_ALREADY_IN_POOL;
 		}
 		
 		// Create new pool member
@@ -225,12 +237,12 @@ public class PoolService {
 			session.save(poolMember);
 		} catch (ConstraintViolationException e) {
 			log.error(authed_user+" | User "+user.getUsername()+" is already a member of pool: "+pool.getName()+". Attempted insert but got ConstraintViolationException");
-			throw new InvalidStateException(new RestError(2906, "User "+user.getUsername()+" is already a member of pool: "+pool.getName()));
+			return Result.USER_ALREADY_IN_POOL;
 		}
 		
 		log.debug(authed_user+" | Successfully added user "+user.getUsername()+" to pool "+pool.getName());
 		
-		return true;
+		return Result.SUCCESS;
 		
 	}
 	
@@ -277,8 +289,8 @@ public class PoolService {
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession(); 
 		
-		Query query = session.createQuery("select pm.user.user_id as user_id, pm.user.username as username, "+
-										  "pm.user.facebook_id as facebook_id from PoolMember pm where pm.pool.pool_id = :pool_id");
+		Query query = session.createQuery("select pm.user.username as username, pm.user.facebook_id as facebook_id "+
+										  "from PoolMember pm where pm.pool.pool_id = :pool_id");
 		query.setParameter("pool_id", pool_id);
 		query.setResultTransformer(Transformers.aliasToBean(PoolMemberResponse.class));
 		

@@ -1,5 +1,6 @@
 package com.inplayrs.rest.requestds;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class UserList {
@@ -9,7 +10,8 @@ public class UserList {
 	public List<String> facebookIDs;
 	
 	public UserList() {
-		
+		usernames = new ArrayList<String>();
+		facebookIDs = new ArrayList<String>();
 	}
 
 	public List<String> getUsernames() {
