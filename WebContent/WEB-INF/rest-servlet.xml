@@ -102,9 +102,20 @@
 		</property>
 	</bean>
 
+	
 
 	<!-- Load Hibernate related configuration (for connecting to MYSQL DB) -->
 	<import resource="hibernate-context.xml" />
 
+	<!-- Set sessionFactory for IPUtil -->
+	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+	    <property name="staticMethod" value="com.inplayrs.rest.util.IPUtil.setSessionFactory" />
+	    <property name="arguments">
+	        <list>
+	            <!-- This is the bean name that holds database-settings.properties -->
+	            <ref bean="sessionFactory" />
+	        </list>
+	    </property>
+	</bean>
 
 </beans>

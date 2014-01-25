@@ -30,6 +30,7 @@ import com.inplayrs.rest.exception.RestError;
 import com.inplayrs.rest.responseds.UserLeaderboardResponse;
 import com.inplayrs.rest.responseds.UserStatsResponse;
 import com.inplayrs.rest.security.PasswordHash;
+import com.inplayrs.rest.util.IPUtil;
 
 
 /*
@@ -60,7 +61,7 @@ public class UserService {
 		Session session = sessionFactory.getCurrentSession();
 		
 		// Check if username is a banned word 
-		if (_isBadWord(username)) {
+		if (IPUtil.isBadWord(username)) {
 			log.debug(authed_user+" | Username "+username+" is not available");
 			throw new InvalidStateException(new RestError(2302, "Username "+username+" is not available"));
 		}	
@@ -237,22 +238,7 @@ public class UserService {
 	}
 	
 	
-	/*
-	 * Checks if given word is in list of banned words
-	 */
-	public boolean _isBadWord(String word) {
-		// Retrieve session from Hibernate
-		Session session = sessionFactory.getCurrentSession();
-				
-		// Verify whether the requested username is in the list of bad words
-		String badWordQuery = "select count(*) from BadWord where word = '"+word.toLowerCase()+"'";
-		
-		if (( (Long) session.createQuery(badWordQuery).iterate().next() ).intValue() > 0) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+
 	
 	
 	
@@ -371,7 +357,7 @@ public class UserService {
 			}
 			
 			// Check if username is a banned word 
-			if (_isBadWord(newUsername)) {
+			if (IPUtil.isBadWord(newUsername)) {
 				log.debug(username+" | Username "+newUsername+" is not available");
 				throw new InvalidStateException(new RestError(2402, "Username "+newUsername+" is not available"));
 			}	

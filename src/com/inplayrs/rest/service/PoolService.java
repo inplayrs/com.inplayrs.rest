@@ -45,6 +45,14 @@ public class PoolService {
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
 		log.debug(username+" | Creating pool "+name);
 		
+		// Check pool name for bad words
+		String[] poolNameWords = name.split("\\s+|[_.,+]");
+		for (String word: poolNameWords) {
+			if (IPUtil.isBadWord(word)) {
+				throw new InvalidStateException(new RestError(2803, "Pool '"+name+"' not available, please try a different name"));
+			}
+		}
+		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession(); 
 		
@@ -74,11 +82,11 @@ public class PoolService {
 			}
 			catch (ConstraintViolationException e) {
 				log.error(username+" | Pool "+name+" already exists. Attempted insert but got ConstraintViolationException");
-				throw new InvalidStateException(new RestError(2800, "Pool '"+name+"' already exists, please try a different name"));
+				throw new InvalidStateException(new RestError(2800, "Pool '"+name+"' not available, please try a different name"));
 			}
 		} else {
 			log.error(username+" | Pool "+name+" already exists");
-			throw new InvalidStateException(new RestError(2800, "Pool '"+name+"' already exists, please try a different name"));
+			throw new InvalidStateException(new RestError(2800, "Pool '"+name+"' not available, please try a different name"));
 		}
 		
 		// Add pool creator to pool
