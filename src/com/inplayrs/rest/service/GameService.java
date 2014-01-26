@@ -7,6 +7,8 @@ import com.inplayrs.rest.ds.Game;
 import com.inplayrs.rest.ds.GameEntry;
 import com.inplayrs.rest.ds.Period;
 import com.inplayrs.rest.ds.PeriodSelection;
+import com.inplayrs.rest.ds.PoolGameEntry;
+import com.inplayrs.rest.ds.PoolMember;
 import com.inplayrs.rest.ds.User;
 import com.inplayrs.rest.exception.DBException;
 import com.inplayrs.rest.exception.InvalidParameterException;
@@ -266,20 +268,13 @@ public class GameService {
 		boolean isInitialSubmit = false;
 		
 		// Create game entry if we don't already have one
-		Query gameEntryQuery = session.createQuery("from GameEntry ge where ge.game = :game_id "+
+		Query gameEntryQuery = session.createQuery("from GameEntry ge where ge.game.game_id = :game_id "+
 										   		   "and ge.user.username = :username");
 		
 		gameEntryQuery.setParameter("game_id", game_id);
 		gameEntryQuery.setParameter("username", username);
 		
-		List<GameEntry> result = null;
-		try {
-			result = gameEntryQuery.list();
-		}
-		catch (Exception e) {
-			log.error(username+" | Failed to find user's entries for game "+game_id);
-			throw new DBException(new RestError(1001, "Failed to find user's game entries"));
-		}
+		List<GameEntry> result = gameEntryQuery.list();
 		
 		if (result.isEmpty()) {
 			
@@ -288,15 +283,8 @@ public class GameService {
 			isInitialSubmit = true;
 			
 			// Create a new GameEntry
-			Game g;
-			try {
-				g = (Game) session.get(Game.class, game_id);	
-			}
-			catch (Exception e) {
-				log.error(username+" | Failed to get game "+game_id);
-				throw new DBException(new RestError(1001, "Failed to get game "+game_id));
-			}
-			
+			Game g = (Game) session.get(Game.class, game_id);	
+
 			if (g == null) {
 				log.error(username+" | Game "+game_id+" does not exist");
 				throw new InvalidParameterException(new RestError(2200, "Game "+game_id+" does not exist"));
@@ -304,7 +292,7 @@ public class GameService {
 			
 			// Check that user has a fangroup before creating a game entry
 			StringBuffer fangroupQueryString = new StringBuffer("from Fan f where f.user.username = :username ");
-			fangroupQueryString.append("and f.fangroup.competition = :comp_id");
+			fangroupQueryString.append("and f.fangroup.competition.comp_id = :comp_id");
 			
 			Query fangroupQuery = session.createQuery(fangroupQueryString.toString());
 			fangroupQuery.setParameter("username", username);
@@ -346,6 +334,20 @@ public class GameService {
 			g.setGlobal_pot_size(g.getGlobal_pot_size() + g.getStake());
 			
 			session.update(g);	
+			
+			// Add game entry for any pools the user is in
+			Query poolMemberQuery = session.createQuery("from PoolMember pm where pm.user.username = :username");
+			poolMemberQuery.setParameter("username", username);
+			List <PoolMember> poolMembers = poolMemberQuery.list();
+			for (PoolMember poolMember: poolMembers) {
+				log.debug(username+" | Adding game entry to pool "+poolMember.getPool().getPool_id()+
+									 " for game "+gameEntry.getGame_id());
+				PoolGameEntry poolGameEntry = new PoolGameEntry();
+				poolGameEntry.setGameEntry(gameEntry);
+				poolGameEntry.setPoolMember(poolMember);
+				session.save(poolGameEntry);
+			}
+			
 
 		} else {
 			// get the game_entry_id
@@ -379,8 +381,8 @@ public class GameService {
 				default: break;
 			}
 			
-			Query periodSelectionQuery = session.createQuery("from PeriodSelection ps where ps.gameEntry = :game_entry_id "+
-															 "and ps.period = :period_id");
+			Query periodSelectionQuery = session.createQuery("from PeriodSelection ps where ps.gameEntry.game_entry_id = :game_entry_id "+
+															 "and ps.period.period_id = :period_id");
 			periodSelectionQuery.setParameter("game_entry_id", gameEntry.getGame_entry_id());
 			periodSelectionQuery.setParameter("period_id", ps.getPeriod_id());
 			
