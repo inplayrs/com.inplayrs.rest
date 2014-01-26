@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.inplayrs.rest.constants.Result;
+import com.inplayrs.rest.constants.Threshold;
 import com.inplayrs.rest.ds.Pool;
 import com.inplayrs.rest.ds.PoolMember;
 import com.inplayrs.rest.ds.User;
@@ -200,6 +201,14 @@ public class PoolService {
 		// Get username of player
 		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
 		
+		// Check whether pool has max number of participants in or not
+		if (pool.getNum_players() >= Threshold.MAX_POOL_SIZE) {
+			log.error(authed_user+" | Cannot add new member to pool '"+pool.getName()+
+								     "'. Max pool size of "+Threshold.MAX_POOL_SIZE+" reached");
+			throw new InvalidStateException(new RestError(2902, "Cannot add new member to pool '"+pool.getName()+
+								     "'. Max pool size of "+Threshold.MAX_POOL_SIZE+" reached"));
+		}
+			
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession(); 
 		

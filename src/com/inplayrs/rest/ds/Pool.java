@@ -13,6 +13,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
@@ -29,7 +32,8 @@ public class Pool implements Serializable {
 	@Column(name = "name", unique=true)
 	private String name;
 	
-	@Column(name = "num_players")
+	@Generated(GenerationTime.ALWAYS)
+	@Column(name = "num_players", insertable=false, updatable=false)
 	@JsonIgnore
 	private Integer num_players;
 	
