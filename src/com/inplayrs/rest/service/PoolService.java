@@ -278,7 +278,8 @@ public class PoolService {
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession(); 
 		
-		Query query = session.createQuery("select pm.pool.pool_id as pool_id, pm.pool.name as name from PoolMember pm where pm.user.username = :username");
+		Query query = session.createQuery("select pm.pool.pool_id as pool_id, pm.pool.name as name, "+
+							"pm.pool.num_players as num_players from PoolMember pm where pm.user.username = :username");
 		query.setParameter("username", username);
 		query.setResultTransformer(Transformers.aliasToBean(MyPoolResponse.class));
 		

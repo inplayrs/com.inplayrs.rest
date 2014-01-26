@@ -16,6 +16,10 @@ public class MyPoolResponse {
 	@JsonProperty
 	private String name;
 	
+	@Column(name = "num_players")
+	@JsonProperty
+	private Integer num_players;
+	
 	public MyPoolResponse() {
 		
 	}
@@ -35,6 +39,15 @@ public class MyPoolResponse {
 	public void setName(String name) {
 		this.name = name;
 	}
+
+	public Integer getNum_players() {
+		return num_players;
+	}
+
+	public void setNum_players(Integer num_players) {
+		this.num_players = num_players;
+	}
+	
 	
 	
 	
