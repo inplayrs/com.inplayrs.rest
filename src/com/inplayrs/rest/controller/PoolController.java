@@ -106,4 +106,18 @@ public class PoolController {
 		
 		return poolService.leavePool(pool_id);
 	}
+	
+	
+	/*
+	 * POST pool/update
+	 */
+	@RequestMapping(value = "/update", method = RequestMethod.POST, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+	public @ResponseBody Pool updatePool(
+			@RequestParam(value="pool_id", required=true) Integer pool_id,
+			@RequestParam(value="name", required=true) String name){
+		
+		return poolService.updatePool(pool_id, name);
+	}
+	
 }

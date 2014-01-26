@@ -355,4 +355,40 @@ public class PoolService {
 		return true;
 	}
 	
+	
+	/*
+	 * POST pool/update
+	 */
+	public Pool updatePool(Integer pool_id, String name) {
+		// Get username of player
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		
+		log.debug(username+" | Updating pool "+pool_id);
+		
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession(); 
+		
+		// Get pool object
+		Pool pool = (Pool) session.get(Pool.class, pool_id);
+		if (pool == null) {
+			log.error(username+" | Pool with ID "+pool_id+" does not exist, cannot update pool");
+			throw new InvalidParameterException(new RestError(3100, "Pool with ID "+pool_id+" does not exist, cannot update pool"));
+		}
+		
+		// Only pool creator can update pool name
+		if (pool.getCreated_by().getUsername().equals(username)) {
+			if (!pool.getName().equals(name)) {
+				pool.setName(name);
+				session.save(pool);
+				return pool;
+			} else {
+				log.debug(username+" | No changes made to pool");
+				throw new InvalidStateException(new RestError(3102, "No changes made to pool"));
+			}
+		} else {
+			log.error(username+" | Pools can only be updated by their creator");
+			throw new InvalidStateException(new RestError(3101, "Pools can only be updated by their creator"));
+		}
+		
+	}
 }
