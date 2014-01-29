@@ -190,7 +190,8 @@ public class PoolService {
 			!nonExistantFBIDs.isEmpty() || !fbIDsAlreadyInPool.isEmpty()) {
 			throw new InvalidStateException(new RestError(2901, errorMsg.toString()));
 		} else {
-			return true;
+			// Return null on success as client will just be looking at the HTTP response
+			return null;
 		}
 
 	}
@@ -362,7 +363,8 @@ public class PoolService {
 		// Remove user from pool
 		session.delete(poolMember);
 		
-		return true;
+		// Return null on success as client will just be looking at the HTTP response
+		return null;
 	}
 	
 	
