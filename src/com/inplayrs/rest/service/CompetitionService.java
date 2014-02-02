@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.Resource;
+
 import org.apache.log4j.Logger;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
@@ -12,11 +13,11 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.transform.Transformers;
 import org.joda.time.LocalDateTime;
-
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.inplayrs.rest.constants.LeaderboardType;
 import com.inplayrs.rest.constants.State;
 import com.inplayrs.rest.ds.Competition;
 import com.inplayrs.rest.ds.Fan;
@@ -185,7 +186,7 @@ public class CompetitionService {
 	 * GET competition/leaderboard
 	 */
 	@SuppressWarnings("unchecked")
-	public List<CompetitionLeaderboardResponse> getLeaderboard(Integer comp_id, String type, String username) {
+	public List<CompetitionLeaderboardResponse> getLeaderboard(Integer comp_id, String type, String username, Integer pool_id) {
 
 		log.debug(username+" | Getting "+type+" leaderboard for competition "+comp_id);
 		
@@ -196,7 +197,7 @@ public class CompetitionService {
 		
 		// Build query string based on type of leaderboard
 		switch(type) {
-			case "global":
+			case LeaderboardType.GLOBAL:
 				queryString.append("lb.rank, ");
 				queryString.append("u.username as name, ");
 				queryString.append("lb.games_played, ");
@@ -206,7 +207,7 @@ public class CompetitionService {
 				queryString.append("where lb.competition = :comp_id");
 				break;
 				
-			case "fangroup":
+			case LeaderboardType.FANGROUP:
 				queryString.append("lb.rank, ");
 				queryString.append("lb.fangroup_name as name, ");
 				queryString.append("lb.games_played, ");
@@ -215,7 +216,7 @@ public class CompetitionService {
 				queryString.append("where lb.competition = :comp_id");
 				break;
 				
-			case "userinfangroup":					
+			case LeaderboardType.USER_IN_FANGROUP:					
 				queryString.append("lb.rank, ");
 				queryString.append("u.username as name, ");
 				queryString.append("lb.games_played, ");
@@ -239,8 +240,19 @@ public class CompetitionService {
 					Fan fan = result.get(0);
 					queryString.append(fan.getFangroup_id());
 				}
-				
 				break;
+				
+			case LeaderboardType.POOL:
+				queryString.append("lb.rank as rank, ");
+				queryString.append("u.username as name, ");
+				queryString.append("lb.games_played, ");
+				queryString.append("lb.winnings ");
+				queryString.append("from pool_comp_leaderboard lb ");
+				queryString.append("left join user u on u.user_id = lb.user ");
+				queryString.append("where lb.competition = :comp_id ");
+				queryString.append("and lb.pool = :pool_id ");
+				break;
+				
 				
 			default: return null;	
 		}
@@ -248,10 +260,11 @@ public class CompetitionService {
 		// Only return top 100 users 
 		queryString.append(" and lb.rank >= 1 ORDER BY lb.rank LIMIT 100");
 		
-		
 		SQLQuery query = session.createSQLQuery(queryString.toString());
 		query.setParameter("comp_id", comp_id);
-		
+		if (queryString.toString().contains(":pool_id")) {
+			query.setParameter("pool_id", pool_id);
+		}
 		query.addScalar("rank");
 		query.addScalar("name");
 		query.addScalar("games_played");

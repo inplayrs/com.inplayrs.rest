@@ -18,7 +18,7 @@ public class PoolCompLeaderboard implements Serializable{
 	
 	@Id
 	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "pool", nullable = false)
+	@JoinColumn(name = "competition", nullable = false)
 	private Competition competition;
 
 	@Id

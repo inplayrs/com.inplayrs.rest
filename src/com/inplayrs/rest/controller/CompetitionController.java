@@ -10,7 +10,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.http.HttpStatus;
 
+import com.inplayrs.rest.constants.LeaderboardType;
 import com.inplayrs.rest.ds.FanGroup;
+import com.inplayrs.rest.exception.InvalidParameterException;
+import com.inplayrs.rest.exception.RestError;
 import com.inplayrs.rest.responseds.CompetitionPointsResponse;
 import com.inplayrs.rest.responseds.CompetitionResponse;
 import com.inplayrs.rest.responseds.CompetitionWinnersResponse;
@@ -97,17 +100,24 @@ public class CompetitionController {
 	@ResponseStatus( HttpStatus.OK )
     public @ResponseBody List <CompetitionLeaderboardResponse> getLeaderboard(
     	   @RequestParam(value="comp_id", required=true) Integer comp_id,
-    	   @RequestParam(value="type", required=true) String type) {
+    	   @RequestParam(value="type", required=true) String type,
+    	   @RequestParam(value="pool_id", required=false) Integer pool_id) {
     	
 		// Validate leaderboard type
-		if (!type.equals("global") && !type.equals("fangroup") && !type.equals("userinfangroup")) {
-			throw new RuntimeException("Invalid leaderboard type specified");
+		if (!type.equals(LeaderboardType.GLOBAL) && !type.equals(LeaderboardType.FANGROUP) 
+				&& !type.equals(LeaderboardType.USER_IN_FANGROUP) && !type.equals(LeaderboardType.POOL)) {
+			throw new InvalidParameterException(new RestError(3300, "Invalid leaderboard type specified"));
+		}
+		
+		// Must specify pool_id if this is a pool leaderboard
+		if (type.equals(LeaderboardType.POOL) && pool_id == null) {
+			throw new InvalidParameterException(new RestError(3301, "Must specify pool_id if this is a pool leaderboard"));
 		}
 		
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
 		
-		return competitionService.getLeaderboard(comp_id, type, username);
+		return competitionService.getLeaderboard(comp_id, type, username, pool_id);
     }
 	
 
