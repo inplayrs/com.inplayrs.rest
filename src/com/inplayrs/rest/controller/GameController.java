@@ -10,8 +10,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.http.HttpStatus;
 
+import com.inplayrs.rest.constants.LeaderboardType;
 import com.inplayrs.rest.ds.Period;
 import com.inplayrs.rest.ds.PeriodSelection;
+import com.inplayrs.rest.exception.InvalidParameterException;
+import com.inplayrs.rest.exception.RestError;
 import com.inplayrs.rest.responseds.GameLeaderboardResponse;
 import com.inplayrs.rest.responseds.GamePointsResponse;
 import com.inplayrs.rest.responseds.GameWinnersResponse;
@@ -126,17 +129,25 @@ public class GameController {
 	@ResponseStatus( HttpStatus.OK )
     public @ResponseBody List <GameLeaderboardResponse> getLeaderboard(
     	   @RequestParam(value="game_id", required=true) Integer game_id,
-    	   @RequestParam(value="type", required=true) String type) {
+    	   @RequestParam(value="type", required=true) String type,
+    	   @RequestParam(value="pool_id", required=false) Integer pool_id) {
     	
 		// Validate leaderboard type
-		if (!type.equals("global") && !type.equals("fangroup") && !type.equals("userinfangroup")) {
-			throw new RuntimeException("Invalid leaderboard type specified");
+		if (!type.equals(LeaderboardType.GLOBAL) && !type.equals(LeaderboardType.FANGROUP) 
+				&& !type.equals(LeaderboardType.USER_IN_FANGROUP) && !type.equals(LeaderboardType.POOL)) {
+			throw new InvalidParameterException(new RestError(3200, "Invalid leaderboard type specified"));
 		}
+		
+		// Must specify pool_id if this is a pool leaderboard
+		if (type.equals(LeaderboardType.POOL) && pool_id == null) {
+			throw new InvalidParameterException(new RestError(3201, "Must specify pool_id if this is a pool leaderboard"));
+		}
+		
 		
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
 		
-		return gameService.getLeaderboard(game_id, type, username);
+		return gameService.getLeaderboard(game_id, type, username, pool_id);
     }
 	
 	

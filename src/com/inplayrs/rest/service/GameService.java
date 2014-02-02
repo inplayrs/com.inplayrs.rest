@@ -1,6 +1,7 @@
 package com.inplayrs.rest.service;
 
 
+import com.inplayrs.rest.constants.LeaderboardType;
 import com.inplayrs.rest.constants.State;
 import com.inplayrs.rest.ds.Fan;
 import com.inplayrs.rest.ds.Game;
@@ -522,7 +523,7 @@ public class GameService {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<GameLeaderboardResponse> getLeaderboard(Integer game_id,
-			String type, String username) {
+								String type, String username, Integer pool_id) {
 
 		log.debug(username+" | Getting "+type+" leaderboard for game "+game_id);
 		
@@ -533,7 +534,7 @@ public class GameService {
 		
 		// Build query string based on type of leaderboard
 		switch(type) {
-			case "global":
+			case LeaderboardType.GLOBAL:
 				queryString.append("lb.rank, ");
 				queryString.append("u.username as name, ");
 				queryString.append("lb.points, ");
@@ -543,7 +544,7 @@ public class GameService {
 				queryString.append("where lb.game = :game_id");
 				break;
 				
-			case "fangroup":
+			case LeaderboardType.FANGROUP:
 				queryString.append("lb.rank, ");
 				queryString.append("lb.fangroup_name as name, ");
 				queryString.append("lb.avg_points as points, ");
@@ -552,7 +553,7 @@ public class GameService {
 				queryString.append("where lb.game = :game_id");
 				break;
 				
-			case "userinfangroup":					
+			case LeaderboardType.USER_IN_FANGROUP:					
 				queryString.append("lb.rank, ");
 				queryString.append("u.username as name, ");
 				queryString.append("lb.points, ");
@@ -578,7 +579,17 @@ public class GameService {
 					Fan fan = result.get(0);
 					queryString.append(fan.getFangroup_id());
 				}
+				break;
 				
+			case LeaderboardType.POOL:
+				queryString.append("lb.rank as rank, ");
+				queryString.append("u.username as name, ");
+				queryString.append("lb.points, ");
+				queryString.append("lb.potential_winnings ");
+				queryString.append("from pool_game_leaderboard lb ");
+				queryString.append("left join user u on u.user_id = lb.user ");
+				queryString.append("where lb.game = :game_id ");
+				queryString.append("and lb.pool = :pool_id ");
 				break;
 				
 			default: return null;	
@@ -588,8 +599,10 @@ public class GameService {
 		queryString.append(" and lb.rank >= 1 ORDER BY lb.rank LIMIT 100");
 		
 		SQLQuery query = session.createSQLQuery(queryString.toString());
-		query.setParameter("username", username);
 		query.setParameter("game_id", game_id);
+		if (queryString.toString().contains(":pool_id")) {
+			query.setParameter("pool_id", pool_id);
+		}
 		query.addScalar("rank");
 		query.addScalar("name");
 		query.addScalar("points");
