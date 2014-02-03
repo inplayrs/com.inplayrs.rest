@@ -10,6 +10,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
+
 @Entity
 @Table(name = "pool_game_leaderboard")
 public class PoolGameLeaderboard implements Serializable{
@@ -31,12 +34,15 @@ public class PoolGameLeaderboard implements Serializable{
 	@JoinColumn(name = "user", nullable = false)
 	private User user;
 	
+	@Generated(GenerationTime.ALWAYS)	// calculated by admin scripts
 	@Column(name = "rank")
 	private Integer rank;
 	
+	@Generated(GenerationTime.ALWAYS)
 	@Column(name = "points")
 	private Integer points;
 	
+	@Generated(GenerationTime.ALWAYS)
 	@Column(name = "potential_winnings")
 	private Integer potential_winnings;
 	
