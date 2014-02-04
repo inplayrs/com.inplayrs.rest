@@ -18,10 +18,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.inplayrs.rest.constants.Threshold;
 import com.inplayrs.rest.ds.Competition;
 import com.inplayrs.rest.ds.Fan;
 import com.inplayrs.rest.ds.FanGroup;
 import com.inplayrs.rest.ds.Game;
+import com.inplayrs.rest.ds.Motd;
 import com.inplayrs.rest.ds.Pat;
 import com.inplayrs.rest.ds.User;
 import com.inplayrs.rest.exception.InvalidParameterException;
@@ -732,6 +734,39 @@ public class UserService {
 		}
 		
 		return response;
+		
+	}
+	
+	
+	/*
+	 * GET user/motd
+	 */
+	@SuppressWarnings("unchecked")
+	public List<String> getMotd() {
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		log.debug(username+" | Getting motd");
+		
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+		
+		Query query = session.createQuery("from Motd m where m.user.username = :username and m.processed = 0 order by m.updated desc");
+		query.setParameter("username", username);
+		query.setMaxResults(Threshold.MAX_MESSAGES_OF_DAY);
+		
+		List<String> messages = new ArrayList<>();
+		List<Motd> messagesOfDay = query.list();
+		
+		for (Motd motd: messagesOfDay) {
+			messages.add(motd.getMessage());
+			motd.setProcessed(1);
+			session.save(motd);
+		}
+		
+		if (!messages.isEmpty()) {
+			return messages;
+		} else {
+			return null;
+		}
 		
 	}
 	

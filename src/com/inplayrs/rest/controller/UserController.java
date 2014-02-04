@@ -267,6 +267,17 @@ public class UserController {
 		return userService.getUserLeaderboard();
 	}
 	
+	
+	/*
+	 * GET user/motd
+	 */
+	@RequestMapping(value = "/motd", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+	public @ResponseBody List<String> getMotd() {
+		
+		return userService.getMotd();
+	}
+	
 }
 
 
