@@ -4,6 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 
 
+
 import org.hibernate.annotations.Type;
 import org.joda.time.LocalDateTime;
 
@@ -61,6 +62,10 @@ public class GameResponse {
 	@JsonProperty
 	@JsonInclude(Include.NON_NULL) 
 	private String banner_image_url;
+	
+	@Column(name = "inplay_type")
+	@JsonProperty
+	private Integer inplay_type;
 	
 	/*
 	 * Default constructor
@@ -183,6 +188,15 @@ public class GameResponse {
 		this.banner_image_url = banner_image_url;
 	}
 
+
+	public Integer getInplay_type() {
+		return inplay_type;
+	}
+
+
+	public void setInplay_type(Integer inplay_type) {
+		this.inplay_type = inplay_type;
+	}
 
 	
 }

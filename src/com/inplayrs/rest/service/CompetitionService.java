@@ -136,7 +136,8 @@ public class CompetitionService {
 		queryString.append("ELSE true ");
 		queryString.append("END) as entered, ");
 		queryString.append("g.banner_position, ");
-		queryString.append("g.banner_image_url ");
+		queryString.append("g.banner_image_url, ");
+		queryString.append("g.inplay_type ");
 		queryString.append("from ");
 		queryString.append("game g ");
 		queryString.append("left join competition c on c.comp_id = g.competition ");
@@ -163,7 +164,9 @@ public class CompetitionService {
 		
 		SQLQuery query = session.createSQLQuery(queryString.toString());
 		query.setParameter("username", username);
-		query.setParameter("comp_id", comp_id);
+		if (comp_id != null) {
+			query.setParameter("comp_id", comp_id);
+		}
 		
 		query.addScalar("game_id");
 		query.addScalar("name");
@@ -175,6 +178,7 @@ public class CompetitionService {
 		query.addScalar("entered", org.hibernate.type.NumericBooleanType.INSTANCE); 
 		query.addScalar("banner_position");
 		query.addScalar("banner_image_url");
+		query.addScalar("inplay_type");
 		query.setResultTransformer(Transformers.aliasToBean(GameResponse.class));
 		
 		return query.list();

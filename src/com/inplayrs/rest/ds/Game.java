@@ -86,6 +86,9 @@ public class Game {
 	@JsonIgnore
 	private boolean hidden;
 	
+	@Column(name = "inplay_type")
+	private Integer inplay_type;
+	
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "game")
 	@JsonIgnore
 	private Set<GameEntry> gameEntries;
@@ -296,6 +299,18 @@ public class Game {
 
 	public void setHidden(boolean hidden) {
 		this.hidden = hidden;
+	}
+
+
+
+	public Integer getInplay_type() {
+		return inplay_type;
+	}
+
+
+
+	public void setInplay_type(Integer inplay_type) {
+		this.inplay_type = inplay_type;
 	}
 
 	
