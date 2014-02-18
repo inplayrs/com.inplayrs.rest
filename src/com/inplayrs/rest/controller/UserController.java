@@ -278,6 +278,20 @@ public class UserController {
 		return userService.getMotd();
 	}
 	
+	
+	/*
+	 * GET user/motd
+	 */
+	@RequestMapping(value = "/list", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+	public @ResponseBody List<String> getUserList(@RequestParam(value="hideBots", required=false) Boolean hideBots) {
+		
+		if (hideBots == null) {
+			hideBots = false;
+		}
+		return userService.getUserList(hideBots);
+	}
+	
 }
 
 

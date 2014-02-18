@@ -74,6 +74,10 @@ public class User implements Serializable {
 	@JsonIgnore
 	private String facebook_email;
 	
+	@Column(name = "is_bot")
+	@JsonIgnore
+	private boolean bot;
+	
 	
 	/*
 	 * Default constructor - required by Hibernate
@@ -230,6 +234,16 @@ public class User implements Serializable {
 
 	public void setFacebook_email(String facebook_email) {
 		this.facebook_email = facebook_email;
+	}
+
+
+	public boolean isBot() {
+		return bot;
+	}
+
+
+	public void setBot(boolean bot) {
+		this.bot = bot;
 	}
 
 

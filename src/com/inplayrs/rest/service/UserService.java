@@ -772,6 +772,29 @@ public class UserService {
 	
 	
 	/*
+	 * GET user/list
+	 */
+	@SuppressWarnings("unchecked")
+	public List<String> getUserList(boolean hideBots) {
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		log.debug(username+" | Getting list of usernames in system");
+		
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+		
+		StringBuffer queryString = new StringBuffer("select u.username from User u");
+		if (hideBots) {
+			queryString.append(" where u.bot = false");
+		}
+		
+		Query query = session.createQuery(queryString.toString());
+		query.setMaxResults(Threshold.MAX_USERS_IN_LIST);
+				
+		return query.list();
+	}
+	
+	
+	/*
 	 * POST user/pat
 	 * TODO: PAT TABLE NO LONGER EXISTS, EITHER DECO CODE OR RECREATE PAT TABLE
 	 */
