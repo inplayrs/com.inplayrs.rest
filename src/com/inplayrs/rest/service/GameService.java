@@ -267,9 +267,6 @@ public class GameService {
 		// GameEntry for the selections
 		GameEntry gameEntry = new GameEntry();
 		
-		// Keep track of whether this is the user's initial submit or not
-		boolean isInitialSubmit = false;
-		
 		// Create game entry if we don't already have one
 		Query gameEntryQuery = session.createQuery("from GameEntry ge where ge.game.game_id = :game_id "+
 										   		   "and ge.user.username = :username");
@@ -283,7 +280,16 @@ public class GameService {
 			
 			log.debug(username+" | This is user's initial submit for game "+game_id+", creating a new game entry");
 			
-			isInitialSubmit = true;
+			// Check whether any periods are suspended as can't submit selections if this is the case
+			for (PeriodSelection ps : periodSelections) {
+				Period period = (Period) session.load(Period.class, ps.getPeriod_id());
+				
+				if (period.getState() == State.SUSPENDED) {
+					log.error(username+" | Cannot post initial selections, one or more events are currently suspended for game "+game_id);
+					session.delete(gameEntry);
+					throw new InvalidStateException(new RestError(2202, "One or more events are currently suspended, please try again later!"));
+				}
+			}
 			
 			// Create a new GameEntry
 			Game g = (Game) session.get(Game.class, game_id);	
@@ -384,10 +390,9 @@ public class GameService {
 							" and pool "+poolMember.getPool().getPool_id());
 				}
 			}
-			
 
 		} else {
-			// get the game_entry_id
+			// get the game entry
 			gameEntry = (GameEntry) result.get(0);
 		}
 		
@@ -400,13 +405,6 @@ public class GameService {
 			Period period = (Period) session.load(Period.class, ps.getPeriod_id());
 			ps.setPeriod(period);
 			
-			// Do not allow user to perform their initial submit of selections if a period is suspended
-			if (isInitialSubmit && period.getState() == State.SUSPENDED) {
-				log.error(username+" | Cannot post initial selections, one or more events are currently suspended for game "+game_id);
-				session.delete(gameEntry);
-				throw new InvalidStateException(new RestError(2202, "One or more events are currently suspended, please try again later!"));
-			}
-				
 			// Set potential_points for period_selection
 			switch(ps.getSelection()) {
 				case 0 : ps.setPotential_points(period.getPoints0());
