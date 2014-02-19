@@ -25,7 +25,9 @@ import com.inplayrs.rest.ds.FanGroup;
 import com.inplayrs.rest.ds.Game;
 import com.inplayrs.rest.ds.Motd;
 import com.inplayrs.rest.ds.Pat;
+import com.inplayrs.rest.ds.Pool;
 import com.inplayrs.rest.ds.User;
+import com.inplayrs.rest.ds.UserInvite;
 import com.inplayrs.rest.exception.InvalidParameterException;
 import com.inplayrs.rest.exception.InvalidStateException;
 import com.inplayrs.rest.exception.RestError;
@@ -863,6 +865,35 @@ public class UserService {
 	}
 	
 	
+	/*
+	 * Invite user to pool
+	 */
+	public void inviteUser(User sourceUser, String facebookId, String email, Pool pool) {
+		
+		StringBuffer logMsg = new StringBuffer("Inviting user to inplayrs:");
+		if (facebookId != null) {
+			logMsg.append(" facebook_id="+facebookId);
+		}
+		if (email != null) {
+			logMsg.append(" email="+email);
+		}
+		if (pool != null) {
+			logMsg.append(" pool="+pool.getPool_id());
+		}
+		
+		log.debug(sourceUser.getUsername()+" | "+logMsg.toString());
+		
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+		
+		UserInvite invite = new UserInvite();
+		invite.setSourceUser(sourceUser);
+		invite.setFacebookId(facebookId);
+		invite.setEmail(email);
+		invite.setPool(pool);
+		
+		session.save(invite);	
+	}
 	
 	
 }

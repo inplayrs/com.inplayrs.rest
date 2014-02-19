@@ -11,12 +11,14 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.transform.Transformers;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.inplayrs.rest.constants.Result;
 import com.inplayrs.rest.constants.Threshold;
+import com.inplayrs.rest.ds.Motd;
 import com.inplayrs.rest.ds.Pool;
 import com.inplayrs.rest.ds.PoolMember;
 import com.inplayrs.rest.ds.User;
@@ -34,6 +36,10 @@ public class PoolService {
 
 	@Resource(name="sessionFactory")
 	private SessionFactory sessionFactory;
+	
+	@Autowired
+	@Resource(name="userService")
+	private UserService userService;
 	
 	//get log4j handler
 	private static final Logger log = Logger.getLogger("APILog");
@@ -131,6 +137,13 @@ public class PoolService {
 			throw new InvalidParameterException(new RestError(2900, "Pool with ID "+pool_id+" does not exist"));
 		}
 		
+		// Get user's record
+		Query usrQuery = session.createQuery("FROM User u WHERE u.username = :username");
+		usrQuery.setParameter("username", authed_user);
+		usrQuery.setCacheable(true);
+		usrQuery.setCacheRegion("user");
+		User user = (User) usrQuery.uniqueResult();
+		
 		List<String> addedUsernames = new ArrayList<>();
 		List<String> nonExistantUsernames = new ArrayList<>();
 		List<String> usernamesAlreadyInPool = new ArrayList<>();
@@ -178,21 +191,24 @@ public class PoolService {
 		}
 		
 		if (!nonExistantFBIDs.isEmpty()) {
-			errorMsg.append(". The following users by facebook_id do not exist: "+IPUtil.listToCommaSeparatedString(nonExistantFBIDs));
+			errorMsg.append(". The following users by facebook_id do not exist - inviting them to inplayrs: "+IPUtil.listToCommaSeparatedString(nonExistantFBIDs));
+			for (String fbID : nonExistantFBIDs) {
+				userService.inviteUser(user, fbID, null, pool);
+			}
 		}
 		
 		if (!fbIDsAlreadyInPool.isEmpty()) {
 			errorMsg.append(". The following users by facebook_id are already in the pool: "+IPUtil.listToCommaSeparatedString(fbIDsAlreadyInPool));
 		}
 		
-		// Return success / failure
+		// Log any errors
 		if (!nonExistantUsernames.isEmpty() || !usernamesAlreadyInPool.isEmpty() || 
 			!nonExistantFBIDs.isEmpty() || !fbIDsAlreadyInPool.isEmpty()) {
-			throw new InvalidStateException(new RestError(2901, errorMsg.toString()));
-		} else {
-			// Return null on success as client will just be looking at the HTTP response
-			return null;
-		}
+			log.debug(errorMsg.toString());
+		} 
+		
+		// Return null as client will just be looking at the HTTP response
+		return null;
 
 	}
 	
@@ -258,7 +274,13 @@ public class PoolService {
 			return Result.USER_ALREADY_IN_POOL;
 		}
 		
-		log.debug(authed_user+" | Successfully added user "+user.getUsername()+" to pool "+pool.getName());
+		log.debug(authed_user+" | Successfully added user "+user.getUsername()+" to pool "+pool.getName()+". Adding motd to indicate this.");
+		
+		// Add message to tell user they have been added to pool
+		Motd message = new Motd();
+		message.setUser(user);
+		message.setMessage("You have been added to friend pool '"+pool.getName()+"' by "+authed_user);
+		session.save(message);
 		
 		return Result.SUCCESS;
 		
