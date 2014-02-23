@@ -280,6 +280,7 @@ public class PoolService {
 		Motd message = new Motd();
 		message.setUser(user);
 		message.setMessage("You have been added to friend pool '"+pool.getName()+"' by "+authed_user);
+		message.setProcessed(0);
 		session.save(message);
 		
 		return Result.SUCCESS;
