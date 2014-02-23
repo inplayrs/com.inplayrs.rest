@@ -480,7 +480,7 @@ public class GameService {
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 		
-		StringBuffer queryString = new StringBuffer("from PeriodSelection ps where ps.period = :period_id ");
+		StringBuffer queryString = new StringBuffer("from PeriodSelection ps where ps.period.period_id = :period_id ");
 		queryString.append("and ps.gameEntry.user.username = :username");
 		
 		Query query = session.createQuery(queryString.toString());
@@ -598,7 +598,7 @@ public class GameService {
 				queryString.append("and lb.fangroup_id = ");
 				
 				// Get fangroup of  user
-				StringBuffer fanQueryString = new StringBuffer("from Fan f where f.fangroup.competition = ");
+				StringBuffer fanQueryString = new StringBuffer("from Fan f where f.fangroup.competition.comp_id = ");
 				fanQueryString.append("(select competition_id from Game g where g.game_id = :game_id");
 				fanQueryString.append(") and f.user.username = :username");
 				Query fanQuery = session.createQuery(fanQueryString.toString());
