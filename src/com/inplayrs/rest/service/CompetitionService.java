@@ -231,7 +231,7 @@ public class CompetitionService {
 				queryString.append(" and lb.fangroup_id = ");
 				
 				// Get fangroup of  user
-				StringBuffer fanQueryString = new StringBuffer("from Fan f where f.fangroup.competition = :comp_id");
+				StringBuffer fanQueryString = new StringBuffer("from Fan f where f.fangroup.competition.comp_id = :comp_id");
 				fanQueryString.append(" and f.user.username = :username");
 				Query fanQuery = session.createQuery(fanQueryString.toString());
 				fanQuery.setParameter("comp_id", comp_id);
