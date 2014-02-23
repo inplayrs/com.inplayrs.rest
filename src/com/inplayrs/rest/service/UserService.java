@@ -526,7 +526,7 @@ public class UserService {
 		
 		// Check to see if the user already has a fangroup selected for this competition
 		StringBuffer queryString = new StringBuffer("from Fan f where f.user.username = :username ");
-		queryString.append("and f.fangroup.competition = :comp_id");
+		queryString.append("and f.fangroup.competition.comp_id = :comp_id");
 		
 		Query query = session.createQuery(queryString.toString());
 		query.setParameter("username", username);
