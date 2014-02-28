@@ -10,6 +10,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
+
 @Entity
 @Table(name = "global_comp_leaderboard")
 public class GlobalCompLeaderboard  implements Serializable{
@@ -26,16 +29,23 @@ public class GlobalCompLeaderboard  implements Serializable{
 	@JoinColumn(name = "user", nullable = false)
 	private User user;
 	
-	@Column(name = "rank")
-	private Integer rank;
-	
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "fangroup_id", nullable = false)
 	private FanGroup fangroup;
 	
+	// TODO - Deco when leaderboard queries are updated to use HQL instead of SQL
+	@Column(name = "fangroup_name")
+	private String fangroupName;
+	
+	@Generated(GenerationTime.ALWAYS)	// calculated by admin scripts
+	@Column(name = "rank")
+	private Integer rank;
+	
+	@Generated(GenerationTime.ALWAYS)	// calculated by admin scripts
 	@Column(name = "games_played")
 	private Integer gamesPlayed;
 	
+	@Generated(GenerationTime.ALWAYS)	// calculated by admin scripts
 	@Column(name = "winnings")
 	private Integer winnings;
 	
@@ -104,7 +114,17 @@ public class GlobalCompLeaderboard  implements Serializable{
 		this.winnings = winnings;
 	}
 
+	
+	public String getFangroupName() {
+		return fangroupName;
+	}
 
+
+	public void setFangroupName(String fangroupName) {
+		this.fangroupName = fangroupName;
+	}
+	
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -138,7 +158,5 @@ public class GlobalCompLeaderboard  implements Serializable{
 		return true;
 	}
 
-
-	
 	
 }

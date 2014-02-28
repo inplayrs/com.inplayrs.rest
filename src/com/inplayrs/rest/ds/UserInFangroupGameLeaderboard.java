@@ -14,16 +14,11 @@ import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
 
 @Entity
-@Table(name = "pool_game_leaderboard")
-public class PoolGameLeaderboard implements Serializable{
+@Table(name = "user_in_fangroup_game_leaderboard")
+public class UserInFangroupGameLeaderboard implements Serializable{
 
 	private static final long serialVersionUID = 1L;
-	
-	@Id
-	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "pool", nullable = false)
-	private Pool pool;
-	
+
 	@Id
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "game", nullable = false)
@@ -33,6 +28,14 @@ public class PoolGameLeaderboard implements Serializable{
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "user", nullable = false)
 	private User user;
+	
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "fangroup_id", nullable = false)
+	private FanGroup fangroup;
+	
+	// TODO - Deco when leaderboard queries are updated to use HQL instead of SQL
+	@Column(name = "fangroup_name")
+	private String fangroupName;
 	
 	@Generated(GenerationTime.ALWAYS)	// calculated by admin scripts
 	@Column(name = "rank")
@@ -46,58 +49,113 @@ public class PoolGameLeaderboard implements Serializable{
 	@Column(name = "potential_winnings")
 	private Integer potential_winnings;
 	
-	public PoolGameLeaderboard() {
+	
+	public UserInFangroupGameLeaderboard() {
 		
 	}
 
-	public Pool getPool() {
-		return pool;
-	}
-
-	public void setPool(Pool pool) {
-		this.pool = pool;
-	}
 
 	public Game getGame() {
 		return game;
 	}
 
+
 	public void setGame(Game game) {
 		this.game = game;
 	}
+
 
 	public User getUser() {
 		return user;
 	}
 
+
 	public void setUser(User user) {
 		this.user = user;
 	}
+
+
+	public FanGroup getFangroup() {
+		return fangroup;
+	}
+
+
+	public void setFangroup(FanGroup fangroup) {
+		this.fangroup = fangroup;
+	}
+
+
+	public String getFangroupName() {
+		return fangroupName;
+	}
+
+
+	public void setFangroupName(String fangroupName) {
+		this.fangroupName = fangroupName;
+	}
+
 
 	public Integer getRank() {
 		return rank;
 	}
 
+
 	public void setRank(Integer rank) {
 		this.rank = rank;
 	}
+
 
 	public Integer getPoints() {
 		return points;
 	}
 
+
 	public void setPoints(Integer points) {
 		this.points = points;
 	}
+
 
 	public Integer getPotential_winnings() {
 		return potential_winnings;
 	}
 
+
 	public void setPotential_winnings(Integer potential_winnings) {
 		this.potential_winnings = potential_winnings;
 	}
-	
+
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((game == null) ? 0 : game.hashCode());
+		result = prime * result + ((user == null) ? 0 : user.hashCode());
+		return result;
+	}
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		UserInFangroupGameLeaderboard other = (UserInFangroupGameLeaderboard) obj;
+		if (game == null) {
+			if (other.game != null)
+				return false;
+		} else if (!game.equals(other.game))
+			return false;
+		if (user == null) {
+			if (other.user != null)
+				return false;
+		} else if (!user.equals(other.user))
+			return false;
+		return true;
+	}
 	
 	
 }

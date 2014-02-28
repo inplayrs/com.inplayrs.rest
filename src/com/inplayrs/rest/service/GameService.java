@@ -4,8 +4,13 @@ package com.inplayrs.rest.service;
 import com.inplayrs.rest.constants.LeaderboardType;
 import com.inplayrs.rest.constants.State;
 import com.inplayrs.rest.ds.Fan;
+import com.inplayrs.rest.ds.FanGroup;
+import com.inplayrs.rest.ds.FangroupCompLeaderboard;
+import com.inplayrs.rest.ds.FangroupGameLeaderboard;
 import com.inplayrs.rest.ds.Game;
 import com.inplayrs.rest.ds.GameEntry;
+import com.inplayrs.rest.ds.GlobalCompLeaderboard;
+import com.inplayrs.rest.ds.GlobalGameLeaderboard;
 import com.inplayrs.rest.ds.Period;
 import com.inplayrs.rest.ds.PeriodSelection;
 import com.inplayrs.rest.ds.PoolCompLeaderboard;
@@ -13,6 +18,8 @@ import com.inplayrs.rest.ds.PoolGameEntry;
 import com.inplayrs.rest.ds.PoolGameLeaderboard;
 import com.inplayrs.rest.ds.PoolMember;
 import com.inplayrs.rest.ds.User;
+import com.inplayrs.rest.ds.UserInFangroupCompLeaderboard;
+import com.inplayrs.rest.ds.UserInFangroupGameLeaderboard;
 import com.inplayrs.rest.exception.DBException;
 import com.inplayrs.rest.exception.InvalidParameterException;
 import com.inplayrs.rest.exception.InvalidStateException;
@@ -307,13 +314,15 @@ public class GameService {
 			fangroupQuery.setParameter("username", username);
 			fangroupQuery.setParameter("comp_id", g.getCompetition_id());
 			
-			List <Fan> fan = fangroupQuery.list();
-			if (fan.isEmpty()) {
+			Fan fan = (Fan)fangroupQuery.uniqueResult();
+			if (fan == null) {
 				log.error(username+" | Cannot post selections, no fangroup selected for competition "+g.getCompetition_id());
 				throw new InvalidStateException(new RestError(2201, "Please select a fangroup for this competition before entering!"));
 			}
 			
+			FanGroup fanGroup = fan.getFangroup();
 			
+			// Get user object
 			Query userQuery = session.createQuery("FROM User u WHERE u.username = :username");
 			userQuery.setParameter("username", username);
 			userQuery.setCacheable(true);
@@ -341,10 +350,121 @@ public class GameService {
 			
 			// Always increase global pot size
 			g.setGlobal_pot_size(g.getGlobal_pot_size() + g.getStake());
-			
 			session.update(g);	
+
 			
-			// Add game entry for any pools the user is in, and add to leaderboards
+			// Add user to global_game_leaderboard
+			log.debug(username+" | Adding user to global_game_leaderboard for game "+game_id);
+			GlobalGameLeaderboard globalGameLeaderboard = new GlobalGameLeaderboard();
+			globalGameLeaderboard.setGame(g);
+			globalGameLeaderboard.setUser(usr);
+			globalGameLeaderboard.setFangroup(fanGroup);
+			globalGameLeaderboard.setPoints(0);
+			globalGameLeaderboard.setPotential_winnings(0);
+			globalGameLeaderboard.setFangroupName(fanGroup.getName()); // TODO - Deco when field removed
+			session.save(globalGameLeaderboard);
+			
+			// See if entry exists in fangroup_game_leaderboard, and create entry if not
+			StringBuffer fglQueryString = new StringBuffer("FROM FangroupGameLeaderboard fgl where ");
+			fglQueryString.append("fgl.game.game_id = :game_id and fgl.fangroup.fangroup_id = :fangroup_id");
+			Query fglQuery = session.createQuery(fglQueryString.toString());
+			fglQuery.setParameter("game_id", g.getGame_id());
+			fglQuery.setParameter("fangroup_id", fanGroup.getFangroup_id());
+			
+			FangroupGameLeaderboard fgl = (FangroupGameLeaderboard) fglQuery.uniqueResult();
+		
+			if (fgl == null) {
+				// Create new FangroupGameLeaderboard entry
+				log.debug(username+" | Adding user to fangroup_game_leaderboard for game "+game_id);
+				fgl = new FangroupGameLeaderboard();
+				fgl.setGame(g);
+				fgl.setFangroup(fanGroup);
+				fgl.setFangroupName(fanGroup.getName()); // TODO - Deco when field removed
+				fgl.setNumPlayers(1); 	// TODO - race condition - fix
+				session.save(fgl);
+			} else {
+				log.debug(username+" | User is already in fangroup_game_leaderboard for game "+game_id);
+				fgl.setNumPlayers(fgl.getNumPlayers()+1);
+				session.save(fgl);
+			}
+			
+			// Add user to user_in_fangroup_game_leaderboard
+			log.debug(username+" | Adding user to user_in_fangroup_game_leaderboard for game "+game_id);
+			UserInFangroupGameLeaderboard uifgl = new UserInFangroupGameLeaderboard();
+			uifgl.setGame(g);
+			uifgl.setUser(usr);
+			uifgl.setFangroup(fanGroup);
+			uifgl.setFangroupName(fanGroup.getName());
+			session.save(uifgl);
+			
+			// See if user is already in global_comp_leaderboard, and add if not
+			StringBuffer gclQueryString = new StringBuffer("FROM GlobalCompLeaderboard gcl where ");
+			gclQueryString.append("gcl.competition.comp_id = :comp_id and ");
+			gclQueryString.append("gcl.user.user_id = :user_id");
+			Query gclQuery = session.createQuery(gclQueryString.toString());
+			gclQuery.setParameter("comp_id", g.getCompetition_id());
+			gclQuery.setParameter("user_id", usr.getUser_id());
+			
+			GlobalCompLeaderboard gcl = (GlobalCompLeaderboard) gclQuery.uniqueResult();
+			
+			if (gcl == null) {
+				log.debug(username+" | Adding user to global_comp_leaderboard for comp "+g.getCompetition_id());
+				gcl = new GlobalCompLeaderboard();
+				gcl.setCompetition(g.getCompetition());
+				gcl.setUser(usr);
+				gcl.setFangroup(fanGroup);
+				gcl.setFangroupName(fanGroup.getName());
+				session.save(gcl);
+			} else {
+				log.debug(username+" | User is already in global_comp_leaderboard for comp "+g.getCompetition_id());
+			}
+			
+			// See if entry exists in fangroup_comp_leaderboard, and create entry if not
+			StringBuffer fclQueryString = new StringBuffer("FROM FangroupCompLeaderboard fcl where ");
+			fclQueryString.append("fcl.competition.comp_id = :comp_id and ");
+			fclQueryString.append("fcl.fangroup.fangroup_id = :fangroup_id");
+			Query fclQuery = session.createQuery(fclQueryString.toString());
+			fclQuery.setParameter("comp_id", g.getCompetition_id());
+			fclQuery.setParameter("fangroup_id", fanGroup.getFangroup_id());
+			
+			FangroupCompLeaderboard fcl = (FangroupCompLeaderboard) fclQuery.uniqueResult();
+			
+			if (fcl == null) {
+				log.debug(username+" | Adding user to fangroup_comp_leaderboard for comp "+g.getCompetition_id());
+				fcl = new FangroupCompLeaderboard();
+				fcl.setCompetition(g.getCompetition());
+				fcl.setFangroup(fanGroup);
+				fcl.setFangroupName(fanGroup.getName());
+				session.save(fcl);
+			} else {
+				log.debug(username+" | User is already in fangroup_comp_leaderboard for comp "+g.getCompetition_id());
+			}
+			
+			
+			// See if entry exists in user_in_fangroup_comp_leaderboard, and create entry if not
+			StringBuffer uifclQueryString = new StringBuffer("FROM UserInFangroupCompLeaderboard uifcl where ");
+			uifclQueryString.append("uifcl.competition.comp_id = :comp_id and ");
+			uifclQueryString.append("uifcl.user.user_id = :user_id");
+			Query uifclQuery = session.createQuery(uifclQueryString.toString());
+			uifclQuery.setParameter("comp_id", g.getCompetition_id());
+			uifclQuery.setParameter("user_id", usr.getUser_id());
+			
+			UserInFangroupCompLeaderboard uifcl = (UserInFangroupCompLeaderboard) uifclQuery.uniqueResult();
+			
+			if (uifcl == null) {
+				log.debug(username+" | Adding user to user_in_fangroup_comp_leaderboard for comp "+g.getCompetition_id());
+				uifcl = new UserInFangroupCompLeaderboard();
+				uifcl.setCompetition(g.getCompetition());
+				uifcl.setUser(usr);
+				uifcl.setFangroup(fanGroup);
+				uifcl.setFangroupName(fanGroup.getName());
+				session.save(uifcl);
+			} else {
+				log.debug(username+" | User is already in user_in_fangroup_comp_leaderboard for comp "+g.getCompetition_id());
+			}
+			
+			
+			// Add game entry for any pools the user is in, and add to pool leaderboards
 			Query poolMemberQuery = session.createQuery("from PoolMember pm where pm.user.username = :username");
 			poolMemberQuery.setParameter("username", username);
 			List <PoolMember> poolMembers = poolMemberQuery.list();
