@@ -352,6 +352,7 @@ public class GameService {
 			g.setGlobal_pot_size(g.getGlobal_pot_size() + g.getStake());
 			session.update(g);	
 
+			/*
 			
 			// Add user to global_game_leaderboard
 			log.debug(username+" | Adding user to global_game_leaderboard for game "+game_id);
@@ -462,6 +463,8 @@ public class GameService {
 			} else {
 				log.debug(username+" | User is already in user_in_fangroup_comp_leaderboard for comp "+g.getCompetition_id());
 			}
+			
+			*/
 			
 			
 			// Add game entry for any pools the user is in, and add to pool leaderboards
