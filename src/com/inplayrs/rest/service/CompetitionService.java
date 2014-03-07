@@ -443,7 +443,9 @@ public class CompetitionService {
 			
 		
 		Query query = session.createQuery(queryString.toString());
-		query.setParameter("comp_id", comp_id);
+		if (comp_id != null) {
+			query.setParameter("comp_id", comp_id);
+		}
 			
 		List<CompetitionWinnersResponse> response = new ArrayList<>();
 		

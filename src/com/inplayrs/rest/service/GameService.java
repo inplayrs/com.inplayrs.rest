@@ -5,12 +5,12 @@ import com.inplayrs.rest.constants.LeaderboardType;
 import com.inplayrs.rest.constants.State;
 import com.inplayrs.rest.ds.Fan;
 import com.inplayrs.rest.ds.FanGroup;
-import com.inplayrs.rest.ds.FangroupCompLeaderboard;
-import com.inplayrs.rest.ds.FangroupGameLeaderboard;
+//import com.inplayrs.rest.ds.FangroupCompLeaderboard;
+//import com.inplayrs.rest.ds.FangroupGameLeaderboard;
 import com.inplayrs.rest.ds.Game;
 import com.inplayrs.rest.ds.GameEntry;
-import com.inplayrs.rest.ds.GlobalCompLeaderboard;
-import com.inplayrs.rest.ds.GlobalGameLeaderboard;
+//import com.inplayrs.rest.ds.GlobalCompLeaderboard;
+//import com.inplayrs.rest.ds.GlobalGameLeaderboard;
 import com.inplayrs.rest.ds.Period;
 import com.inplayrs.rest.ds.PeriodSelection;
 import com.inplayrs.rest.ds.PoolCompLeaderboard;
@@ -18,8 +18,8 @@ import com.inplayrs.rest.ds.PoolGameEntry;
 import com.inplayrs.rest.ds.PoolGameLeaderboard;
 import com.inplayrs.rest.ds.PoolMember;
 import com.inplayrs.rest.ds.User;
-import com.inplayrs.rest.ds.UserInFangroupCompLeaderboard;
-import com.inplayrs.rest.ds.UserInFangroupGameLeaderboard;
+//import com.inplayrs.rest.ds.UserInFangroupCompLeaderboard;
+//import com.inplayrs.rest.ds.UserInFangroupGameLeaderboard;
 import com.inplayrs.rest.exception.DBException;
 import com.inplayrs.rest.exception.InvalidParameterException;
 import com.inplayrs.rest.exception.InvalidStateException;
@@ -320,7 +320,7 @@ public class GameService {
 				throw new InvalidStateException(new RestError(2201, "Please select a fangroup for this competition before entering!"));
 			}
 			
-			FanGroup fanGroup = fan.getFangroup();
+			// FanGroup fanGroup = fan.getFangroup();
 			
 			// Get user object
 			Query userQuery = session.createQuery("FROM User u WHERE u.username = :username");
