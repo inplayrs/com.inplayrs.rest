@@ -486,6 +486,42 @@ public class PoolService {
 		} else if (comp_id != null) {
 			log.debug(username+" | Getting pool points response for pool "+pool_id+" and comp: "+game_id);
 			
+			StringBuffer queryString = new StringBuffer("SELECT ");
+			queryString.append("pcl.rank as pool_rank, ");
+			queryString.append("pcl.winnings as pool_winnings, ");
+			queryString.append("pool_comp_stats.pool_size as pool_size, ");
+			queryString.append("pool_comp_stats.total_pool_winnings as total_pool_winnings ");
+			queryString.append("FROM ");
+			queryString.append("pool_comp_leaderboard pcl ");
+			queryString.append("LEFT JOIN user u ON u.user_id = pcl.user ");
+			queryString.append("LEFT JOIN ");
+			queryString.append("( SELECT ");
+			queryString.append("COUNT(*) as pool_size, ");
+			queryString.append("SUM(pcl.winnings) AS total_pool_winnings, ");
+			queryString.append("pcl.competition as competition ");
+			queryString.append("FROM ");
+			queryString.append("pool_comp_leaderboard pcl ");
+			queryString.append("WHERE ");
+			queryString.append("pcl.competition = :comp_id AND ");
+			queryString.append("pcl.pool = :pool_id ");
+			queryString.append(") AS pool_comp_stats ");
+			queryString.append("on 	pool_comp_stats.competition = pcl.competition ");
+			queryString.append("WHERE ");
+			queryString.append("pcl.competition = :comp_id AND ");
+			queryString.append("pcl.pool = :pool_id AND ");
+			queryString.append("u.username = :username ");
+			
+			SQLQuery sqlQuery = session.createSQLQuery(queryString.toString());
+			sqlQuery.setParameter("pool_id", pool_id);
+			sqlQuery.setParameter("comp_id", comp_id);
+			sqlQuery.setParameter("username", username);
+			sqlQuery.addScalar("pool_rank",  org.hibernate.type.IntegerType.INSTANCE);
+			sqlQuery.addScalar("pool_winnings",  org.hibernate.type.IntegerType.INSTANCE);
+			sqlQuery.addScalar("pool_size",  org.hibernate.type.IntegerType.INSTANCE);
+			sqlQuery.addScalar("total_pool_winnings",  org.hibernate.type.IntegerType.INSTANCE);
+			sqlQuery.setResultTransformer(Transformers.aliasToBean(PoolPointsResponse.class));
+			
+			return (PoolPointsResponse) sqlQuery.uniqueResult();
 		} 
 
 		return null;
