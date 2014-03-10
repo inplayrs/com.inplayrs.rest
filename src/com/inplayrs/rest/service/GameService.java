@@ -4,7 +4,7 @@ package com.inplayrs.rest.service;
 import com.inplayrs.rest.constants.LeaderboardType;
 import com.inplayrs.rest.constants.State;
 import com.inplayrs.rest.ds.Fan;
-import com.inplayrs.rest.ds.FanGroup;
+//import com.inplayrs.rest.ds.FanGroup;
 //import com.inplayrs.rest.ds.FangroupCompLeaderboard;
 //import com.inplayrs.rest.ds.FangroupGameLeaderboard;
 import com.inplayrs.rest.ds.Game;

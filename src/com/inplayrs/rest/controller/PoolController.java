@@ -22,6 +22,7 @@ import com.inplayrs.rest.exception.RestError;
 import com.inplayrs.rest.requestds.UserList;
 import com.inplayrs.rest.responseds.MyPoolResponse;
 import com.inplayrs.rest.responseds.PoolMemberResponse;
+import com.inplayrs.rest.responseds.PoolPointsResponse;
 import com.inplayrs.rest.service.PoolService;
 
 /*
@@ -120,4 +121,25 @@ public class PoolController {
 		return poolService.updatePool(pool_id, name);
 	}
 	
+	
+	/*
+	 * GET pool/points
+	 */
+	@RequestMapping(value = "/points", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+	public @ResponseBody PoolPointsResponse getPoolPoints(
+			@RequestParam(value="pool_id", required=true) Integer pool_id,
+			@RequestParam(value="game_id", required=false) Integer game_id,
+			@RequestParam(value="comp_id", required=false) Integer comp_id){
+		
+		// Must specify either game_id or comp_id but not both
+		if (game_id != null && comp_id != null) {
+			throw new InvalidParameterException(new RestError(3400, "Must specify either game_id or comp_id, not both"));
+		}
+		if (game_id == null && comp_id == null) {
+			throw new InvalidParameterException(new RestError(3401, "Must specify either game_id or comp_id"));
+		}
+		
+		return poolService.getPoolPoints(pool_id, game_id, comp_id);
+	}
 }

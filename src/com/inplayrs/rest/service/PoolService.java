@@ -7,6 +7,7 @@ import javax.annotation.Resource;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Query;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.exception.ConstraintViolationException;
@@ -28,6 +29,7 @@ import com.inplayrs.rest.exception.RestError;
 import com.inplayrs.rest.requestds.UserList;
 import com.inplayrs.rest.responseds.MyPoolResponse;
 import com.inplayrs.rest.responseds.PoolMemberResponse;
+import com.inplayrs.rest.responseds.PoolPointsResponse;
 import com.inplayrs.rest.util.IPUtil;
 
 @Service("poolService")
@@ -426,4 +428,67 @@ public class PoolService {
 		}
 		
 	}
+	
+	
+	/*
+	 * GET pool/points
+	 */
+	public PoolPointsResponse getPoolPoints(Integer pool_id, Integer game_id, Integer comp_id) {
+		// Get username of player
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession(); 
+		
+		if (game_id != null) {
+			log.debug(username+" | Getting pool points response for pool "+pool_id+" and game: "+game_id);
+			
+			StringBuffer queryString = new StringBuffer("SELECT ");
+			queryString.append("pool_players.pool_size * g.stake as pool_pot_size, ");
+			queryString.append("ge.total_points as points, ");
+			queryString.append("pgl.rank as pool_rank, ");
+			queryString.append("pgl.potential_winnings as pool_winnings, ");
+			queryString.append("pool_players.pool_size as pool_size ");
+			queryString.append("FROM ");
+			queryString.append("pool_game_entry pge ");
+			queryString.append("left join game_entry ge on ge.game_entry_id = pge.game_entry ");
+			queryString.append("left join pool_member pm on pm.pool_member_id = pge.pool_member ");
+			queryString.append("left join user u on u.user_id = pm.user ");
+			queryString.append("left join game g on g.game_id = ge.game ");
+			queryString.append("left join pool_game_leaderboard pgl on ");
+			queryString.append("pgl.user = pm.user and pgl.game = ge.game and pgl.pool = pm.pool ");
+			queryString.append("left join ");
+			queryString.append("(select count(*) as pool_size, ");
+			queryString.append("pgl.game as game_id ");
+			queryString.append("from pool_game_leaderboard pgl ");
+			queryString.append("where pgl.game = :game_id ");
+			queryString.append("and pgl.pool = :pool_id ");
+			queryString.append(") as pool_players ");
+			queryString.append("on pool_players.game_id = ge.game ");
+			queryString.append("WHERE ");
+			queryString.append("pm.pool = :pool_id ");
+			queryString.append("and ge.game = :game_id ");
+			queryString.append("and u.username = :username ");
+			
+			SQLQuery sqlQuery = session.createSQLQuery(queryString.toString());
+			sqlQuery.setParameter("pool_id", pool_id);
+			sqlQuery.setParameter("game_id", game_id);
+			sqlQuery.setParameter("username", username);
+			sqlQuery.addScalar("pool_pot_size", org.hibernate.type.IntegerType.INSTANCE);
+			sqlQuery.addScalar("points",  org.hibernate.type.IntegerType.INSTANCE);
+			sqlQuery.addScalar("pool_rank",  org.hibernate.type.IntegerType.INSTANCE);
+			sqlQuery.addScalar("pool_winnings",  org.hibernate.type.IntegerType.INSTANCE);
+			sqlQuery.addScalar("pool_size",  org.hibernate.type.IntegerType.INSTANCE);
+			sqlQuery.setResultTransformer(Transformers.aliasToBean(PoolPointsResponse.class));
+			
+			return (PoolPointsResponse) sqlQuery.uniqueResult();
+			
+		} else if (comp_id != null) {
+			log.debug(username+" | Getting pool points response for pool "+pool_id+" and comp: "+game_id);
+			
+		} 
+
+		return null;
+	}
+	
 }
