@@ -809,7 +809,9 @@ public class GameService {
 		queryString.append(" ORDER BY ggl.game.end_date DESC");
 		
 		Query query = session.createQuery(queryString.toString());
-		query.setParameter("game_id", game_id);
+		if (game_id != null) {
+			query.setParameter("game_id", game_id);
+		}
 		
 		//return first 100
 		query.setMaxResults(100);
