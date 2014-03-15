@@ -72,6 +72,16 @@ public class PoolService {
 		userQuery.setCacheRegion("user");
 		User user = (User) userQuery.uniqueResult();
 		
+		// Check if user is already in the max number of pools allowed
+		Query numPoolsQuery = session.createQuery("select count(*) from PoolMember pm where pm.user.username = :username");
+		numPoolsQuery.setParameter("username", user.getUsername());
+		Integer numPoolsUserIn = ( (Long) numPoolsQuery.iterate().next() ).intValue();
+		
+		if (numPoolsUserIn >= Threshold.MAX_POOLS_USER_CAN_BE_IN) {
+			log.info(username+" | Cannot create pool, user is already in the max number of pools ("+Threshold.MAX_POOLS_USER_CAN_BE_IN+")");
+			throw new InvalidStateException(new RestError(2804, "You are already in the max number of pools, please leave a pool before creating a new one"));
+		}		
+		
 		// See if pool already exists
 		Query query = session.createQuery("FROM Pool p WHERE p.name = :name");
 		query.setParameter("name", name);
