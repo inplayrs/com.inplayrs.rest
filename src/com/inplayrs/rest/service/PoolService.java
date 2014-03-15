@@ -333,7 +333,8 @@ public class PoolService {
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession(); 
 		
-		Query query = session.createQuery("select pm.user.username as username, pm.user.facebook_id as facebook_id "+
+		Query query = session.createQuery("select pm.user.username as username, pm.user.facebook_id as facebook_id, "+
+										  "pm.rank as rank, pm.winnings as winnings "+
 										  "from PoolMember pm where pm.pool.pool_id = :pool_id");
 		query.setParameter("pool_id", pool_id);
 		query.setResultTransformer(Transformers.aliasToBean(PoolMemberResponse.class));

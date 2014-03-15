@@ -9,6 +9,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
+
 @Entity
 @Table(name = "pool_member")
 public class PoolMember {
@@ -25,6 +28,14 @@ public class PoolMember {
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "user", nullable = false)
 	private User user;
+	
+	@Generated(GenerationTime.ALWAYS)	// calculated by admin scripts
+	@Column(name = "rank")
+	private Integer rank;
+	
+	@Generated(GenerationTime.ALWAYS)	// calculated by admin scripts
+	@Column(name = "winnings")
+	private Integer winnings;
 	
 	
 	public PoolMember() {
@@ -60,8 +71,26 @@ public class PoolMember {
 	public void setUser(User user) {
 		this.user = user;
 	}
-	
-	
+
+
+	public Integer getRank() {
+		return rank;
+	}
+
+
+	public void setRank(Integer rank) {
+		this.rank = rank;
+	}
+
+
+	public Integer getWinnings() {
+		return winnings;
+	}
+
+
+	public void setWinnings(Integer winnings) {
+		this.winnings = winnings;
+	}
 	
 	
 }

@@ -16,6 +16,15 @@ public class PoolMemberResponse {
 	@JsonProperty
 	private String facebook_id;
 	
+	@Column(name = "rank")
+	@JsonProperty
+	private Integer rank;
+	
+	@Column(name = "winnings")
+	@JsonProperty
+	private Integer winnings;
+	
+	
 	public PoolMemberResponse() {
 		
 	}
@@ -35,5 +44,23 @@ public class PoolMemberResponse {
 	public void setFacebook_id(String facebook_id) {
 		this.facebook_id = facebook_id;
 	}
+
+	public Integer getRank() {
+		return rank;
+	}
+
+	public void setRank(Integer rank) {
+		this.rank = rank;
+	}
+
+	public Integer getWinnings() {
+		return winnings;
+	}
+
+	public void setWinnings(Integer winnings) {
+		this.winnings = winnings;
+	}
+	
+	
 	
 }
