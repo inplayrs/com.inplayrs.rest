@@ -317,12 +317,14 @@ public class PoolService {
 		
 		log.debug(authed_user+" | Successfully added user "+user.getUsername()+" to pool "+pool.getName()+". Adding motd to indicate this.");
 		
-		// Add message to tell user they have been added to pool
-		Motd message = new Motd();
-		message.setUser(user);
-		message.setMessage("You have been added to friend pool '"+pool.getName()+"' by "+authed_user);
-		message.setProcessed(0);
-		session.save(message);
+		// Add message to tell user they have been added to pool (unless adding pool creator to pool)
+		if (!pool.getCreated_by().equals(user)) {
+			Motd message = new Motd();
+			message.setUser(user);
+			message.setMessage("You have been added to friend pool '"+pool.getName()+"' by "+authed_user);
+			message.setProcessed(0);
+			session.save(message);
+		}
 		
 		return Result.SUCCESS;
 		
