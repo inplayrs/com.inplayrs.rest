@@ -152,6 +152,8 @@ public class PoolService {
 		List<String> addedFBIDs = new ArrayList<>();
 		List<String> nonExistantFBIDs = new ArrayList<>();
 		List<String> fbIDsAlreadyInPool = new ArrayList<>();
+		List<String> usernamesInMaxNumPools = new ArrayList<>();
+		List<String> fbIDsInMaxNumPools = new ArrayList<>();
 		
 		// Process usernames
 		if (!userList.getUsernames().isEmpty()) {
@@ -163,6 +165,8 @@ public class PoolService {
 					nonExistantUsernames.add(username);
 				} else if (userAdded == Result.USER_ALREADY_IN_POOL) {
 					usernamesAlreadyInPool.add(username);
+				} else if (userAdded == Result.USER_IN_MAX_NUMBER_OF_POOLS) {
+					usernamesInMaxNumPools.add(username);
 				}
 			}
 		}
@@ -177,12 +181,16 @@ public class PoolService {
 					nonExistantFBIDs.add(fbID);
 				} else if (userAdded == Result.USER_ALREADY_IN_POOL) {
 					fbIDsAlreadyInPool.add(fbID);
+				} else if (userAdded == Result.USER_IN_MAX_NUMBER_OF_POOLS) {
+					fbIDsInMaxNumPools.add(fbID);
 				}
 			}
 		}	
 			
 		// Check which users failed to be added to pool
-		StringBuffer errorMsg = new StringBuffer("Could not add all users to pool ").append(pool_id);
+		
+		String initialErrorMsgString = "Could not add all users to pool "+pool_id;
+		StringBuffer errorMsg = new StringBuffer(initialErrorMsgString);
 		
 		if (!nonExistantUsernames.isEmpty()) {
 			errorMsg.append(". The following usernames do not exist: "+IPUtil.listToCommaSeparatedString(nonExistantUsernames));
@@ -190,6 +198,10 @@ public class PoolService {
 		
 		if (!usernamesAlreadyInPool.isEmpty()) {
 			errorMsg.append(". The following users are already in the pool: "+IPUtil.listToCommaSeparatedString(usernamesAlreadyInPool));
+		}
+		
+		if (!usernamesInMaxNumPools.isEmpty()) {
+			errorMsg.append(". The following users are already in the max number of pools: "+IPUtil.listToCommaSeparatedString(usernamesInMaxNumPools));
 		}
 		
 		if (!nonExistantFBIDs.isEmpty()) {
@@ -203,10 +215,14 @@ public class PoolService {
 			errorMsg.append(". The following users by facebook_id are already in the pool: "+IPUtil.listToCommaSeparatedString(fbIDsAlreadyInPool));
 		}
 		
+		if (!fbIDsInMaxNumPools.isEmpty()) {
+			errorMsg.append(". The following users by facebook_id are already in the max number of pools: "+IPUtil.listToCommaSeparatedString(fbIDsInMaxNumPools));
+		}
+		
+		
 		// Log any errors
-		if (!nonExistantUsernames.isEmpty() || !usernamesAlreadyInPool.isEmpty() || 
-			!nonExistantFBIDs.isEmpty() || !fbIDsAlreadyInPool.isEmpty()) {
-			log.debug(errorMsg.toString());
+		if (!initialErrorMsgString.equals(errorMsg.toString())) {
+			log.info(errorMsg.toString());
 		} 
 		
 		// Return null as client will just be looking at the HTTP response
@@ -214,10 +230,11 @@ public class PoolService {
 
 	}
 	
+	
 	// Helper method to add an individual pool member
 	public int _addPoolMember(Pool pool, String username, String fbID) {
 		
-		// Get username of player
+		// Get username of player adding user to pool
 		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
 		
 		// Check whether pool has max number of participants in or not
@@ -231,6 +248,7 @@ public class PoolService {
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession(); 
 		
+		// Get user object
 		User user = null;
 		if (username != null) {
 			Query userQuery = session.createQuery("FROM User u WHERE u.username = :username");
@@ -254,6 +272,17 @@ public class PoolService {
 				return Result.USER_DOES_NOT_EXIST;
 			}
 		}
+		
+		// Check if user is already in the max number of pools allowed
+		Query numPoolsQuery = session.createQuery("select count(*) from PoolMember pm where pm.user.username = :username");
+		numPoolsQuery.setParameter("username", user.getUsername());
+		Integer numPoolsUserIn = ( (Long) numPoolsQuery.iterate().next() ).intValue();
+		
+		if (numPoolsUserIn >= Threshold.MAX_POOLS_USER_CAN_BE_IN) {
+			log.info(authed_user+" | User "+user.getUsername()+" is already in max number of pools ("+Threshold.MAX_POOLS_USER_CAN_BE_IN+")");
+			return Result.USER_IN_MAX_NUMBER_OF_POOLS;
+		}
+		
 		
 		PoolMember poolMember = new PoolMember();
 		poolMember.setPool(pool);
