@@ -21,6 +21,8 @@ import com.inplayrs.rest.constants.Result;
 import com.inplayrs.rest.constants.Threshold;
 import com.inplayrs.rest.ds.Motd;
 import com.inplayrs.rest.ds.Pool;
+import com.inplayrs.rest.ds.PoolCompLeaderboard;
+import com.inplayrs.rest.ds.PoolGameLeaderboard;
 import com.inplayrs.rest.ds.PoolMember;
 import com.inplayrs.rest.ds.User;
 import com.inplayrs.rest.exception.InvalidParameterException;
@@ -395,6 +397,7 @@ public class PoolService {
 	/*
 	 * POST pool/leave
 	 */
+	@SuppressWarnings("unchecked")
 	public Boolean leavePool(Integer pool_id) {
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -427,8 +430,49 @@ public class PoolService {
 		
 		log.debug(username+" | Removed "+poolGameEntriesDeleted+" pool game entries for user in pool "+pool_id);
 		
-		// Remove user from pool
-		session.delete(poolMember);
+		
+		// Remove user's entries from pool_game_leaderboard
+		log.debug(username+" | Removing entries from pool_game_leaderboard for user "+username+" and pool "+pool_id);
+		StringBuffer poolGameLeaderboardQueryString = new StringBuffer("from PoolGameLeaderboard pgl ");
+		poolGameLeaderboardQueryString.append("where pgl.pool.pool_id = :pool_id ");
+		poolGameLeaderboardQueryString.append("and pgl.user.username = :username");
+		Query poolGameLeaderboardQuery = session.createQuery(poolGameLeaderboardQueryString.toString());
+		poolGameLeaderboardQuery.setParameter("pool_id", pool_id);
+		poolGameLeaderboardQuery.setParameter("username", username);
+		
+		List <PoolGameLeaderboard> pglList= poolGameLeaderboardQuery.list();
+		for (PoolGameLeaderboard pgl: pglList) {
+			log.debug(username+" | Removing pool_game_leaderboard entry for pool "+pool_id+" and game "+pgl.getGame().getGame_id());
+			session.delete(pgl);
+		}
+		
+		// Remove user's entries from pool_comp_leaderboard
+		log.debug(username+" | Removing entries from pool_comp_leaderboard for user "+username+" and pool "+pool_id);
+		StringBuffer poolCompLeaderboardQueryString = new StringBuffer("from PoolCompLeaderboard pcl ");
+		poolCompLeaderboardQueryString.append("where pcl.pool.pool_id = :pool_id ");
+		poolCompLeaderboardQueryString.append("and pcl.user.username = :username");
+		Query poolCompLeaderboardQuery = session.createQuery(poolCompLeaderboardQueryString.toString());
+		poolCompLeaderboardQuery.setParameter("pool_id", pool_id);
+		poolCompLeaderboardQuery.setParameter("username", username);
+		
+		List <PoolCompLeaderboard> pclList= poolCompLeaderboardQuery.list();
+		for (PoolCompLeaderboard pcl: pclList) {
+			log.debug(username+" | Removing pool_comp_leaderboard entry for pool "+pool_id+" and comp "+pcl.getCompetition().getComp_id());
+			session.delete(pcl);
+		}
+		
+		// Get pool object
+		Pool pool = poolMember.getPool();
+		
+		// Delete pool member then delete pool if this is last member
+		if (pool.getNum_players() <= 1) {
+			session.delete(poolMember);
+			log.debug(username+" | Deleting pool "+pool_id+" as no more members remaining");
+			session.delete(pool);
+		} else {
+			// Just remove user from pool
+			session.delete(poolMember);
+		}
 		
 		// Return null on success as client will just be looking at the HTTP response
 		return null;
