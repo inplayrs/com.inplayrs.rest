@@ -112,7 +112,7 @@ public class PoolService {
 		
 		// Add pool creator to pool
 		log.debug(username+" | Adding creator of pool as pool member");
-		int addUserResult = _addPoolMember(pool, username, null);
+		int addUserResult = _addPoolMember(pool, username, null, null);
 		if (addUserResult != Result.SUCCESS) {
 			throw new InvalidStateException(new RestError(2802, "Failed to add creator of pool as a pool member"));
 		}
@@ -170,7 +170,7 @@ public class PoolService {
 		// Process usernames
 		if (!userList.getUsernames().isEmpty()) {
 			for (String username : userList.getUsernames()) {
-				int userAdded = _addPoolMember(pool, username, null);
+				int userAdded = _addPoolMember(pool, username, null, null);
 				if (userAdded == Result.SUCCESS) {
 					addedUsernames.add(username);
 				} else if (userAdded == Result.USER_DOES_NOT_EXIST){
@@ -186,7 +186,7 @@ public class PoolService {
 		// Process facebookIDs
 		if (!userList.getFacebookIDs().isEmpty()) {
 			for (String fbID : userList.getFacebookIDs()) {
-				int userAdded = _addPoolMember(pool, null, fbID);
+				int userAdded = _addPoolMember(pool, null, fbID, null);
 				if (userAdded == Result.SUCCESS) {
 					addedFBIDs.add(fbID);
 				} else if (userAdded == Result.USER_DOES_NOT_EXIST){
@@ -244,7 +244,7 @@ public class PoolService {
 	
 	
 	// Helper method to add an individual pool member
-	public int _addPoolMember(Pool pool, String username, String fbID) {
+	public int _addPoolMember(Pool pool, String username, String fbID, String invitedByUser) {
 		
 		// Get username of player adding user to pool
 		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -321,9 +321,10 @@ public class PoolService {
 		
 		// Add message to tell user they have been added to pool (unless adding pool creator to pool)
 		if (!pool.getCreated_by().equals(user)) {
+			invitedByUser = (invitedByUser == null ? authed_user : invitedByUser);
 			Motd message = new Motd();
 			message.setUser(user);
-			message.setMessage("You have been added to friend pool '"+pool.getName()+"' by "+authed_user);
+			message.setMessage("You have been added to friend pool '"+pool.getName()+"' by "+invitedByUser);
 			message.setProcessed(0);
 			session.save(message);
 		}

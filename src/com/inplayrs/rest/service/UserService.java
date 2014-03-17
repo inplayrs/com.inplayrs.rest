@@ -14,10 +14,12 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.inplayrs.rest.constants.Result;
 import com.inplayrs.rest.constants.Threshold;
 import com.inplayrs.rest.ds.Competition;
 import com.inplayrs.rest.ds.Fan;
@@ -50,10 +52,14 @@ public class UserService {
 	//get log4j handler
 	private static final Logger log = Logger.getLogger("APILog");
 	
+	@Autowired
+	@Resource(name="poolService")
+	private PoolService poolService;
 	
 	/*
 	 * POST user/register (Username & Password registration)
 	 */
+	@SuppressWarnings("unchecked")
 	public User registerUser(String username, String password, String email, String timezone, 
 							 String deviceID, Boolean pushActive, String gcID, String gcUsername, 
 							 String fbID, String fbUsername, String fbEmail, String fbFullName) {
@@ -145,6 +151,30 @@ public class UserService {
 			}
 				
 			session.save(usr);
+			
+			// Add user to any pools they have been invited to
+			StringBuffer userInviteQuerySQL = new StringBuffer("from UserInvite ui where ");
+			userInviteQuerySQL.append("( (ui.facebookId = :fbID and ui.facebookId is not null) or ");
+			userInviteQuerySQL.append("  (ui.email = :email and ui.email is not null) or ");
+			userInviteQuerySQL.append("  (ui.email = :fbEmail and ui.email is not null) ) and ui.pool is not null");
+			
+			Query userInviteQuery = session.createQuery(userInviteQuerySQL.toString());
+			userInviteQuery.setParameter("fbID", usr.getFacebook_id());
+			userInviteQuery.setParameter("fbEmail", usr.getFacebook_email());
+			userInviteQuery.setParameter("email", usr.getEmail());
+			
+			List<UserInvite> invites = userInviteQuery.list();
+			for (UserInvite ui : invites) {
+				if (ui.getPool() != null) {
+					int result = poolService._addPoolMember(ui.getPool(), usr.getUsername(), null, ui.getSourceUser().getUsername());
+					if (result == Result.SUCCESS) {
+						log.debug(authed_user+" | Successfully added user to pool "+ui.getPool().getPool_id()+" from invite "+ui.getUserInviteId());
+					} else {
+						log.debug(authed_user+" | Failed to add user to pool "+ui.getPool().getPool_id()+" from invite "+ui.getUserInviteId());
+					}
+				}
+			}
+			
 			return usr;
 			
 		} else {
