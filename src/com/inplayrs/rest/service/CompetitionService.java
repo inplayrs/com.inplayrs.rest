@@ -127,6 +127,7 @@ public class CompetitionService {
 		queryString.append("g.game_id, ");
 		queryString.append("g.name, ");
 		queryString.append("c.category as category_id, ");
+		queryString.append("c.comp_id, ");
 		queryString.append("g.game_type, ");
 		queryString.append("g.start_date, ");
 		queryString.append("g.state, ");
@@ -171,6 +172,7 @@ public class CompetitionService {
 		query.addScalar("game_id");
 		query.addScalar("name");
 		query.addScalar("category_id");
+		query.addScalar("comp_id");
 		query.addScalar("game_type");
 		query.addScalar("start_date");
 		query.addScalar("state");

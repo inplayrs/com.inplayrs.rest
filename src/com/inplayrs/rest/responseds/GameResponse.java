@@ -31,6 +31,10 @@ public class GameResponse {
 	@JsonProperty
 	private int category_id;
 	
+	@Column(name = "comp_id")
+	@JsonProperty
+	private int comp_id;
+	
 	@Column(name = "game_type")
 	@JsonProperty
 	private int game_type;
@@ -79,11 +83,9 @@ public class GameResponse {
 	}
 
 
-
 	public void setGame_id(int game_id) {
 		this.game_id = game_id;
 	}
-
 
 
 	public String getName() {
@@ -91,11 +93,9 @@ public class GameResponse {
 	}
 
 
-
 	public void setName(String name) {
 		this.name = name;
 	}
-
 
 
 	public int getCategory_id() {
@@ -103,9 +103,18 @@ public class GameResponse {
 	}
 
 
-
 	public void setCategory_id(int category_id) {
 		this.category_id = category_id;
+	}
+
+	
+	public int getComp_id() {
+		return comp_id;
+	}
+
+
+	public void setComp_id(int comp_id) {
+		this.comp_id = comp_id;
 	}
 
 
@@ -114,11 +123,9 @@ public class GameResponse {
 	}
 
 
-
 	public void setGame_type(int game_type) {
 		this.game_type = game_type;
 	}
-
 
 
 	public LocalDateTime getStart_date() {
@@ -141,17 +148,14 @@ public class GameResponse {
 	}
 
 
-
 	public void setState(int state) {
 		this.state = state;
 	}
 
 
-
 	public int getNum_players() {
 		return num_players;
 	}
-
 
 
 	public void setNum_players(int num_players) {
