@@ -39,7 +39,7 @@ public class UserController {
 	private UserService userService;
 	
 	//get log4j handler
-	private static final Logger log = Logger.getLogger("APILog");
+	private static final Logger log = Logger.getLogger(UserController.class.getName());
 	
     
 	/*
@@ -280,7 +280,7 @@ public class UserController {
 	
 	
 	/*
-	 * GET user/motd
+	 * GET user/list
 	 */
 	@RequestMapping(value = "/list", method = RequestMethod.GET, headers="Accept=application/json")
 	@ResponseStatus( HttpStatus.OK )

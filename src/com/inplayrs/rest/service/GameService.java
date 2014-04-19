@@ -57,7 +57,7 @@ public class GameService {
 	private SessionFactory sessionFactory;
 	
 	//get log4j handler
-	private static final Logger log = Logger.getLogger("APILog");
+	private static final Logger log = Logger.getLogger(GameService.class.getName());
 	
 	
 	/*
@@ -67,7 +67,7 @@ public class GameService {
 		
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
-		log.debug(username+" | Getting period "+period_id);
+		log.info(username+" | Getting period "+period_id);
 		
 	    // Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
@@ -87,7 +87,7 @@ public class GameService {
 		
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
-		log.debug(username+" | Getting periods in game "+game_id);
+		log.info(username+" | GET game/periods game_id="+game_id);
 		
 		// Retrieve session from Hibernate, create query (HQL) and return a list of Periods
 		Session session = sessionFactory.getCurrentSession(); 
@@ -114,7 +114,7 @@ public class GameService {
 	@SuppressWarnings("unchecked")
 	public List<PeriodSelection> getPeriodSelections(Integer game_id, String username) {
 		
-		log.debug(username+" | Getting period selections for game "+game_id);
+		log.info(username+" | Getting period selections for game "+game_id);
 		
 		// Retrieve session from Hibernate, create query (HQL) and return a GamePointsResponse
 		Session session = sessionFactory.getCurrentSession(); 
@@ -138,9 +138,9 @@ public class GameService {
 		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
 		
 		if (authed_user.equals(username)) {
-			log.debug(authed_user+" | Getting points for game "+game_id);
+			log.info(authed_user+" | GET game/points game_id="+game_id);
 		} else {
-			log.debug(authed_user+" | Getting points for game "+game_id+" and user "+username);
+			log.info(authed_user+" | GET game/points game_id="+game_id+" user="+username);
 		}
 		
 		// Default includeSelections to true
@@ -246,7 +246,7 @@ public class GameService {
 		List<GamePointsResponse> result = query.list();
 		
 		if (result.isEmpty()) {
-			log.debug(username+" | No points found for game "+game_id);
+			log.info(username+" | No points found for game "+game_id);
 			return null;
 		} else {	
 			GamePointsResponse gpr = (GamePointsResponse) result.get(0);
@@ -266,7 +266,7 @@ public class GameService {
 	@SuppressWarnings("unchecked")
 	public Integer addGamePeriodSelections(Integer game_id, String username, PeriodSelection[] periodSelections) {
 		
-		log.debug(username+" | Posting selections for game "+game_id);
+		log.info(username+" | POST game/selections game_id="+game_id);
 		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();		
@@ -285,14 +285,14 @@ public class GameService {
 		
 		if (result.isEmpty()) {
 			
-			log.debug(username+" | This is user's initial submit for game "+game_id+", creating a new game entry");
+			log.info(username+" | This is user's initial submit for game "+game_id+", creating a new game entry");
 			
 			// Check whether any periods are suspended as can't submit selections if this is the case
 			for (PeriodSelection ps : periodSelections) {
 				Period period = (Period) session.load(Period.class, ps.getPeriod_id());
 				
 				if (period.getState() == State.SUSPENDED) {
-					log.error(username+" | Cannot post initial selections, one or more events are currently suspended for game "+game_id);
+					log.info(username+" | Cannot post initial selections, one or more events are currently suspended for game "+game_id);
 					session.delete(gameEntry);
 					throw new InvalidStateException(new RestError(2202, "One or more events are currently suspended, please try again later!"));
 				}
@@ -316,7 +316,7 @@ public class GameService {
 			
 			Fan fan = (Fan)fangroupQuery.uniqueResult();
 			if (fan == null) {
-				log.error(username+" | Cannot post selections, no fangroup selected for competition "+g.getCompetition_id());
+				log.info(username+" | Cannot post selections, no fangroup selected for competition "+g.getCompetition_id());
 				throw new InvalidStateException(new RestError(2201, "Please select a fangroup for this competition before entering!"));
 			}
 			
@@ -344,7 +344,7 @@ public class GameService {
 			
 			// Only increase fangroup pot size if it's not a late entry
 			if (g.getState() == State.PREPLAY  || g.getState() == State.TRANSITION) {
-				log.debug(username+" | Increasing fangroup_pot_size for game "+game_id);
+				log.info(username+" | Increasing fangroup_pot_size for game "+game_id);
 				g.setFangroup_pot_size(g.getFangroup_pot_size() + g.getStake());
 			}
 			
@@ -376,7 +376,7 @@ public class GameService {
 		
 			if (fgl == null) {
 				// Create new FangroupGameLeaderboard entry
-				log.debug(username+" | Adding user to fangroup_game_leaderboard for game "+game_id);
+				log.info(username+" | Adding user to fangroup_game_leaderboard for game "+game_id);
 				fgl = new FangroupGameLeaderboard();
 				fgl.setGame(g);
 				fgl.setFangroup(fanGroup);
@@ -390,7 +390,7 @@ public class GameService {
 			}
 			
 			// Add user to user_in_fangroup_game_leaderboard
-			log.debug(username+" | Adding user to user_in_fangroup_game_leaderboard for game "+game_id);
+			log.info(username+" | Adding user to user_in_fangroup_game_leaderboard for game "+game_id);
 			UserInFangroupGameLeaderboard uifgl = new UserInFangroupGameLeaderboard();
 			uifgl.setGame(g);
 			uifgl.setUser(usr);
@@ -417,7 +417,7 @@ public class GameService {
 				gcl.setFangroupName(fanGroup.getName());
 				session.save(gcl);
 			} else {
-				log.debug(username+" | User is already in global_comp_leaderboard for comp "+g.getCompetition_id());
+				log.info(username+" | User is already in global_comp_leaderboard for comp "+g.getCompetition_id());
 			}
 			
 			// See if entry exists in fangroup_comp_leaderboard, and create entry if not
@@ -438,7 +438,7 @@ public class GameService {
 				fcl.setFangroupName(fanGroup.getName());
 				session.save(fcl);
 			} else {
-				log.debug(username+" | User is already in fangroup_comp_leaderboard for comp "+g.getCompetition_id());
+				log.info(username+" | User is already in fangroup_comp_leaderboard for comp "+g.getCompetition_id());
 			}
 			
 			
@@ -461,7 +461,7 @@ public class GameService {
 				uifcl.setFangroupName(fanGroup.getName());
 				session.save(uifcl);
 			} else {
-				log.debug(username+" | User is already in user_in_fangroup_comp_leaderboard for comp "+g.getCompetition_id());
+				log.info(username+" | User is already in user_in_fangroup_comp_leaderboard for comp "+g.getCompetition_id());
 			}
 			
 			*/
@@ -473,7 +473,7 @@ public class GameService {
 			List <PoolMember> poolMembers = poolMemberQuery.list();
 			for (PoolMember poolMember: poolMembers) {
 				// Add game entry
-				log.debug(username+" | Adding game entry to pool "+poolMember.getPool().getPool_id()+
+				log.info(username+" | Adding game entry to pool "+poolMember.getPool().getPool_id()+
 									 " for game "+gameEntry.getGame_id());
 				PoolGameEntry poolGameEntry = new PoolGameEntry();
 				poolGameEntry.setGameEntry(gameEntry);
@@ -481,7 +481,7 @@ public class GameService {
 				session.save(poolGameEntry);
 				
 				// Add to Pool Game Leaderboard
-				log.debug(username+" | Adding user to pool_game_leaderboard for game "+gameEntry.getGame_id()+
+				log.info(username+" | Adding user to pool_game_leaderboard for game "+gameEntry.getGame_id()+
 						" and pool "+poolMember.getPool().getPool_id());
 				PoolGameLeaderboard poolGameLeaderboard = new PoolGameLeaderboard();
 				poolGameLeaderboard.setPool(poolMember.getPool());
@@ -501,7 +501,7 @@ public class GameService {
 				
 				PoolCompLeaderboard poolCompLeaderboard = (PoolCompLeaderboard) pclQuery.uniqueResult();
 				if (poolCompLeaderboard == null) {
-					log.debug(username+" | Adding user to pool_comp_leaderboard for comp "+g.getCompetition_id()+
+					log.info(username+" | Adding user to pool_comp_leaderboard for comp "+g.getCompetition_id()+
 							" and pool "+poolMember.getPool().getPool_id());
 					poolCompLeaderboard = new PoolCompLeaderboard();
 					poolCompLeaderboard.setCompetition(g.getCompetition());
@@ -509,7 +509,7 @@ public class GameService {
 					poolCompLeaderboard.setUser(usr);
 					session.save(poolCompLeaderboard);
 				} else {
-					log.debug(username+" | User is already in pool_comp_leaderboard for comp "+g.getCompetition_id()+
+					log.info(username+" | User is already in pool_comp_leaderboard for comp "+g.getCompetition_id()+
 							" and pool "+poolMember.getPool().getPool_id());
 				}
 			}
@@ -558,7 +558,7 @@ public class GameService {
 						throw new DBException(new RestError(1000, "Failed to create new period selection"));
 					}
 				} else {
-					log.debug(username+" | Could not update period selection, period "+ps.getPeriod_id()+" is no longer in preplay/transition");
+					log.info(username+" | Could not update period selection, period "+ps.getPeriod_id()+" is no longer in preplay/transition");
 				}
 			} else {
 				// Update if pre-play/transition and not cashed out
@@ -566,9 +566,9 @@ public class GameService {
 				int period_state = currentSelection.getPeriod().getState();
 				if (period_state == State.PREPLAY || period_state == State.TRANSITION) {
 					if (currentSelection.isCashed_out()) {
-						log.debug(username+" | User has already banked their points for period "+ps.getPeriod_id());
+						log.info(username+" | User has already banked their points for period "+ps.getPeriod_id());
 					} else {
-						log.debug(username+" | Updating selection for period "+ps.getPeriod_id());
+						log.info(username+" | Updating selection for period "+ps.getPeriod_id());
 						currentSelection.setSelection(ps.getSelection());
 						currentSelection.setPotential_points(ps.getPotential_points());
 						try {
@@ -581,7 +581,7 @@ public class GameService {
 					}
 					
 				} else {
-					log.debug(username+" | Could not update period selection, period "+ps.getPeriod_id()+" is no longer in preplay/transition");
+					log.info(username+" | Could not update period selection, period "+ps.getPeriod_id()+" is no longer in preplay/transition");
 				}
 				
 			}
@@ -598,7 +598,7 @@ public class GameService {
 	 */
 	public PeriodSelection bankPeriodPoints(Integer period_id, String username) {
 		
-		log.debug(username+" | Banking points for period "+period_id);
+		log.info(username+" | POST game/period/bank period_id="+period_id);
 		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
@@ -682,7 +682,7 @@ public class GameService {
 	public List<GameLeaderboardResponse> getLeaderboard(Integer game_id,
 								String type, String username, Integer pool_id) {
 
-		log.debug(username+" | Getting "+type+" leaderboard for game "+game_id);
+		log.info(username+" | GET game/leaderboard type="+type+" game_id="+game_id);
 		
 		// Retrieve session from Hibernate, create query (HQL) and return a GamePointsResponse
 		Session session = sessionFactory.getCurrentSession(); 
@@ -779,9 +779,9 @@ public class GameService {
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
 		if (game_id != null) {
-			log.debug(username+" | Getting winners of game "+game_id);
+			log.info(username+" | GET game/winners game_id="+game_id);
 		} else {
-			log.debug(username+" | Getting game winners");
+			log.info(username+" | GET game/winners");
 		}
 				
 		// Retrieve session from Hibernate, create query (HQL) and return a list of fangroups

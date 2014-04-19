@@ -40,7 +40,7 @@ public class CompetitionService {
 	private SessionFactory sessionFactory;
 	
 	//get log4j handler
-	private static final Logger log = Logger.getLogger("APILog");
+	private static final Logger log = Logger.getLogger(CompetitionService.class.getName());
 	
 	
 	/*
@@ -51,7 +51,7 @@ public class CompetitionService {
 		
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
-		log.debug(username+" | Getting fangroups for competition "+comp_id);
+		log.info(username+" | GET competition/fangroups comp_id="+comp_id);
 		
 		// Retrieve session from Hibernate, create query (HQL) and return a list of fangroups
 		Session session = sessionFactory.getCurrentSession();
@@ -67,7 +67,7 @@ public class CompetitionService {
 	 */
 	public List<CompetitionResponse> getCompetitions(String username) {
 				
-		log.debug(username+" | Getting list of competitions");
+		log.info(username+" | GET competition/list");
 		
 		StringBuffer queryString = new StringBuffer("select c, max(ge.game_entry_id) from Competition c ");
 		queryString.append("left join c.games g ");
@@ -121,7 +121,7 @@ public class CompetitionService {
 	@SuppressWarnings("unchecked")
 	public List<GameResponse> getGames(Integer comp_id, String username) {
 		
-		log.debug(username+" | Getting games for competition "+comp_id);
+		log.info(username+" | GET competition/games comp_id="+comp_id);
 			
 		StringBuffer queryString = new StringBuffer("select ");
 		queryString.append("g.game_id, ");
@@ -194,7 +194,7 @@ public class CompetitionService {
 	@SuppressWarnings("unchecked")
 	public List<CompetitionLeaderboardResponse> getLeaderboard(Integer comp_id, String type, String username, Integer pool_id) {
 
-		log.debug(username+" | Getting "+type+" leaderboard for competition "+comp_id);
+		log.info(username+" | GET competition/leaderboard type="+type+" comp_id="+comp_id);
 		
 		// Retrieve session from Hibernate, create query (HQL) and return a GamePointsResponse
 		Session session = sessionFactory.getCurrentSession(); 
@@ -287,7 +287,7 @@ public class CompetitionService {
 	 */
 	public CompetitionPointsResponse getCompetitionPoints(Integer comp_id, String username) {
 
-		log.debug(username+" | Getting users points for competition "+comp_id);
+		log.info(username+" | GET competition/points comp_id="+comp_id);
 		
 		// Retrieve session from Hibernate, create query (HQL) and return a GamePointsResponse
 		Session session = sessionFactory.getCurrentSession(); 
@@ -397,7 +397,7 @@ public class CompetitionService {
 		List<CompetitionPointsResponse> result = query.list();
 		
 		if (result.isEmpty()) {
-			log.debug(username+" | No points found for this user in competition "+comp_id);
+			log.info(username+" | No points found for this user in competition "+comp_id);
 			return null;
 		} else {	
 			CompetitionPointsResponse cpr = (CompetitionPointsResponse) result.get(0);		
@@ -417,9 +417,9 @@ public class CompetitionService {
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
 		if (comp_id != null) {
-			log.debug(username+" | Getting winners of competition "+comp_id);
+			log.info(username+" | GET competition/winners comp_id="+comp_id);
 		} else {
-			log.debug(username+" | Getting competition winners");
+			log.info(username+" | GET competition/winners");
 		}
 		
 		// Retrieve session from Hibernate, create query (HQL) and return a list of fangroups

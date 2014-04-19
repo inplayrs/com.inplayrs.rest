@@ -37,7 +37,7 @@ public class PoolController {
 	private PoolService poolService;
 
 	//get log4j handler
-	private static final Logger log = Logger.getLogger("APILog");
+	private static final Logger log = Logger.getLogger(PoolController.class.getName());
 	
 	/*
 	 * POST pool/create

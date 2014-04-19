@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
 public class TestController {
 	
 	//get log4j handler
-	private static final Logger log = Logger.getLogger(TestController.class);
+	private static final Logger log = Logger.getLogger(TestController.class.getName());
 
 	@Autowired
 	@Resource(name="testService")

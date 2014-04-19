@@ -3,6 +3,8 @@ package com.inplayrs.rest.requestds;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.inplayrs.rest.util.IPUtil;
+
 public class UserList {
 
 	public List<String> usernames;
@@ -30,6 +32,13 @@ public class UserList {
 		this.facebookIDs = facebookIDs;
 	}
 	
-	
+	@Override
+	public String toString() {
+		StringBuffer str = new StringBuffer("usernames=");
+		str.append(IPUtil.listToCommaSeparatedString(usernames));
+		str.append(". facebookIDs=");
+		str.append(IPUtil.listToCommaSeparatedString(facebookIDs));
+		return str.toString();
+	}
 	
 }

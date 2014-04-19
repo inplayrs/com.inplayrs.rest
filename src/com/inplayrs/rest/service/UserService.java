@@ -50,7 +50,7 @@ public class UserService {
 	private SessionFactory sessionFactory;
 	
 	//get log4j handler
-	private static final Logger log = Logger.getLogger("APILog");
+	private static final Logger log = Logger.getLogger(UserService.class.getName());
 	
 	@Autowired
 	@Resource(name="poolService")
@@ -65,14 +65,14 @@ public class UserService {
 							 String fbID, String fbUsername, String fbEmail, String fbFullName) {
 		
 		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
-		log.debug(authed_user+" | Registering new user: "+username);
+		log.info(authed_user+" | POST user/register username="+username);
 		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
 		
 		// Check if username is a banned word 
 		if (IPUtil.isBadWord(username)) {
-			log.debug(authed_user+" | Username "+username+" is not available");
+			log.info(authed_user+" | Username "+username+" is a banned word, cannot create user");
 			throw new InvalidStateException(new RestError(2302, "Username "+username+" is not available"));
 		}	
 		
@@ -101,7 +101,7 @@ public class UserService {
 				Integer usersWithSameEmail = ( (Long) emailQuery.iterate().next() ).intValue();
 				
 				if (usersWithSameEmail > 0) {
-					log.error(authed_user+" | Email address "+email+" is already registered");
+					log.info(authed_user+" | Email address "+email+" is already registered");
 					throw new InvalidStateException(new RestError(2301, "Email address "+email+" is already registered"));
 				} else {
 					usr.setEmail(email);
@@ -168,9 +168,9 @@ public class UserService {
 				if (ui.getPool() != null) {
 					int result = poolService._addPoolMember(ui.getPool(), usr.getUsername(), null, ui.getSourceUser().getUsername());
 					if (result == Result.SUCCESS) {
-						log.debug(authed_user+" | Successfully added user to pool "+ui.getPool().getPool_id()+" from invite "+ui.getUserInviteId());
+						log.info(authed_user+" | Successfully added user to pool "+ui.getPool().getPool_id()+" from invite "+ui.getUserInviteId());
 					} else {
-						log.debug(authed_user+" | Failed to add user to pool "+ui.getPool().getPool_id()+" from invite "+ui.getUserInviteId());
+						log.info(authed_user+" | Failed to add user to pool "+ui.getPool().getPool_id()+" from invite "+ui.getUserInviteId());
 					}
 				}
 			}
@@ -178,7 +178,7 @@ public class UserService {
 			return usr;
 			
 		} else {
-			log.error(authed_user+" | Username "+username+" is not available");
+			log.info(authed_user+" | Username "+username+" is not available");
 			throw new InvalidStateException(new RestError(2300, "Username "+username+" is not available"));
 		}
 		
@@ -192,7 +192,7 @@ public class UserService {
 								String timezone, String deviceID, Boolean pushActive) {
 		
 		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
-		log.debug(authed_user+" | Registering new user with gamecenter_id: "+gcID);
+		log.debug(authed_user+" | POST user/register gcID="+gcID);
 		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
@@ -216,7 +216,7 @@ public class UserService {
 		}
 		String username = _getNextAvailableUsername(shortenedGCusername, 0);
 		
-		log.debug(authed_user+" | GC Username provided: "+gcUsername+", next available username: "+username);
+		log.info(authed_user+" | GC Username provided: "+gcUsername+", next available username: "+username);
 		
 		return registerUser(username, password, email, timezone, deviceID, pushActive, gcID, gcUsername, 
 							null, null, null, null);
@@ -230,7 +230,7 @@ public class UserService {
 			String email, String timezone, String deviceID, Boolean pushActive) {
 		
 		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
-		log.debug(authed_user+" | Registering new user with facebook_id: "+fbID);
+		log.info(authed_user+" | POST user/register fbID="+fbID);
 		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
@@ -328,7 +328,7 @@ public class UserService {
 							  Boolean pushActive, String newUsername, String gcID, String gcUsername, 
 							  String fbID, String fbUsername, String fbEmail, String fbFullName) {
 
-		log.debug(username+" | Updating user account");
+		log.info(username+" | POST user/account/update");
 		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
@@ -364,7 +364,7 @@ public class UserService {
 			Integer usersWithSameEmail = ( (Long) emailQuery.iterate().next() ).intValue();
 		
 			if (usersWithSameEmail > 0) {
-				log.error(username+" | Email address "+email+" is already registered");
+				log.info(username+" | Email address "+email+" is already registered");
 				throw new InvalidStateException(new RestError(2401, "Email address "+email+" is already registered"));
 			} else {
 				usr.setEmail(email);
@@ -386,13 +386,13 @@ public class UserService {
 		if (newUsername != null) {
 			// Check that a different username has been supplied
 			if (newUsername.equals(username)) {
-				log.error(username+" | New username provided is same as your current username!");
+				log.info(username+" | New username provided is same as your current username!");
 				throw new InvalidParameterException(new RestError(2404, "New username provided is same as your current username!"));
 			}
 			
 			// Check if username is a banned word 
 			if (IPUtil.isBadWord(newUsername)) {
-				log.debug(username+" | Username "+newUsername+" is not available");
+				log.info(username+" | Username "+newUsername+" is a banned word, cannot change username to this");
 				throw new InvalidStateException(new RestError(2402, "Username "+newUsername+" is not available"));
 			}	
 			
@@ -401,10 +401,10 @@ public class UserService {
 			usrQuery.setParameter("newUsername", newUsername);
 			Long exists = (Long) usrQuery.uniqueResult();
 			if (exists > 0) {
-				log.error(username+" | Cannot change username, user "+newUsername+" already exists");
+				log.info(username+" | Cannot change username, user "+newUsername+" already exists");
 				throw new InvalidStateException(new RestError(2403, "Username "+newUsername+" is not available"));
 			} else {
-				log.debug(username+" | Changing username to "+newUsername);
+				log.info(username+" | Changing username to "+newUsername);
 				usr.setUsername(newUsername);
 			}
 			
@@ -498,7 +498,7 @@ public class UserService {
 	 */
 	public User getUser(String username, String gcID, String fbID) {
 		
-		log.debug(username+" | Getting user account");
+		log.info(username+" | GET user/account username="+username+" gcID="+gcID+" fbID="+fbID);
 		
 	    // Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
@@ -534,7 +534,7 @@ public class UserService {
 	 */
 	public Integer setUserFan(Integer comp_id, Integer fangroup_id, String username) {
 
-		log.debug(username+" | Selecting fangroup "+fangroup_id+" for competition "+comp_id);
+		log.info(username+" | POST user/fan fangroup_id="+fangroup_id+" comp_id="+comp_id);
 		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
@@ -566,7 +566,7 @@ public class UserService {
 		List<Fan> result = query.list();
 		
 		if (result.isEmpty()) {
-			log.debug(username+" | User has not yet selected fangroup for competition "+comp_id+", therefore making new selection");
+			log.info(username+" | User has not yet selected fangroup for competition "+comp_id+", therefore making new selection");
 			
 			// Get user's record
 			Query usrQuery = session.createQuery("FROM User u WHERE u.username = :username");
@@ -591,7 +591,7 @@ public class UserService {
 		} else {
 			Fan currentFan = result.get(0);
 			if (currentFan.getFangroup_id() == fangroup_id) {
-				log.error(username+" | User has already selected fangroup "+fangroup_id+" for competition "+comp_id);
+				log.info(username+" | User has already selected fangroup "+fangroup_id+" for competition "+comp_id);
 				throw new InvalidStateException(new RestError(2100, "You have already selected this fangroup for this competition"));
 			} else {
 				// Do not allow user to change fangroup if they already have 
@@ -605,14 +605,14 @@ public class UserService {
 				
 				int numEntriesInComp = gameEntryQuery.list().size();
 				if (numEntriesInComp > 0) {
-					log.error(username+" | Unable to set a new fangroup, user has already played a game in competition "+comp_id);
+					log.info(username+" | Unable to set a new fangroup, user has already played a game in competition "+comp_id);
 					throw new InvalidStateException(new RestError(2101, "Unable to set new fangroup, you have already played a game in this competition"));
 				}
 							
 				// Set fangroup as user has not yet entered any games in this competition
 				currentFan.setFangroup((FanGroup) session.load(FanGroup.class, fangroup_id));
 				session.update(currentFan);
-				log.debug(username+" | Fangroup selection updated to "+fangroup_id+" for competition "+comp_id);
+				log.info(username+" | Fangroup selection updated to "+fangroup_id+" for competition "+comp_id);
 				return null;
 			}
 			
@@ -627,7 +627,7 @@ public class UserService {
 	@SuppressWarnings("unchecked")
 	public List <FanGroup> getUserFangroups(String username) {
 		
-		log.debug(username+" | Getting users fangroups");
+		log.debug(username+" | GET user/fangroups username="+username);
 		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
@@ -648,7 +648,7 @@ public class UserService {
 	 */
 	public UserStatsResponse getUserStats(String username) {
 		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
-		log.debug(authed_user+" | Getting user stats for user: "+username);
+		log.debug(authed_user+" | GET user/stats username="+username);
 		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
@@ -730,7 +730,7 @@ public class UserService {
 	 */
 	public List<UserLeaderboardResponse> getUserLeaderboard() {
 		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
-		log.debug(authed_user+" | Getting user leaderboard");
+		log.info(authed_user+" | GET user/leaderboard");
 		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
@@ -776,7 +776,7 @@ public class UserService {
 	@SuppressWarnings("unchecked")
 	public List<String> getMotd() {
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
-		log.debug(username+" | Getting motd");
+		log.info(username+" | GET user/motd");
 		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
@@ -809,7 +809,7 @@ public class UserService {
 	@SuppressWarnings("unchecked")
 	public List<String> getUserList(boolean hideBots) {
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
-		log.debug(username+" | Getting list of usernames in system");
+		log.info(username+" | GET user/list hideBots="+hideBots);
 		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();
@@ -911,7 +911,7 @@ public class UserService {
 			logMsg.append(" pool="+pool.getPool_id());
 		}
 		
-		log.debug(sourceUser.getUsername()+" | "+logMsg.toString());
+		log.info(sourceUser.getUsername()+" | "+logMsg.toString());
 		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession();

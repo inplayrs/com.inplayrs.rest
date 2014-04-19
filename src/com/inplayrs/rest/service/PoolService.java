@@ -46,7 +46,7 @@ public class PoolService {
 	private UserService userService;
 	
 	//get log4j handler
-	private static final Logger log = Logger.getLogger("APILog");
+	private static final Logger log = Logger.getLogger(PoolService.class.getName());
 	
 	/*
 	 * POST pool/create
@@ -54,12 +54,13 @@ public class PoolService {
 	public Pool createPool(String name, UserList userList) {
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
-		log.debug(username+" | Creating pool "+name);
+		log.info(username+" | POST pool/create name="+name);
 		
 		// Check pool name for bad words
 		String[] poolNameWords = name.split("\\s+|[_.,+]");
 		for (String word: poolNameWords) {
 			if (IPUtil.isBadWord(word)) {
+				log.info("Pool name "+name+" is a bad word, cannot create pool");
 				throw new InvalidStateException(new RestError(2803, "Pool '"+name+"' not available, please try a different name"));
 			}
 		}
@@ -111,7 +112,7 @@ public class PoolService {
 		}
 		
 		// Add pool creator to pool
-		log.debug(username+" | Adding creator of pool as pool member");
+		log.info(username+" | Adding creator of pool as pool member");
 		int addUserResult = _addPoolMember(pool, username, null, null);
 		if (addUserResult != Result.SUCCESS) {
 			throw new InvalidStateException(new RestError(2802, "Failed to add creator of pool as a pool member"));
@@ -119,7 +120,7 @@ public class PoolService {
 		
 		// Add list of users to pool
 		if (userList != null) {
-			log.debug(username+" | Adding users to pool "+name);
+			log.info(username+" | Adding users to pool "+name);
 			
 			boolean allPoolMembersAddedSuccessfully = addPoolMembers(pool.getPool_id(), userList);
 			if (!allPoolMembersAddedSuccessfully) {
@@ -140,7 +141,7 @@ public class PoolService {
 		// Get username of player
 		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
 		
-		log.debug(authed_user+" | Adding pool members to pool "+pool_id);
+		log.info(authed_user+" | POST pool/addusers pool_id="+pool_id+" userList: "+userList.toString());
 		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession(); 
@@ -251,7 +252,7 @@ public class PoolService {
 		
 		// Check whether pool has max number of participants in or not
 		if (pool.getNum_players() >= Threshold.MAX_POOL_SIZE) {
-			log.error(authed_user+" | Cannot add new member to pool '"+pool.getName()+
+			log.info(authed_user+" | Cannot add new member to pool '"+pool.getName()+
 								     "'. Max pool size of "+Threshold.MAX_POOL_SIZE+" reached");
 			throw new InvalidStateException(new RestError(2902, "Cannot add new member to pool '"+pool.getName()+
 								     "'. Max pool size of "+Threshold.MAX_POOL_SIZE+" reached"));
@@ -269,7 +270,7 @@ public class PoolService {
 			userQuery.setCacheRegion("user");
 			user = (User) userQuery.uniqueResult();
 			if (user == null) {
-				log.error(authed_user+" | User with username "+username+" does not exist, cannot add to pool: "+pool.getName());
+				log.info(authed_user+" | User with username "+username+" does not exist, cannot add to pool: "+pool.getName());
 				return Result.USER_DOES_NOT_EXIST;
 			}
 		}
@@ -280,7 +281,7 @@ public class PoolService {
 			userQuery.setCacheRegion("user");
 			user = (User) userQuery.uniqueResult();
 			if (user == null) {
-				log.error(authed_user+" | User with facebook_id "+fbID+" does not exist, cannot add to pool: "+pool.getName());
+				log.info(authed_user+" | User with facebook_id "+fbID+" does not exist, cannot add to pool: "+pool.getName());
 				return Result.USER_DOES_NOT_EXIST;
 			}
 		}
@@ -305,7 +306,7 @@ public class PoolService {
 		poolMemberQuery.setParameter("pool_id", pool.getPool_id());
 		poolMemberQuery.setParameter("user_id", user.getUser_id());
 		if (poolMemberQuery.uniqueResult() != null) {
-			log.error(authed_user+" | User "+user.getUsername()+" is already a member of pool: "+pool.getName());
+			log.info(authed_user+" | User "+user.getUsername()+" is already a member of pool: "+pool.getName());
 			return Result.USER_ALREADY_IN_POOL;
 		}
 		
@@ -317,7 +318,7 @@ public class PoolService {
 			return Result.USER_ALREADY_IN_POOL;
 		}
 		
-		log.debug(authed_user+" | Successfully added user "+user.getUsername()+" to pool "+pool.getName()+". Adding motd to indicate this.");
+		log.info(authed_user+" | Successfully added user "+user.getUsername()+" to pool "+pool.getName()+". Adding motd to indicate this.");
 		
 		// Add message to tell user they have been added to pool (unless adding pool creator to pool)
 		if (!pool.getCreated_by().equals(user)) {
@@ -343,7 +344,7 @@ public class PoolService {
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
 		
-		log.debug(username+" | Getting list of pools entered");
+		log.info(username+" | GET pool/mypools");
 		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession(); 
@@ -356,7 +357,7 @@ public class PoolService {
 		List<MyPoolResponse> response = query.list();
 		
 		if (response.isEmpty()) {
-			log.debug(username+" | Not a member of any pools");
+			log.info(username+" | Not a member of any pools");
 			return null;
 		}
 
@@ -372,7 +373,7 @@ public class PoolService {
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
 		
-		log.debug(username+" | Getting list of pool members for pool "+pool_id);
+		log.info(username+" | GET pool/members pool_id="+pool_id);
 		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession(); 
@@ -403,7 +404,7 @@ public class PoolService {
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
 		
-		log.debug(username+" | Leaving pool "+pool_id);
+		log.info(username+" | POST pool/leave pool_id="+pool_id);
 		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession(); 
@@ -420,7 +421,7 @@ public class PoolService {
 		}
 		
 		// Remove game entries for user in that pool
-		log.debug(username+" | Removing pool game entries for user in pool "+pool_id);
+		log.info(username+" | Removing pool game entries for user in pool "+pool_id);
 		
 		Query removePoolGameEntriesQuery = session.createQuery("delete from PoolGameEntry pge where pge.poolMember in ("+
 						"select pm.poolMemberID from PoolMember pm where pm.user.username = :username "+
@@ -429,11 +430,11 @@ public class PoolService {
 		removePoolGameEntriesQuery.setParameter("pool_id", pool_id);
 		int poolGameEntriesDeleted = removePoolGameEntriesQuery.executeUpdate();
 		
-		log.debug(username+" | Removed "+poolGameEntriesDeleted+" pool game entries for user in pool "+pool_id);
+		log.info(username+" | Removed "+poolGameEntriesDeleted+" pool game entries for user in pool "+pool_id);
 		
 		
 		// Remove user's entries from pool_game_leaderboard
-		log.debug(username+" | Removing entries from pool_game_leaderboard for user "+username+" and pool "+pool_id);
+		log.info(username+" | Removing entries from pool_game_leaderboard for user "+username+" and pool "+pool_id);
 		StringBuffer poolGameLeaderboardQueryString = new StringBuffer("from PoolGameLeaderboard pgl ");
 		poolGameLeaderboardQueryString.append("where pgl.pool.pool_id = :pool_id ");
 		poolGameLeaderboardQueryString.append("and pgl.user.username = :username");
@@ -443,12 +444,12 @@ public class PoolService {
 		
 		List <PoolGameLeaderboard> pglList= poolGameLeaderboardQuery.list();
 		for (PoolGameLeaderboard pgl: pglList) {
-			log.debug(username+" | Removing pool_game_leaderboard entry for pool "+pool_id+" and game "+pgl.getGame().getGame_id());
+			log.info(username+" | Removing pool_game_leaderboard entry for pool "+pool_id+" and game "+pgl.getGame().getGame_id());
 			session.delete(pgl);
 		}
 		
 		// Remove user's entries from pool_comp_leaderboard
-		log.debug(username+" | Removing entries from pool_comp_leaderboard for user "+username+" and pool "+pool_id);
+		log.info(username+" | Removing entries from pool_comp_leaderboard for user "+username+" and pool "+pool_id);
 		StringBuffer poolCompLeaderboardQueryString = new StringBuffer("from PoolCompLeaderboard pcl ");
 		poolCompLeaderboardQueryString.append("where pcl.pool.pool_id = :pool_id ");
 		poolCompLeaderboardQueryString.append("and pcl.user.username = :username");
@@ -458,7 +459,7 @@ public class PoolService {
 		
 		List <PoolCompLeaderboard> pclList= poolCompLeaderboardQuery.list();
 		for (PoolCompLeaderboard pcl: pclList) {
-			log.debug(username+" | Removing pool_comp_leaderboard entry for pool "+pool_id+" and comp "+pcl.getCompetition().getComp_id());
+			log.info(username+" | Removing pool_comp_leaderboard entry for pool "+pool_id+" and comp "+pcl.getCompetition().getComp_id());
 			session.delete(pcl);
 		}
 		
@@ -468,7 +469,7 @@ public class PoolService {
 		// Delete pool member then delete pool if this is last member
 		if (pool.getNum_players() <= 1) {
 			session.delete(poolMember);
-			log.debug(username+" | Deleting pool "+pool_id+" as no more members remaining");
+			log.info(username+" | Deleting pool "+pool_id+" as no more members remaining");
 			session.delete(pool);
 		} else {
 			// Just remove user from pool
@@ -487,7 +488,7 @@ public class PoolService {
 		// Get username of player
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
 		
-		log.debug(username+" | Updating pool "+pool_id);
+		log.info(username+" | POST pool/update pool_id="+pool_id+" name="+name);
 		
 		// Retrieve session from Hibernate
 		Session session = sessionFactory.getCurrentSession(); 
@@ -506,7 +507,7 @@ public class PoolService {
 				session.save(pool);
 				return pool;
 			} else {
-				log.debug(username+" | No changes made to pool");
+				log.info(username+" | No changes made to pool");
 				throw new InvalidStateException(new RestError(3102, "No changes made to pool"));
 			}
 		} else {
@@ -528,7 +529,7 @@ public class PoolService {
 		Session session = sessionFactory.getCurrentSession(); 
 		
 		if (game_id != null) {
-			log.debug(username+" | Getting pool points response for pool "+pool_id+" and game: "+game_id);
+			log.info(username+" | GET pool/points pool_id="+pool_id+" game_id="+game_id);
 			
 			StringBuffer queryString = new StringBuffer("SELECT ");
 			queryString.append("pool_players.pool_size * g.stake as pool_pot_size, ");
@@ -571,7 +572,7 @@ public class PoolService {
 			return (PoolPointsResponse) sqlQuery.uniqueResult();
 			
 		} else if (comp_id != null) {
-			log.debug(username+" | Getting pool points response for pool "+pool_id+" and comp: "+game_id);
+			log.debug(username+" | GET pool/points pool_id="+pool_id+" comp_id="+game_id);
 			
 			StringBuffer queryString = new StringBuffer("SELECT ");
 			queryString.append("pcl.rank as pool_rank, ");
