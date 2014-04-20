@@ -10,6 +10,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
@@ -29,39 +32,51 @@ public class UserStats implements Serializable{
 	private Integer user_id;
 	
 	@Column(name = "total_winnings")
+	@Generated(GenerationTime.ALWAYS)	// calculated by admin scripts
 	private Integer total_winnings;
 	
 	@Column(name = "total_rank")
+	@Generated(GenerationTime.ALWAYS)	// calculated by admin scripts
 	private Integer total_rank;
 	
 	@Column(name = "total_games_played")
+	@Generated(GenerationTime.ALWAYS)	// calculated by admin scripts
 	private Integer total_games_played;
 	
 	@Column(name = "total_pc_correct")
+	@Generated(GenerationTime.ALWAYS)	// calculated by admin scripts
 	private Double total_pc_correct;
 	
 	@Column(name = "total_user_rating")
+	@Generated(GenerationTime.ALWAYS)	// calculated by admin scripts
 	private String total_user_rating;
 	
 	@Column(name = "global_winnings")
+	@Generated(GenerationTime.ALWAYS)	// calculated by admin scripts
 	private Integer global_winnings;
 	
 	@Column(name = "fangroup_winnings")
+	@Generated(GenerationTime.ALWAYS)	// calculated by admin scripts
 	private Integer fangroup_winnings;
 	
 	@Column(name = "h2h_winnings")
+	@Generated(GenerationTime.ALWAYS)	// calculated by admin scripts
 	private Integer h2h_winnings;
 	
 	@Column(name = "global_games_won")
+	@Generated(GenerationTime.ALWAYS)	// calculated by admin scripts
 	private Integer global_games_won;
 	
 	@Column(name = "fangroup_pools_won")
+	@Generated(GenerationTime.ALWAYS)	// calculated by admin scripts
 	private Integer fangroup_pools_won;
 	
 	@Column(name = "h2h_won")
+	@Generated(GenerationTime.ALWAYS)	// calculated by admin scripts
 	private Integer h2h_won;
 	
 	@Column(name = "h2h_pc_correct")
+	@Generated(GenerationTime.ALWAYS)	// calculated by admin scripts
 	private Double h2h_pc_correct;
 	
 	

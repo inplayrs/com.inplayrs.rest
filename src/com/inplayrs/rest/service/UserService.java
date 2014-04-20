@@ -30,6 +30,7 @@ import com.inplayrs.rest.ds.Pat;
 import com.inplayrs.rest.ds.Pool;
 import com.inplayrs.rest.ds.User;
 import com.inplayrs.rest.ds.UserInvite;
+import com.inplayrs.rest.ds.UserStats;
 import com.inplayrs.rest.exception.InvalidParameterException;
 import com.inplayrs.rest.exception.InvalidStateException;
 import com.inplayrs.rest.exception.RestError;
@@ -151,6 +152,14 @@ public class UserService {
 			}
 				
 			session.save(usr);
+			
+			// Create user stats entry
+			log.info(authed_user+" | Creating user_stats entry");
+			UserStats userStats = new UserStats();
+			userStats.setUser(usr);
+			userStats.setUser_id(usr.getUser_id());
+			userStats.setTotal_user_rating("Keep playing");
+			session.save(userStats);
 			
 			// Add user to any pools they have been invited to
 			StringBuffer userInviteQuerySQL = new StringBuffer("from UserInvite ui where ");
