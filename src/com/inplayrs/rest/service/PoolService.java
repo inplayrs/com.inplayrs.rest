@@ -201,20 +201,27 @@ public class PoolService {
 		}	
 			
 		// Check which users failed to be added to pool
+		boolean allUsersAddedSuccessfully = true;
+		boolean someUsersDontExist = false;
+		boolean someUsersInMaxNumPools = false;
 		
-		String initialErrorMsgString = "Could not add all users to pool "+pool_id;
-		StringBuffer errorMsg = new StringBuffer(initialErrorMsgString);
+		StringBuffer errorMsg = new StringBuffer("Could not add all users to pool "+pool_id);
 		
 		if (!nonExistantUsernames.isEmpty()) {
 			errorMsg.append(". The following usernames do not exist: "+IPUtil.listToCommaSeparatedString(nonExistantUsernames));
+			allUsersAddedSuccessfully = false;
+			someUsersDontExist = true;
 		}
 		
 		if (!usernamesAlreadyInPool.isEmpty()) {
 			errorMsg.append(". The following users are already in the pool: "+IPUtil.listToCommaSeparatedString(usernamesAlreadyInPool));
+			allUsersAddedSuccessfully = false;
 		}
 		
 		if (!usernamesInMaxNumPools.isEmpty()) {
 			errorMsg.append(". The following users are already in the max number of pools: "+IPUtil.listToCommaSeparatedString(usernamesInMaxNumPools));
+			allUsersAddedSuccessfully = false;
+			someUsersInMaxNumPools = true;
 		}
 		
 		if (!nonExistantFBIDs.isEmpty()) {
@@ -222,25 +229,44 @@ public class PoolService {
 			for (String fbID : nonExistantFBIDs) {
 				userService.inviteUser(user, fbID, null, pool);
 			}
+			allUsersAddedSuccessfully = false;
+			someUsersDontExist = true;
 		}
 		
 		if (!fbIDsAlreadyInPool.isEmpty()) {
 			errorMsg.append(". The following users by facebook_id are already in the pool: "+IPUtil.listToCommaSeparatedString(fbIDsAlreadyInPool));
+			allUsersAddedSuccessfully = false;
 		}
 		
 		if (!fbIDsInMaxNumPools.isEmpty()) {
 			errorMsg.append(". The following users by facebook_id are already in the max number of pools: "+IPUtil.listToCommaSeparatedString(fbIDsInMaxNumPools));
+			allUsersAddedSuccessfully = false;
+			someUsersInMaxNumPools = true;
 		}
 		
-		
-		// Log any errors
-		if (!initialErrorMsgString.equals(errorMsg.toString())) {
+		// Log & return any errors
+		if (!allUsersAddedSuccessfully) {
 			log.info(errorMsg.toString());
+			
+			// Build error message to return to client.
+			// Note that there is no need to return an error for users already in the pool
+			StringBuffer clientErrorMsg = new StringBuffer();
+			
+			if (someUsersDontExist) {
+				clientErrorMsg.append("Users without accounts have been invited to Inplayrs");
+				if (someUsersInMaxNumPools) {
+					clientErrorMsg.append(" and users in max number of pools could not be added");
+				}
+				throw new InvalidStateException(new RestError(2901, clientErrorMsg.toString()));
+			} else if (someUsersInMaxNumPools) {
+				clientErrorMsg.append("Users in max number of pools could not be added");
+				throw new InvalidStateException(new RestError(2901, clientErrorMsg.toString()));
+			}
+			
 		} 
 		
-		// Return null as client will just be looking at the HTTP response
+		// Return null if no errors (client just looking at HTTP response)
 		return null;
-
 	}
 	
 	
