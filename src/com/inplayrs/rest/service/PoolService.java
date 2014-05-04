@@ -18,10 +18,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.inplayrs.rest.constants.Result;
+import com.inplayrs.rest.constants.State;
 import com.inplayrs.rest.constants.Threshold;
+import com.inplayrs.rest.ds.GameEntry;
 import com.inplayrs.rest.ds.Motd;
 import com.inplayrs.rest.ds.Pool;
 import com.inplayrs.rest.ds.PoolCompLeaderboard;
+import com.inplayrs.rest.ds.PoolGameEntry;
 import com.inplayrs.rest.ds.PoolGameLeaderboard;
 import com.inplayrs.rest.ds.PoolMember;
 import com.inplayrs.rest.ds.User;
@@ -271,6 +274,7 @@ public class PoolService {
 	
 	
 	// Helper method to add an individual pool member
+	@SuppressWarnings("unchecked")
 	public int _addPoolMember(Pool pool, String username, String fbID, String invitedByUser) {
 		
 		// Get username of player adding user to pool
@@ -356,8 +360,64 @@ public class PoolService {
 			session.save(message);
 		}
 		
-		return Result.SUCCESS;
+		// Find all active games that user is currently in, create pool game entries and add user to pool leaderboards
+		log.info(authed_user+" | Adding user "+user.getUsername()+" to pool game entries and leaderboards for current games");
 		
+		StringBuffer activeGameEntryQueryString = new StringBuffer("from GameEntry ge where ge.user.username = :username and ");
+		activeGameEntryQueryString.append("ge.game.state in (");
+		activeGameEntryQueryString.append(State.PREPLAY+", ");
+		activeGameEntryQueryString.append(State.TRANSITION+", ");
+		activeGameEntryQueryString.append(State.INPLAY+", ");
+		activeGameEntryQueryString.append(State.SUSPENDED+")");
+		
+		Query activeGameEntryQuery = session.createQuery(activeGameEntryQueryString.toString());
+		activeGameEntryQuery.setParameter("username", user.getUsername());
+		
+		for (GameEntry gameEntry : (List<GameEntry>) activeGameEntryQuery.list()) {
+			// Add game entry
+			log.info(authed_user+" | Adding game entry to pool "+pool.getPool_id()+" for game "+gameEntry.getGame_id()+
+								" and user "+user.getUsername());
+			PoolGameEntry poolGameEntry = new PoolGameEntry();
+			poolGameEntry.setGameEntry(gameEntry);
+			poolGameEntry.setPoolMember(poolMember);
+			session.save(poolGameEntry);
+			
+			// Add to Pool Game Leaderboard
+			log.info(authed_user+" | Adding user "+user.getUsername()+" to pool_game_leaderboard for game "+gameEntry.getGame_id()+
+					" and pool "+pool.getPool_id());
+			PoolGameLeaderboard poolGameLeaderboard = new PoolGameLeaderboard();
+			poolGameLeaderboard.setPool(pool);
+			poolGameLeaderboard.setGame(gameEntry.getGame());
+			poolGameLeaderboard.setUser(user);
+			session.save(poolGameLeaderboard);
+			
+			// See if user is already a member of pool comp leaderboard, and add if not
+			StringBuffer pclQueryString = new StringBuffer("FROM PoolCompLeaderboard pcl where ");
+			pclQueryString.append("pcl.competition.comp_id = :comp_id and pcl.pool.pool_id = :pool_id ");
+			pclQueryString.append("and pcl.user.username = :username");
+			
+			Query pclQuery = session.createQuery(pclQueryString.toString());
+			pclQuery.setParameter("comp_id", gameEntry.getGame().getCompetition_id());
+			pclQuery.setParameter("pool_id", pool.getPool_id());
+			pclQuery.setParameter("username", user.getUsername());
+			
+			PoolCompLeaderboard poolCompLeaderboard = (PoolCompLeaderboard) pclQuery.uniqueResult();
+			if (poolCompLeaderboard == null) {
+				log.info(authed_user+" | Adding user "+user.getUsername()+" to pool_comp_leaderboard for comp "+
+						gameEntry.getGame().getCompetition_id()+" and pool "+pool.getPool_id());
+				poolCompLeaderboard = new PoolCompLeaderboard();
+				poolCompLeaderboard.setCompetition(gameEntry.getGame().getCompetition());
+				poolCompLeaderboard.setPool(pool);
+				poolCompLeaderboard.setUser(user);
+				session.save(poolCompLeaderboard);
+			} else {
+				log.info(authed_user+" | User "+user.getUsername()+" is already in pool_comp_leaderboard for comp "+
+						gameEntry.getGame().getCompetition_id()+" and pool "+poolMember.getPool().getPool_id());
+			}
+			
+		}
+		
+		return Result.SUCCESS;
 	}
 	
 	
