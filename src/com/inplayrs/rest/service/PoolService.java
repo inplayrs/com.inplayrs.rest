@@ -205,7 +205,7 @@ public class PoolService {
 			
 		// Check which users failed to be added to pool
 		boolean allUsersAddedSuccessfully = true;
-		boolean someUsersDontExist = false;
+		//boolean someUsersDontExist = false;
 		boolean someUsersInMaxNumPools = false;
 		
 		StringBuffer errorMsg = new StringBuffer("Could not add all users to pool "+pool_id);
@@ -213,7 +213,7 @@ public class PoolService {
 		if (!nonExistantUsernames.isEmpty()) {
 			errorMsg.append(". The following usernames do not exist: "+IPUtil.listToCommaSeparatedString(nonExistantUsernames));
 			allUsersAddedSuccessfully = false;
-			someUsersDontExist = true;
+			//someUsersDontExist = true;
 		}
 		
 		if (!usernamesAlreadyInPool.isEmpty()) {
@@ -233,7 +233,7 @@ public class PoolService {
 				userService.inviteUser(user, fbID, null, pool);
 			}
 			allUsersAddedSuccessfully = false;
-			someUsersDontExist = true;
+			//someUsersDontExist = true;
 		}
 		
 		if (!fbIDsAlreadyInPool.isEmpty()) {
@@ -253,16 +253,11 @@ public class PoolService {
 			
 			// Build error message to return to client.
 			// Note that there is no need to return an error for users already in the pool
-			StringBuffer clientErrorMsg = new StringBuffer();
-			
-			if (someUsersDontExist) {
-				clientErrorMsg.append("Users without accounts have been invited to Inplayrs");
-				if (someUsersInMaxNumPools) {
-					clientErrorMsg.append(" and users in max number of pools could not be added");
-				}
-				throw new InvalidStateException(new RestError(2901, clientErrorMsg.toString()));
-			} else if (someUsersInMaxNumPools) {
-				clientErrorMsg.append("Users in max number of pools could not be added");
+			// We have also chosen not to return an error for users without accounts as 
+			// users will get feedback in UI that non-existent users have been invited to Inplayrs
+			if (someUsersInMaxNumPools) {
+				StringBuffer clientErrorMsg = new StringBuffer("One or more users have already joined the limit of ");
+				clientErrorMsg.append(Threshold.MAX_POOLS_USER_CAN_BE_IN).append(" pools");
 				throw new InvalidStateException(new RestError(2901, clientErrorMsg.toString()));
 			}
 			
