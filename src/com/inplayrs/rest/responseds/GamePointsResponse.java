@@ -46,6 +46,10 @@ public class GamePointsResponse {
 	@JsonProperty
 	private String h2h_user;
 	
+	@Column(name = "h2h_fbID")
+	@JsonProperty
+	private String h2h_fbID;
+	
 	@Column(name = "h2h_points")
 	@JsonProperty
 	private Integer h2h_points;
@@ -178,6 +182,16 @@ public class GamePointsResponse {
 
 	public void setH2h_user(String h2h_user) {
 		this.h2h_user = h2h_user;
+	}
+
+
+	public String getH2h_fbID() {
+		return h2h_fbID;
+	}
+
+
+	public void setH2h_fbID(String h2h_fbID) {
+		this.h2h_fbID = h2h_fbID;
 	}
 
 

@@ -160,6 +160,7 @@ public class GameService {
 		queryString.append("ge.h2h_winnings, ");
 		queryString.append("ge.total_winnings, ");
 		queryString.append("h2h_user.username as h2h_user, ");
+		queryString.append("h2h_user.facebook_id as h2h_fbID, ");
 		queryString.append("h2h_ge.total_points as h2h_points, ");
 		queryString.append("fangrp.name as fangroup_name, ");
 		queryString.append("ge.total_points as points, ");
@@ -230,6 +231,7 @@ public class GameService {
 		query.addScalar("h2h_winnings");
 		query.addScalar("total_winnings");
 		query.addScalar("h2h_user");
+		query.addScalar("h2h_fbID");
 		query.addScalar("h2h_points");
 		query.addScalar("fangroup_name");
 		query.addScalar("points");

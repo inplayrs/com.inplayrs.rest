@@ -747,6 +747,7 @@ public class UserService {
 		StringBuffer queryString = new StringBuffer("select ");
 		queryString.append("us.total_rank as rank, ");
 		queryString.append("us.user.username, ");
+		queryString.append("us.user.facebook_id as fbID, ");
 		queryString.append("us.total_winnings as winnings ");
 		queryString.append("from UserStats us ");
 		queryString.append("where us.total_rank > 0 ");
@@ -762,14 +763,12 @@ public class UserService {
 		while(userLeaders.hasNext()) {
 			// Process each competition winner and add to response object
 			Object[] row = (Object[]) userLeaders.next();
-			Integer rank = (Integer) row[0];
-			String username = (String) row[1];
-			Integer winnings = (Integer) row[2];
 			
 			UserLeaderboardResponse ulbr = new UserLeaderboardResponse();
-			ulbr.setRank(rank);
-			ulbr.setUsername(username);
-			ulbr.setWinnings(winnings);
+			ulbr.setRank((Integer) row[0]);
+			ulbr.setUsername((String) row[1]);
+			ulbr.setFbID((String) row[2]);
+			ulbr.setWinnings((Integer) row[3]);
 			
 			response.add(ulbr);
 		}

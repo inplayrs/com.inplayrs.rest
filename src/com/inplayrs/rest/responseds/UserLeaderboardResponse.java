@@ -11,6 +11,9 @@ public class UserLeaderboardResponse {
 	private String username;
 	
 	@JsonProperty
+	private String fbID;
+	
+	@JsonProperty
 	private Integer winnings;
 	
 	
@@ -36,6 +39,16 @@ public class UserLeaderboardResponse {
 
 	public void setUsername(String username) {
 		this.username = username;
+	}
+
+
+	public String getFbID() {
+		return fbID;
+	}
+
+
+	public void setFbID(String fbID) {
+		this.fbID = fbID;
 	}
 
 
