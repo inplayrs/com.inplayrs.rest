@@ -466,49 +466,52 @@ public class GameService {
 			
 			
 			// Add game entry for any pools the user is in, and add to pool leaderboards
-			Query poolMemberQuery = session.createQuery("from PoolMember pm where pm.user.username = :username");
-			poolMemberQuery.setParameter("username", username);
-			List <PoolMember> poolMembers = poolMemberQuery.list();
-			for (PoolMember poolMember: poolMembers) {
-				// Add game entry
-				log.info(username+" | Adding game entry to pool "+poolMember.getPool().getPool_id()+
-									 " for game "+gameEntry.getGame_id());
-				PoolGameEntry poolGameEntry = new PoolGameEntry();
-				poolGameEntry.setGameEntry(gameEntry);
-				poolGameEntry.setPoolMember(poolMember);
-				session.save(poolGameEntry);
-				
-				// Add to Pool Game Leaderboard
-				log.info(username+" | Adding user to pool_game_leaderboard for game "+gameEntry.getGame_id()+
-						" and pool "+poolMember.getPool().getPool_id());
-				PoolGameLeaderboard poolGameLeaderboard = new PoolGameLeaderboard();
-				poolGameLeaderboard.setPool(poolMember.getPool());
-				poolGameLeaderboard.setGame(g);
-				poolGameLeaderboard.setUser(usr);
-				session.save(poolGameLeaderboard);
-				
-				// See if user is already a member of pool comp leaderboard, and add if not
-				StringBuffer pclQueryString = new StringBuffer("FROM PoolCompLeaderboard pcl where ");
-				pclQueryString.append("pcl.competition.comp_id = :comp_id and pcl.pool.pool_id = :pool_id ");
-				pclQueryString.append("and pcl.user.username = :username");
-				
-				Query pclQuery = session.createQuery(pclQueryString.toString());
-				pclQuery.setParameter("comp_id", g.getCompetition_id());
-				pclQuery.setParameter("pool_id", poolMember.getPool().getPool_id());
-				pclQuery.setParameter("username", usr.getUsername());
-				
-				PoolCompLeaderboard poolCompLeaderboard = (PoolCompLeaderboard) pclQuery.uniqueResult();
-				if (poolCompLeaderboard == null) {
-					log.info(username+" | Adding user to pool_comp_leaderboard for comp "+g.getCompetition_id()+
+			// but only if this is not a late entry
+			if (g.getState() == State.PREPLAY  || g.getState() == State.TRANSITION) {
+				Query poolMemberQuery = session.createQuery("from PoolMember pm where pm.user.username = :username");
+				poolMemberQuery.setParameter("username", username);
+				List <PoolMember> poolMembers = poolMemberQuery.list();
+				for (PoolMember poolMember: poolMembers) {
+					// Add game entry
+					log.info(username+" | Adding game entry to pool "+poolMember.getPool().getPool_id()+
+										 " for game "+gameEntry.getGame_id());
+					PoolGameEntry poolGameEntry = new PoolGameEntry();
+					poolGameEntry.setGameEntry(gameEntry);
+					poolGameEntry.setPoolMember(poolMember);
+					session.save(poolGameEntry);
+					
+					// Add to Pool Game Leaderboard
+					log.info(username+" | Adding user to pool_game_leaderboard for game "+gameEntry.getGame_id()+
 							" and pool "+poolMember.getPool().getPool_id());
-					poolCompLeaderboard = new PoolCompLeaderboard();
-					poolCompLeaderboard.setCompetition(g.getCompetition());
-					poolCompLeaderboard.setPool(poolMember.getPool());
-					poolCompLeaderboard.setUser(usr);
-					session.save(poolCompLeaderboard);
-				} else {
-					log.info(username+" | User is already in pool_comp_leaderboard for comp "+g.getCompetition_id()+
-							" and pool "+poolMember.getPool().getPool_id());
+					PoolGameLeaderboard poolGameLeaderboard = new PoolGameLeaderboard();
+					poolGameLeaderboard.setPool(poolMember.getPool());
+					poolGameLeaderboard.setGame(g);
+					poolGameLeaderboard.setUser(usr);
+					session.save(poolGameLeaderboard);
+					
+					// See if user is already a member of pool comp leaderboard, and add if not
+					StringBuffer pclQueryString = new StringBuffer("FROM PoolCompLeaderboard pcl where ");
+					pclQueryString.append("pcl.competition.comp_id = :comp_id and pcl.pool.pool_id = :pool_id ");
+					pclQueryString.append("and pcl.user.username = :username");
+					
+					Query pclQuery = session.createQuery(pclQueryString.toString());
+					pclQuery.setParameter("comp_id", g.getCompetition_id());
+					pclQuery.setParameter("pool_id", poolMember.getPool().getPool_id());
+					pclQuery.setParameter("username", usr.getUsername());
+					
+					PoolCompLeaderboard poolCompLeaderboard = (PoolCompLeaderboard) pclQuery.uniqueResult();
+					if (poolCompLeaderboard == null) {
+						log.info(username+" | Adding user to pool_comp_leaderboard for comp "+g.getCompetition_id()+
+								" and pool "+poolMember.getPool().getPool_id());
+						poolCompLeaderboard = new PoolCompLeaderboard();
+						poolCompLeaderboard.setCompetition(g.getCompetition());
+						poolCompLeaderboard.setPool(poolMember.getPool());
+						poolCompLeaderboard.setUser(usr);
+						session.save(poolCompLeaderboard);
+					} else {
+						log.info(username+" | User is already in pool_comp_leaderboard for comp "+g.getCompetition_id()+
+								" and pool "+poolMember.getPool().getPool_id());
+					}
 				}
 			}
 
