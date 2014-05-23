@@ -28,6 +28,16 @@ public class GameWinnersResponse {
 	private LocalDateTime gameEndDate;
 	
 	@JsonProperty
+	private Integer comp_id;
+	
+	@JsonProperty
+	private Integer inplay_type;
+	
+	@JsonProperty
+	private Integer state;
+	
+	
+	@JsonProperty
 	private List<String> winners;
 	
 	
@@ -83,6 +93,36 @@ public class GameWinnersResponse {
 
 	public void setWinners(List<String> winners) {
 		this.winners = winners;
+	}
+
+
+	public Integer getComp_id() {
+		return comp_id;
+	}
+
+
+	public void setComp_id(Integer comp_id) {
+		this.comp_id = comp_id;
+	}
+
+
+	public Integer getInplay_type() {
+		return inplay_type;
+	}
+
+
+	public void setInplay_type(Integer inplay_type) {
+		this.inplay_type = inplay_type;
+	}
+
+
+	public Integer getState() {
+		return state;
+	}
+
+
+	public void setState(Integer state) {
+		this.state = state;
 	}
 	
 	

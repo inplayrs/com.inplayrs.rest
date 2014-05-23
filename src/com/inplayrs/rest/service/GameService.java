@@ -794,6 +794,9 @@ public class GameService {
 		queryString.append("ggl.game.name as game, ");
 		queryString.append("ggl.game.competition.category.cat_id, ");
 		queryString.append("ggl.game.end_date as game_end_date, ");
+		queryString.append("ggl.game.competition.comp_id as comp_id, ");
+		queryString.append("ggl.game.inplay_type as inplay_type, ");
+		queryString.append("ggl.game.state as state, ");
 		queryString.append("ggl.user.username as user from GlobalGameLeaderboard ggl where ggl.rank = 1");
 		
 		// Filter competitions by state
@@ -831,7 +834,10 @@ public class GameService {
 			String game = (String) row[1];
 			Integer cat_id = (Integer) row[2];
 			LocalDateTime gameEndDate = (LocalDateTime) row[3];
-			String user = (String) row[4];
+			Integer comp_id = (Integer) row[4];
+			Integer inplay_type = (Integer) row[5];
+			Integer state = (Integer) row[6];
+			String user = (String) row[7];
 		
 			// If this winner is for the same game that we're processing, 
 			// add to the list of winners
@@ -856,6 +862,9 @@ public class GameService {
 				gwr.setGame(game);
 				gwr.setCategory_id(cat_id);
 				gwr.setGameEndDate(gameEndDate);
+				gwr.setComp_id(comp_id);
+				gwr.setInplay_type(inplay_type);
+				gwr.setState(state);
 				
 				List<String> winners = new ArrayList<String>();
 				winners.add(user);
