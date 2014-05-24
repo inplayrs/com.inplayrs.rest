@@ -36,6 +36,8 @@ public class GameWinnersResponse {
 	@JsonProperty
 	private Integer state;
 	
+	@JsonProperty
+	private Integer game_type;
 	
 	@JsonProperty
 	private List<String> winners;
@@ -123,6 +125,16 @@ public class GameWinnersResponse {
 
 	public void setState(Integer state) {
 		this.state = state;
+	}
+
+
+	public Integer getGame_type() {
+		return game_type;
+	}
+
+
+	public void setGame_type(Integer game_type) {
+		this.game_type = game_type;
 	}
 	
 	
