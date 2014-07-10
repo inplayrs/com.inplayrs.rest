@@ -4,9 +4,9 @@ package com.inplayrs.rest.service;
 import com.inplayrs.rest.constants.LeaderboardType;
 import com.inplayrs.rest.constants.State;
 import com.inplayrs.rest.ds.Fan;
-import com.inplayrs.rest.ds.FanGroup;
-import com.inplayrs.rest.ds.FangroupCompLeaderboard;
-import com.inplayrs.rest.ds.FangroupGameLeaderboard;
+//import com.inplayrs.rest.ds.FanGroup;
+//import com.inplayrs.rest.ds.FangroupCompLeaderboard;
+//import com.inplayrs.rest.ds.FangroupGameLeaderboard;
 import com.inplayrs.rest.ds.Game;
 import com.inplayrs.rest.ds.GameEntry;
 import com.inplayrs.rest.ds.GlobalCompLeaderboard;
@@ -18,8 +18,8 @@ import com.inplayrs.rest.ds.PoolGameEntry;
 import com.inplayrs.rest.ds.PoolGameLeaderboard;
 import com.inplayrs.rest.ds.PoolMember;
 import com.inplayrs.rest.ds.User;
-import com.inplayrs.rest.ds.UserInFangroupCompLeaderboard;
-import com.inplayrs.rest.ds.UserInFangroupGameLeaderboard;
+//import com.inplayrs.rest.ds.UserInFangroupCompLeaderboard;
+//import com.inplayrs.rest.ds.UserInFangroupGameLeaderboard;
 import com.inplayrs.rest.exception.DBException;
 import com.inplayrs.rest.exception.InvalidParameterException;
 import com.inplayrs.rest.exception.InvalidStateException;
@@ -308,6 +308,10 @@ public class GameService {
 				throw new InvalidParameterException(new RestError(2200, "Game "+game_id+" does not exist"));
 			}
 			
+			/*
+			 * NO LONGER CHECKING FOR FANGROUP as removing fangroup from game
+			 * TODO: Remove fangroup code
+			 * 
 			// Check that user has a fangroup before creating a game entry
 			StringBuffer fangroupQueryString = new StringBuffer("from Fan f where f.user.username = :username ");
 			fangroupQueryString.append("and f.fangroup.competition.comp_id = :comp_id");
@@ -321,6 +325,7 @@ public class GameService {
 				log.info(username+" | Cannot post selections, no fangroup selected for competition "+g.getCompetition_id());
 				throw new InvalidStateException(new RestError(2201, "Please select a fangroup for this competition before entering!"));
 			}
+			*/
 			
 			// Get user object
 			Query userQuery = session.createQuery("FROM User u WHERE u.username = :username");
@@ -351,20 +356,26 @@ public class GameService {
 			g.setGlobal_pot_size(g.getGlobal_pot_size() + g.getStake());
 			session.update(g);	
 
-			
+			/*
+			 * NO LONGER HAVE FANGROUP
+			 * TODO: Remove code
 			FanGroup fanGroup = fan.getFangroup();
+			*/
 			
 			// Add user to global_game_leaderboard
 			log.info(username+" | Adding user to global_game_leaderboard for game "+game_id);
 			GlobalGameLeaderboard globalGameLeaderboard = new GlobalGameLeaderboard();
 			globalGameLeaderboard.setGame(g);
 			globalGameLeaderboard.setUser(usr);
-			globalGameLeaderboard.setFangroup(fanGroup);
+			//globalGameLeaderboard.setFangroup(fanGroup);
 			globalGameLeaderboard.setPoints(0);
 			globalGameLeaderboard.setPotential_winnings(0);
-			globalGameLeaderboard.setFangroupName(fanGroup.getName()); // TODO - Deco when field removed
+			//globalGameLeaderboard.setFangroupName(fanGroup.getName()); // TODO - Deco when field removed
 			session.save(globalGameLeaderboard);
 			
+			/* NO LONGER ADDING TO FANGROUP LEADERBOARDS as removing fangroup from game
+			 * TODO: Remove fangroup code
+			 * 
 			// See if entry exists in fangroup_game_leaderboard, and create entry if not
 			StringBuffer fglQueryString = new StringBuffer("FROM FangroupGameLeaderboard fgl where ");
 			fglQueryString.append("fgl.game.game_id = :game_id and fgl.fangroup.fangroup_id = :fangroup_id");
@@ -397,6 +408,7 @@ public class GameService {
 			uifgl.setFangroup(fanGroup);
 			uifgl.setFangroupName(fanGroup.getName());
 			session.save(uifgl);
+			*/
 			
 			// See if user is already in global_comp_leaderboard, and add if not
 			StringBuffer gclQueryString = new StringBuffer("FROM GlobalCompLeaderboard gcl where ");
@@ -413,13 +425,18 @@ public class GameService {
 				gcl = new GlobalCompLeaderboard();
 				gcl.setCompetition(g.getCompetition());
 				gcl.setUser(usr);
-				gcl.setFangroup(fanGroup);
-				gcl.setFangroupName(fanGroup.getName());
+				//gcl.setFangroup(fanGroup);
+				//gcl.setFangroupName(fanGroup.getName());
 				session.save(gcl);
 			} else {
 				log.info(username+" | User is already in global_comp_leaderboard for comp "+g.getCompetition_id());
 			}
 			
+			
+			/*
+			 * NO LONGER ADDING TO FANGROUP LEADERBOARDS as removing fangroup from game
+			 * TODO: Remove fangroup code
+			 * 
 			// See if entry exists in fangroup_comp_leaderboard, and create entry if not
 			StringBuffer fclQueryString = new StringBuffer("FROM FangroupCompLeaderboard fcl where ");
 			fclQueryString.append("fcl.competition.comp_id = :comp_id and ");
@@ -463,7 +480,7 @@ public class GameService {
 			} else {
 				log.info(username+" | User is already in user_in_fangroup_comp_leaderboard for comp "+g.getCompetition_id());
 			}
-			
+			*/
 			
 			// Add game entry for any pools the user is in, and add to pool leaderboards
 			// but only if this is not a late entry
