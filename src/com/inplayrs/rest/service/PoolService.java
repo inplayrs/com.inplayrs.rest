@@ -5,7 +5,8 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
@@ -49,7 +50,7 @@ public class PoolService {
 	private UserService userService;
 	
 	//get log4j handler
-	private static final Logger log = Logger.getLogger(PoolService.class.getName());
+	private static final Logger log = LogManager.getLogger(PoolService.class.getName());
 	
 	/*
 	 * POST pool/create

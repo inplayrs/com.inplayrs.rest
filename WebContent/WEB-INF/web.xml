@@ -6,6 +6,17 @@
 
 	<display-name>com.inplayrs.rest</display-name>
 
+	<context-param>
+		<param-name>log4jConfigLocation</param-name>
+		<param-value>/WEB-INF/log4j2.xml</param-value>
+	</context-param>
+	
+	<listener>
+	<listener-class>org.apache.logging.log4j.web.Log4jServletContextListener</listener-class>
+		<!--  <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class> -->
+	</listener>
+
+
 	<!-- Register the DispatcherServlet as a servlet called rest -->
 	<servlet>
 		<servlet-name>rest</servlet-name>
@@ -13,12 +24,14 @@
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 
+
 	<!-- Map the Servlet to handle incoming requests (relative to the app path) 
 		starting with "/" -->
 	<servlet-mapping>
 		<servlet-name>rest</servlet-name>
 		<url-pattern>/</url-pattern>
 	</servlet-mapping>
+
 
 	<!-- The base config xml file for the Spring Application context -->
 	<context-param>
@@ -28,14 +41,6 @@
 	    	/WEB-INF/security-context.xml
 	    </param-value>
 	</context-param>
-
-	<context-param>
-		<param-name>log4jConfigLocation</param-name>
-		<param-value>/WEB-INF/log4j.properties</param-value>
-	</context-param>
-	<listener>
-		<listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
-	</listener>
 
 
 	<!-- Security: Delegate the filter's methods to a bean obtained from the 
@@ -53,15 +58,6 @@
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 	</listener>
-
-
-
-
-
-
-
-
-
 
 
 </web-app>

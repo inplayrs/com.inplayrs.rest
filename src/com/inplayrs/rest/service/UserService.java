@@ -8,7 +8,8 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -51,7 +52,7 @@ public class UserService {
 	private SessionFactory sessionFactory;
 	
 	//get log4j handler
-	private static final Logger log = Logger.getLogger(UserService.class.getName());
+	private static final Logger log = LogManager.getLogger(UserService.class.getName());
 	
 	@Autowired
 	@Resource(name="poolService")

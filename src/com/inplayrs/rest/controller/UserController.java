@@ -24,7 +24,8 @@ import com.inplayrs.rest.responseds.UserLeaderboardResponse;
 import com.inplayrs.rest.responseds.UserStatsResponse;
 import com.inplayrs.rest.service.UserService;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /*
@@ -39,7 +40,7 @@ public class UserController {
 	private UserService userService;
 	
 	//get log4j handler
-	private static final Logger log = Logger.getLogger(UserController.class.getName());
+	private static final Logger log = LogManager.getLogger(UserController.class.getName());
 	
     
 	/*

@@ -17,14 +17,15 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.inplayrs.rest.ds.TestTable;
 import com.inplayrs.rest.service.TestService;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Controller
 @RequestMapping("/test")
 public class TestController {
 	
 	//get log4j handler
-	private static final Logger log = Logger.getLogger(TestController.class.getName());
+	private static final Logger log = LogManager.getLogger(TestController.class.getName());
 
 	@Autowired
 	@Resource(name="testService")

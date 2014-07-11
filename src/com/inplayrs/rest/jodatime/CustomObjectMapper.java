@@ -8,14 +8,15 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.inplayrs.rest.controller.TestController;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 @SuppressWarnings("serial")
 public class CustomObjectMapper extends ObjectMapper {
 
 	//get log4j handler
-	private static final Logger log = Logger.getLogger(TestController.class);
+	private static final Logger log = LogManager.getLogger(TestController.class);
 	
     public CustomObjectMapper() {
     	

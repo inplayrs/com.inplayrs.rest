@@ -4,7 +4,8 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -37,7 +38,7 @@ public class PoolController {
 	private PoolService poolService;
 
 	//get log4j handler
-	private static final Logger log = Logger.getLogger(PoolController.class.getName());
+	private static final Logger log = LogManager.getLogger(PoolController.class.getName());
 	
 	/*
 	 * POST pool/create
