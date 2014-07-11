@@ -3,6 +3,8 @@ package com.inplayrs.rest.exception;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,14 +20,18 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+
 @ControllerAdvice
 public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
+	//get log4j handler
+	private static final Logger log = LogManager.getLogger(CustomResponseEntityExceptionHandler.class.getName());
 		
 	@ExceptionHandler
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     @ResponseBody
     protected RestError handleException(InvalidStateException ex) {
+		log.error("Error code: "+ex.getRestError().getCode() +", message: "+ex.getRestError().getMessage());
         return ex.getRestError();
     }
 
@@ -33,6 +39,7 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     @ResponseBody
     protected RestError handleException(InvalidParameterException ex) {
+		log.error("Error code: "+ex.getRestError().getCode() +", message: "+ex.getRestError().getMessage());
         return ex.getRestError();
     }
 	
@@ -40,6 +47,7 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     @ResponseBody
     protected RestError handleException(DBException ex) {
+		log.error("Error code: "+ex.getRestError().getCode() +", message: "+ex.getRestError().getMessage());
         return ex.getRestError();
     }
 	
@@ -62,6 +70,7 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
         }
         
         RestError restError = new RestError("Method argument was not valid: "+errors.toString());
+        log.error("Error code: "+restError.getCode() +", message: "+restError.getMessage()+", "+request.toString());
         return new ResponseEntity(restError, headers, status);
     }
  
@@ -73,6 +82,7 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
         String unsupported = "Unsupported content type: " + ex.getContentType();
         //String supported = "Supported content types: " + MediaType.toString(ex.getSupportedMediaTypes());
         RestError restError = new RestError(unsupported);
+        log.error("Error code: "+restError.getCode() +", message: "+restError.getMessage()+", "+request.toString());
         return new ResponseEntity(restError, headers, status);
     }
  
@@ -90,6 +100,8 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
         } else {
             restError = new RestError(ex.getMessage());
         }
+        
+        log.error("Error code: "+restError.getCode() +", message: "+restError.getMessage()+", "+request.toString());
         return new ResponseEntity(restError, headers, status);
     }
 	
