@@ -30,6 +30,8 @@
 	</Appenders>
 	
 	<Loggers>
+		<Asynclogger name="com.mchange.v2.c3p0" level="info" includeLocation="true"/>
+	
 		<asyncRoot level="debug" includeLocation="true">
 			<AppenderRef ref="FILE"/>
 			<AppenderRef ref="CONSOLE"/>
