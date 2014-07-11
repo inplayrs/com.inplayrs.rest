@@ -26,7 +26,7 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
 
 	//get log4j handler
 	private static final Logger log = LogManager.getLogger(CustomResponseEntityExceptionHandler.class.getName());
-		
+
 	@ExceptionHandler
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     @ResponseBody
