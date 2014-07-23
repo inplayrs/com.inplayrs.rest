@@ -42,6 +42,14 @@ public class PeriodSelection {
 	@Column(name = "selection")
 	private int selection;
 	
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "period_option", nullable = true)
+	@JsonIgnore
+	private PeriodOption period_option;
+	
+	@Column(name = "period_option", insertable=false, updatable = false)
+	private int period_option_id;
+	
 	@Column(name = "potential_points")
 	private int potential_points;
 	
@@ -83,6 +91,7 @@ public class PeriodSelection {
 		this.period_selection_id = period_selection_id;
 	}
 
+	
 
 	public GameEntry getGameEntry() {
 		return gameEntry;
@@ -141,6 +150,23 @@ public class PeriodSelection {
 
 	public void setSelection(int selection) {
 		this.selection = selection;
+	}
+
+
+	public PeriodOption getPeriod_option() {
+		return period_option;
+	}
+
+	public void setPeriod_option(PeriodOption period_option) {
+		this.period_option = period_option;
+	}
+
+	public int getPeriod_option_id() {
+		return period_option_id;
+	}
+
+	public void setPeriod_option_id(int period_option_id) {
+		this.period_option_id = period_option_id;
 	}
 
 	public int getGame_entry_id() {

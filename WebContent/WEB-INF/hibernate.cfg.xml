@@ -11,6 +11,9 @@
 		<!-- Enable this to see the SQL statements in the logs -->
 		<property name="show_sql">false</property>
 
+		<!-- Quote all identifiers in SQL statements to avoid issues with keywords -->
+		<property name="hibernate.globally_quoted_identifiers">true</property>
+
 		<property name="hibernate.connection.username">restapi</property>
 		<property name="hibernate.connection.password">jbW#32Hsq@@P</property>
 		<property name="hibernate.connection.driver_class">${app.jdbc.driverClassName}</property>

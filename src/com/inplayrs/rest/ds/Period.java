@@ -1,5 +1,7 @@
 package com.inplayrs.rest.ds;
 
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -7,6 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Type;
@@ -77,6 +80,10 @@ public class Period {
 	@Column(name = "hidden")
 	@JsonIgnore
 	private boolean hidden;
+	
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "period")
+	@JsonIgnore
+	private Set<PeriodOption> periodOptions;
 	
 	/*
 	 * Default constructor - required by Hibernate
@@ -222,6 +229,16 @@ public class Period {
 
 	public void setHidden(boolean hidden) {
 		this.hidden = hidden;
+	}
+
+
+	public Set<PeriodOption> getPeriodOptions() {
+		return periodOptions;
+	}
+
+
+	public void setPeriodOptions(Set<PeriodOption> periodOptions) {
+		this.periodOptions = periodOptions;
 	}
 
 	

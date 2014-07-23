@@ -3,6 +3,8 @@ package com.inplayrs.rest.exception;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
@@ -50,6 +52,21 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
 		log.error("Error code: "+ex.getRestError().getCode() +", message: "+ex.getRestError().getMessage());
         return ex.getRestError();
     }
+	
+	/*
+	 * TODO: Check if this works - don't think it's getting called.
+	 * 		 Need a method of catching all uncaught exceptions
+	 */
+	@ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    @ResponseBody
+    protected RestError defaultErrorHandler(HttpServletRequest req, Exception ex) {
+            
+		RestError restError = new RestError(-1, ex.getMessage());
+		log.error("Unhandled error, request URL: "+req.getRequestURL()+", message: "+ex.getMessage()+", stack trace: "+ex.getStackTrace());
+		return restError;
+	}
+	
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override

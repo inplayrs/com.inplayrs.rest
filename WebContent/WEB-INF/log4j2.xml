@@ -30,12 +30,23 @@
 	</Appenders>
 	
 	<Loggers>
-		<Asynclogger name="com.mchange.v2.c3p0" level="info" includeLocation="true"/>
-	
-		<asyncRoot level="debug" includeLocation="true">
+		<Asynclogger name="com.mchange.v2.c3p0" level="info" includeLocation="true">
 			<AppenderRef ref="FILE"/>
 			<AppenderRef ref="CONSOLE"/>
-		</asyncRoot>
+		</Asynclogger>
+		
+		<!-- Must have system property set for hibernate to use slf4j
+			 -Dorg.jboss.logging.provider=slf4j
+			 https://issues.apache.org/jira/browse/LOG4J2-172 -->
+		<Asynclogger name="org.hibernate" level="info" includeLocation="true">
+			<AppenderRef ref="FILE"/>
+			<AppenderRef ref="CONSOLE"/>
+		</Asynclogger>
+	
+		<AsyncRoot level="debug" includeLocation="true">
+			<AppenderRef ref="FILE"/>
+			<AppenderRef ref="CONSOLE"/>
+		</AsyncRoot>
 	</Loggers>
   
 </Configuration>

@@ -1,6 +1,7 @@
 package com.inplayrs.rest.service;
 
 
+import com.inplayrs.rest.constants.GameType;
 import com.inplayrs.rest.constants.LeaderboardType;
 import com.inplayrs.rest.constants.State;
 import com.inplayrs.rest.ds.Fan;
@@ -12,6 +13,7 @@ import com.inplayrs.rest.ds.GameEntry;
 import com.inplayrs.rest.ds.GlobalCompLeaderboard;
 import com.inplayrs.rest.ds.GlobalGameLeaderboard;
 import com.inplayrs.rest.ds.Period;
+import com.inplayrs.rest.ds.PeriodOption;
 import com.inplayrs.rest.ds.PeriodSelection;
 import com.inplayrs.rest.ds.PoolCompLeaderboard;
 import com.inplayrs.rest.ds.PoolGameEntry;
@@ -59,7 +61,6 @@ public class GameService {
 	
 	//get log4j handler
 	private static final Logger log = LogManager.getLogger(GameService.class.getName());
-	
 	
 	/*
 	  * Retrieves a single period by the period_id
@@ -344,8 +345,14 @@ public class GameService {
 			
 			session.save(gameEntry);
 		
-			// Increment num players, global pot size & fangroup pot size in game and update
-			g.setNum_players(g.getNum_players()+1);
+			synchronized (this) {
+				// Increment num players in game
+				g.setNum_players(g.getNum_players()+1);
+				
+				// Always increase global pot size
+				g.setGlobal_pot_size(g.getGlobal_pot_size() + g.getStake());
+				session.update(g);
+			}
 			
 			/*
 			// Only increase fangroup pot size if it's not a late entry
@@ -355,9 +362,7 @@ public class GameService {
 			}
 			*/
 			
-			// Always increase global pot size
-			g.setGlobal_pot_size(g.getGlobal_pot_size() + g.getStake());
-			session.update(g);	
+			
 
 			/*
 			 * NO LONGER HAVE FANGROUP
@@ -549,6 +554,9 @@ public class GameService {
 			Period period = (Period) session.load(Period.class, ps.getPeriod_id());
 			ps.setPeriod(period);
 			
+			PeriodOption period_option = (PeriodOption) session.load(PeriodOption.class, ps.getPeriod_option_id());
+			ps.setPeriod_option(period_option);
+			
 			// Set potential_points for period_selection
 			switch(ps.getSelection()) {
 				case 0 : ps.setPotential_points(period.getPoints0());
@@ -558,6 +566,25 @@ public class GameService {
 				case 2 : ps.setPotential_points(period.getPoints2());
 						 break;
 				default: break;
+			}
+			
+			// Set awarded_points for Quiz game type only
+			if (ps.getPeriod().getGame().getGame_type() == GameType.QUIZ) {
+				if (ps.getAwarded_points() > 0) {
+					// Can only set awarded points for quiz answers that are correct
+					if (ps.getPeriod_option().getState() == 0) {
+						throw new InvalidStateException(new RestError(2203,username+" | Attempting to set awarded points as "
+								+ps.getAwarded_points()+" when the state of period_option "+ps.getPeriod_option().getPo_id()+
+								" is "+ps.getPeriod_option().getState()));
+					} else if (ps.getAwarded_points() > ps.getPeriod_option().getPoints()) {
+						// Can't award more points than available for that option
+						throw new InvalidStateException(new RestError(2204,username+" Attempting to set awarded points as "
+								+ps.getAwarded_points()+" when the points for period_option "+ps.getPeriod_option().getPo_id()+
+								" is "+ps.getPeriod_option().getPoints()));
+					}
+				}
+			} else if (ps.getAwarded_points() > 0){
+				ps.setAwarded_points(0);
 			}
 			
 			Query periodSelectionQuery = session.createQuery("from PeriodSelection ps where ps.gameEntry.game_entry_id = :game_entry_id "+
@@ -592,6 +619,7 @@ public class GameService {
 						log.info(username+" | Updating selection for period "+ps.getPeriod_id());
 						currentSelection.setSelection(ps.getSelection());
 						currentSelection.setPotential_points(ps.getPotential_points());
+						currentSelection.setAwarded_points(ps.getAwarded_points());
 						try {
 							session.update(currentSelection);
 						}
