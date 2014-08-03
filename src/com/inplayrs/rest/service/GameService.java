@@ -554,8 +554,10 @@ public class GameService {
 			Period period = (Period) session.load(Period.class, ps.getPeriod_id());
 			ps.setPeriod(period);
 			
-			PeriodOption period_option = (PeriodOption) session.load(PeriodOption.class, ps.getPeriod_option_id());
-			ps.setPeriod_option(period_option);
+			if (ps.getPeriod_option_id() != null) {
+				PeriodOption period_option = (PeriodOption) session.load(PeriodOption.class, ps.getPeriod_option_id());
+				ps.setPeriod_option(period_option);
+			}
 			
 			// Set potential_points for period_selection
 			switch(ps.getSelection()) {

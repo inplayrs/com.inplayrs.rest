@@ -63,7 +63,8 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
     protected RestError defaultErrorHandler(HttpServletRequest req, Exception ex) {
             
 		RestError restError = new RestError(-1, ex.getMessage());
-		log.error("Unhandled error, request URL: "+req.getRequestURL()+", message: "+ex.getMessage()+", stack trace: "+ex.getStackTrace());
+		log.error("Unhandled error, request URL: "+req.getRequestURL()+", message: "+ex.getMessage());
+		ex.printStackTrace();
 		return restError;
 	}
 	

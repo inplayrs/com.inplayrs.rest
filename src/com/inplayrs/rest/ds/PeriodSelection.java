@@ -48,7 +48,7 @@ public class PeriodSelection {
 	private PeriodOption period_option;
 	
 	@Column(name = "period_option", insertable=false, updatable = false)
-	private int period_option_id;
+	private Integer period_option_id;
 	
 	@Column(name = "potential_points")
 	private int potential_points;
@@ -161,11 +161,11 @@ public class PeriodSelection {
 		this.period_option = period_option;
 	}
 
-	public int getPeriod_option_id() {
+	public Integer getPeriod_option_id() {
 		return period_option_id;
 	}
 
-	public void setPeriod_option_id(int period_option_id) {
+	public void setPeriod_option_id(Integer period_option_id) {
 		this.period_option_id = period_option_id;
 	}
 
