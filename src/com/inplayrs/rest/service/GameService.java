@@ -574,10 +574,10 @@ public class GameService {
 			if (ps.getPeriod().getGame().getGame_type() == GameType.QUIZ) {
 				if (ps.getAwarded_points() > 0) {
 					// Can only set awarded points for quiz answers that are correct
-					if (ps.getPeriod_option().getState() == 0) {
+					if (ps.getPeriod_option().getResult() == 0) {
 						throw new InvalidStateException(new RestError(2203,username+" | Attempting to set awarded points as "
 								+ps.getAwarded_points()+" when the state of period_option "+ps.getPeriod_option().getPo_id()+
-								" is "+ps.getPeriod_option().getState()));
+								" is "+ps.getPeriod_option().getResult()));
 					} else if (ps.getAwarded_points() > ps.getPeriod_option().getPoints()) {
 						// Can't award more points than available for that option
 						throw new InvalidStateException(new RestError(2204,username+" Attempting to set awarded points as "

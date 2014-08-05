@@ -31,8 +31,8 @@ public class PeriodOption {
 	@Column(name = "points")
 	private int points;
 	
-	@Column(name = "state")
-	private int state;
+	@Column(name = "result")
+	private int result;
 	
 	public PeriodOption () {
 		
@@ -70,12 +70,12 @@ public class PeriodOption {
 		this.points = points;
 	}
 
-	public int getState() {
-		return state;
+	public int getResult() {
+		return result;
 	}
 
-	public void setState(int state) {
-		this.state = state;
+	public void setResult(int result) {
+		this.result = result;
 	}
 	
 	
