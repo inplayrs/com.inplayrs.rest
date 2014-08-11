@@ -554,20 +554,23 @@ public class GameService {
 			Period period = (Period) session.load(Period.class, ps.getPeriod_id());
 			ps.setPeriod(period);
 			
+			// Either period_option_id or selection will be set depending on game type
 			if (ps.getPeriod_option_id() != null) {
+				// Set the period_option and potential_points
 				PeriodOption period_option = (PeriodOption) session.load(PeriodOption.class, ps.getPeriod_option_id());
 				ps.setPeriod_option(period_option);
-			}
-			
-			// Set potential_points for period_selection
-			switch(ps.getSelection()) {
-				case 0 : ps.setPotential_points(period.getPoints0());
-						 break;
-				case 1 : ps.setPotential_points(period.getPoints1());
-						 break;
-				case 2 : ps.setPotential_points(period.getPoints2());
-						 break;
-				default: break;
+				ps.setPotential_points(period_option.getPoints());
+			} else {
+				// Set potential_points for period_selection
+				switch(ps.getSelection()) {
+					case 0 : ps.setPotential_points(period.getPoints0());
+							 break;
+					case 1 : ps.setPotential_points(period.getPoints1());
+							 break;
+					case 2 : ps.setPotential_points(period.getPoints2());
+							 break;
+					default: break;
+				}
 			}
 			
 			// Set awarded_points for Quiz game type only
@@ -622,6 +625,7 @@ public class GameService {
 						currentSelection.setSelection(ps.getSelection());
 						currentSelection.setPotential_points(ps.getPotential_points());
 						currentSelection.setAwarded_points(ps.getAwarded_points());
+						currentSelection.setPeriod_option(ps.getPeriod_option());
 						try {
 							session.update(currentSelection);
 						}
