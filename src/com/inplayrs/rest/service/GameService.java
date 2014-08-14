@@ -555,7 +555,7 @@ public class GameService {
 			ps.setPeriod(period);
 			
 			// Either period_option_id or selection will be set depending on game type
-			if (ps.getPeriod_option_id() != null) {
+			if (ps.getPeriod_option_id() != null && ps.getPeriod_option_id() >0) {
 				// Set the period_option and potential_points
 				PeriodOption period_option = (PeriodOption) session.load(PeriodOption.class, ps.getPeriod_option_id());
 				ps.setPeriod_option(period_option);
