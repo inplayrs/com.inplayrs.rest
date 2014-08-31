@@ -11,8 +11,10 @@ import javax.annotation.Resource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Query;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.transform.Transformers;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +37,10 @@ import com.inplayrs.rest.ds.UserStats;
 import com.inplayrs.rest.exception.InvalidParameterException;
 import com.inplayrs.rest.exception.InvalidStateException;
 import com.inplayrs.rest.exception.RestError;
+import com.inplayrs.rest.responseds.GamePointsResponse;
 import com.inplayrs.rest.responseds.UserLeaderboardResponse;
 import com.inplayrs.rest.responseds.UserStatsResponse;
+import com.inplayrs.rest.responseds.UserTrophyResponse;
 import com.inplayrs.rest.security.PasswordHash;
 import com.inplayrs.rest.util.IPUtil;
 
@@ -934,5 +938,35 @@ public class UserService {
 		session.save(invite);	
 	}
 	
-	
+	/*
+	 * GET user/trophies
+	 */
+	@SuppressWarnings("unchecked")
+	public List <UserTrophyResponse> getUserTrophies(String username) {
+		
+		String authed_user = SecurityContextHolder.getContext().getAuthentication().getName();
+		username = (username == null ? authed_user : username);
+		log.info(authed_user+" | GET user/trophies username="+username);
+		
+		// Retrieve session from Hibernate
+		Session session = sessionFactory.getCurrentSession();
+		
+		// Get all trophies and indicate whether the user has achieved that trophy or not
+		StringBuffer queryString = new StringBuffer("select t.trophy_id as trophy_id, t.name as name, ");
+		queryString.append("(CASE WHEN usr.user is NULL THEN false ELSE true END) as achieved ");
+		queryString.append("from trophy t left join ");
+		queryString.append("(select ut.trophy, ut.user from user_trophy ut ");
+		queryString.append("left join user u on ut.user = u.user_id where u.username = :username) usr ");
+		queryString.append("on usr.trophy = t.trophy_id order by t.trophy_id");
+		
+		SQLQuery query = session.createSQLQuery(queryString.toString()); 
+		query.setParameter("username", username);
+		query.addScalar("trophy_id");
+		query.addScalar("name");
+		query.addScalar("achieved", org.hibernate.type.BooleanType.INSTANCE);
+		query.setResultTransformer(Transformers.aliasToBean(UserTrophyResponse.class));
+		
+		return query.list();
+		
+	}
 }

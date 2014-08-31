@@ -22,6 +22,7 @@ import com.inplayrs.rest.exception.RestError;
 import com.inplayrs.rest.responseds.FangroupResponse;
 import com.inplayrs.rest.responseds.UserLeaderboardResponse;
 import com.inplayrs.rest.responseds.UserStatsResponse;
+import com.inplayrs.rest.responseds.UserTrophyResponse;
 import com.inplayrs.rest.service.UserService;
 
 import org.apache.logging.log4j.LogManager;
@@ -291,6 +292,15 @@ public class UserController {
 			hideBots = false;
 		}
 		return userService.getUserList(hideBots);
+	}
+	
+	/*
+	 * GET user/trophies
+	 */
+	@RequestMapping(value = "/trophies", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+	public @ResponseBody List<UserTrophyResponse> getUserTrophies(@RequestParam(value="username", required=false) String username) {
+		return userService.getUserTrophies(username);
 	}
 	
 }
