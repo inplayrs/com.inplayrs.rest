@@ -952,17 +952,18 @@ public class UserService {
 		Session session = sessionFactory.getCurrentSession();
 		
 		// Get all trophies and indicate whether the user has achieved that trophy or not
-		StringBuffer queryString = new StringBuffer("select t.trophy_id as trophy_id, t.name as name, ");
+		StringBuffer queryString = new StringBuffer("select t.trophy_id as trophy_id, t.name as name, t.order as 'order', ");
 		queryString.append("(CASE WHEN usr.user is NULL THEN false ELSE true END) as achieved ");
 		queryString.append("from trophy t left join ");
 		queryString.append("(select ut.trophy, ut.user from user_trophy ut ");
 		queryString.append("left join user u on ut.user = u.user_id where u.username = :username) usr ");
-		queryString.append("on usr.trophy = t.trophy_id order by t.trophy_id");
+		queryString.append("on usr.trophy = t.trophy_id order by t.order");
 		
 		SQLQuery query = session.createSQLQuery(queryString.toString()); 
 		query.setParameter("username", username);
 		query.addScalar("trophy_id");
 		query.addScalar("name");
+		query.addScalar("order");
 		query.addScalar("achieved", org.hibernate.type.BooleanType.INSTANCE);
 		query.setResultTransformer(Transformers.aliasToBean(UserTrophyResponse.class));
 		

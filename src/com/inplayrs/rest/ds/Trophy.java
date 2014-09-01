@@ -18,6 +18,9 @@ public class Trophy {
 	@Column(name = "name", unique=true)
 	private String name;
 	
+	@Column(name = "order")
+	private Integer order;
+	
 	public Trophy() {
 		
 	}
@@ -36,6 +39,14 @@ public class Trophy {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public Integer getOrder() {
+		return order;
+	}
+
+	public void setOrder(Integer order) {
+		this.order = order;
 	}
 	
 	

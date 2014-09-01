@@ -16,6 +16,9 @@ public class UserTrophyResponse {
 	@JsonProperty
 	private String name;
 	
+	@Column(name = "order")
+	private Integer order;
+	
 	@Column(name = "achieved")
 	@JsonProperty
 	private Boolean achieved;
@@ -38,6 +41,14 @@ public class UserTrophyResponse {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public Integer getOrder() {
+		return order;
+	}
+
+	public void setOrder(Integer order) {
+		this.order = order;
 	}
 
 	public Boolean getAchieved() {
