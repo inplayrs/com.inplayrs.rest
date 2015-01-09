@@ -30,6 +30,7 @@ import com.inplayrs.rest.responseds.GameLeaderboardResponse;
 import com.inplayrs.rest.responseds.GamePointsResponse;
 import com.inplayrs.rest.responseds.GameWinnersResponse;
 
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -749,6 +750,7 @@ public class GameService {
 			case LeaderboardType.GLOBAL:
 				queryString.append("lb.rank, ");
 				queryString.append("u.username as name, ");
+				queryString.append("u.facebook_id as fbID, ");
 				queryString.append("lb.points, ");
 				queryString.append("lb.potential_winnings ");
 				queryString.append("from global_game_leaderboard lb ");
@@ -759,6 +761,8 @@ public class GameService {
 			case LeaderboardType.FANGROUP:
 				queryString.append("lb.rank, ");
 				queryString.append("lb.fangroup_name as name, ");
+				// Include fbID as it is in GameLeaderboardResponse so column must be present for Transformers.aliasToBean
+				queryString.append("NULL as fbID, "); 
 				queryString.append("lb.avg_points as points, ");
 				queryString.append("lb.potential_winnings ");
 				queryString.append("from fangroup_game_leaderboard lb ");
@@ -768,6 +772,7 @@ public class GameService {
 			case LeaderboardType.USER_IN_FANGROUP:					
 				queryString.append("lb.rank, ");
 				queryString.append("u.username as name, ");
+				queryString.append("u.facebook_id as fbID, ");
 				queryString.append("lb.points, ");
 				queryString.append("lb.potential_winnings ");
 				queryString.append("from user_in_fangroup_game_leaderboard lb ");
@@ -796,6 +801,7 @@ public class GameService {
 			case LeaderboardType.POOL:
 				queryString.append("lb.rank as rank, ");
 				queryString.append("u.username as name, ");
+				queryString.append("u.facebook_id as fbID, ");
 				queryString.append("lb.points, ");
 				queryString.append("lb.potential_winnings ");
 				queryString.append("from pool_game_leaderboard lb ");
@@ -817,10 +823,10 @@ public class GameService {
 		}
 		query.addScalar("rank");
 		query.addScalar("name");
+		query.addScalar("fbID", org.hibernate.type.StringType.INSTANCE);
 		query.addScalar("points");
 		query.addScalar("potential_winnings");
 		query.setResultTransformer(Transformers.aliasToBean(GameLeaderboardResponse.class));
-		
 		return query.list();
 		
 	}

@@ -1,6 +1,8 @@
 package com.inplayrs.rest.responseds;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 public class GameLeaderboardResponse {
 
@@ -9,6 +11,10 @@ public class GameLeaderboardResponse {
 	
 	@JsonProperty
 	String name;
+	
+	@JsonProperty
+	@JsonInclude(Include.NON_NULL) 
+	String fbID;
 	
 	@JsonProperty
 	int points;
@@ -40,6 +46,16 @@ public class GameLeaderboardResponse {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+
+	public String getFbID() {
+		return fbID;
+	}
+
+
+	public void setFbID(String fbID) {
+		this.fbID = fbID;
 	}
 
 
