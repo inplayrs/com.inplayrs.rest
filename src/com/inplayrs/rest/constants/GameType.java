@@ -14,7 +14,7 @@ public class GameType {
 	public final static int TOP3 = 33;
 	public final static int LEADTHRUCUT = 34;
 	public final static int ZEROONETWO = 35;
-	public final static int QUIZ = 40;
-	public final static int FANTASY = 100;
+	public final static int QUIZ = 50;
+	public final static int FANTASY = 40;
 
 }
