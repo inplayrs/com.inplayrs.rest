@@ -8,6 +8,8 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
+import com.inplayrs.rest.constants.URL;
+
 public class IPUtil {
 
 	@Resource(name="sessionFactory")
@@ -50,6 +52,14 @@ public class IPUtil {
 		} else {
 			return false;
 		}
+	}
+	
+	/*
+	 * Generates key to be used to store photos to S3 with in photo game
+	 */
+	public static String generatePhotoKey(int game_id, String username) {
+		StringBuilder photoKey = new StringBuilder(URL.AWS_PHOTO_URL);
+		return photoKey.append('/').append(game_id).append('/').append(username).append(':').append(System.nanoTime()).toString();
 	}
 	
 }

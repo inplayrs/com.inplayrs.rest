@@ -16,5 +16,5 @@ public class GameType {
 	public final static int ZEROONETWO = 35;
 	public final static int QUIZ = 50;
 	public final static int FANTASY = 40;
-
+	public final static int PHOTO = 45;
 }

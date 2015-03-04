@@ -19,6 +19,8 @@ import com.inplayrs.rest.responseds.GameLeaderboardResponse;
 import com.inplayrs.rest.responseds.GamePointsResponse;
 import com.inplayrs.rest.responseds.GameWinnersResponse;
 import com.inplayrs.rest.responseds.PeriodResponse;
+import com.inplayrs.rest.responseds.PhotoKeyResponse;
+import com.inplayrs.rest.responseds.PhotoResponse;
 import com.inplayrs.rest.service.GameService;
 
 import java.util.ArrayList;
@@ -162,5 +164,44 @@ public class GameController {
 		// Get list of game winners
 		return gameService.getGameWinners(game_id);
     }
+	
+	
+	/*
+	 * GET game/photos
+	 */
+	@RequestMapping(value = "/photos", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+    public @ResponseBody List<PhotoResponse> getGamePhotos(
+    	   @RequestParam(value="game_id", required=true) Integer game_id){
+		
+		// Get list of game photos
+		return gameService.getGamePhotos(game_id);
+    }
+	
+	
+	/*
+	 * POST game/photo
+	 */
+	@RequestMapping(value = "/photo", method = RequestMethod.POST, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.CREATED )
+	public @ResponseBody PhotoKeyResponse addGamePhoto(@RequestParam(value="game_id", required=true) Integer game_id,
+													   @RequestParam(value="caption", required=false) String caption) {
+		// Return the Key for the image to be used as the URL and the unique key for storing on Amazon S3
+		return gameService.addGamePhoto(game_id, caption);
+	}
+	
+	
+	/*
+	 * POST game/photo/setActive
+	 */
+	@RequestMapping(value = "/photo/setActive", method = RequestMethod.POST, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.CREATED )
+	public void setPhotoActive(@RequestParam(value="photo_id", required=true) Integer photo_id,
+							   @RequestParam(value="active", required=true) Boolean active) {
+		// Return the Key for the image to be used as the URL and the unique key for storing on Amazon S3
+		gameService.setPhotoActive(photo_id, active);
+	}	
+	
+	
 	
 }

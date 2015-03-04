@@ -4,6 +4,7 @@ package com.inplayrs.rest.service;
 import com.inplayrs.rest.constants.GameType;
 import com.inplayrs.rest.constants.LeaderboardType;
 import com.inplayrs.rest.constants.State;
+import com.inplayrs.rest.constants.Threshold;
 import com.inplayrs.rest.ds.Fan;
 //import com.inplayrs.rest.ds.FanGroup;
 //import com.inplayrs.rest.ds.FangroupCompLeaderboard;
@@ -15,6 +16,7 @@ import com.inplayrs.rest.ds.GlobalGameLeaderboard;
 import com.inplayrs.rest.ds.Period;
 import com.inplayrs.rest.ds.PeriodOption;
 import com.inplayrs.rest.ds.PeriodSelection;
+import com.inplayrs.rest.ds.Photo;
 import com.inplayrs.rest.ds.PoolCompLeaderboard;
 import com.inplayrs.rest.ds.PoolGameEntry;
 import com.inplayrs.rest.ds.PoolGameLeaderboard;
@@ -29,6 +31,9 @@ import com.inplayrs.rest.exception.RestError;
 import com.inplayrs.rest.responseds.GameLeaderboardResponse;
 import com.inplayrs.rest.responseds.GamePointsResponse;
 import com.inplayrs.rest.responseds.GameWinnersResponse;
+import com.inplayrs.rest.responseds.PhotoKeyResponse;
+import com.inplayrs.rest.responseds.PhotoResponse;
+import com.inplayrs.rest.util.IPUtil;
 
 import java.sql.Types;
 import java.util.ArrayList;
@@ -940,8 +945,115 @@ public class GameService {
 		}
 		
 		return  response;
-		
-				
 	}
+
+	
+	/*
+	 * GET game/photos
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PhotoResponse> getGamePhotos(int game_id) {
+		// Get username of player
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		log.info(username+" | GET game/photos game_id="+game_id);
+		
+		Session session = sessionFactory.getCurrentSession();
+		
+		StringBuffer queryString = new StringBuffer("SELECT p.photo_id as photo_id, p.user_id as user_id, p.url as url, p.caption as caption, p.likes as likes FROM Photo p ");
+		queryString.append("LEFT JOIN p.photoLikes pl LEFT JOIN pl.user user with user.username = :username ");
+		queryString.append("WHERE p.game.game_id = :game_id and pl.like_id IS NULL and p.active = true");
+		
+		Query query = session.createQuery(queryString.toString());
+		query.setParameter("game_id", game_id);
+		query.setParameter("username", username);
+		query.setResultTransformer(Transformers.aliasToBean(PhotoResponse.class));
+		query.setMaxResults(Threshold.MAX_PHOTOS_RETURNED);
+		
+		return query.list();
+	}
+	
+	
+	/*
+	 * POST game/photo
+	 */
+	public PhotoKeyResponse addGamePhoto(int game_id, String caption) {
+		
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		log.info(username+" | POST game/photo game_id="+game_id+", caption="+caption);
+		
+		String photoKey = IPUtil.generatePhotoKey(game_id, username);
+		log.info(username+" | Generated photoKey: "+photoKey);
+		
+		Session session = sessionFactory.getCurrentSession();
+		
+		Game game = (Game) session.load(Game.class, game_id);
+		
+		if (game == null) {
+			log.error(username+" | Failed to get game with ID "+game_id);
+			throw new DBException(new RestError(3500, "Failed to get game with ID "+game_id));
+		}
+				
+		// Get user object
+		Query userQuery = session.createQuery("FROM User u WHERE u.username = :username");
+		userQuery.setParameter("username", username);
+		userQuery.setCacheable(true);
+		userQuery.setCacheRegion("user");
+		User user = (User) userQuery.uniqueResult();
+		
+		Photo photo = new Photo();
+		photo.setGame(game);
+		photo.setUser(user);
+		photo.setActive(false);
+		photo.setUrl("http://"+photoKey);
+		if (caption != null) {
+			photo.setCaption(caption);
+		}
+
+		try {
+			session.save(photo);
+		} catch (Exception e) {
+			log.error(username+" | Failed to insert new photo");
+			throw new DBException(new RestError(3501, "Failed to insert new photo"));
+		}
+		
+		PhotoKeyResponse photoKeyResponse = new PhotoKeyResponse(photo.getPhoto_id(), photoKey);
+		return photoKeyResponse;
+	}
+	
+	
+	/*
+	 * POST game/photo/setActive
+	 */
+	public void setPhotoActive(Integer photo_id, Boolean active) {
+		
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		log.info(username+" | POST game/photo/setActive photo_id="+photo_id+", active="+active);
+		
+		Session session = sessionFactory.getCurrentSession();
+		
+		// Get Photo object
+		Photo photo = (Photo) session.load(Photo.class, photo_id);
+		
+		if (photo != null) {
+			if (!photo.getUser().getUsername().equals(username)) {
+				log.error(username+" | User "+username+" does not own photo with ID "+photo_id+", cannot set active flag to "+active);
+				throw new InvalidParameterException(new RestError(3600, "Could not mark photo as active, user does not own this photo"));
+			}
+			
+			if (photo.isActive() == active) {
+				log.info(username+" | Photo with ID "+photo_id+" already has active flag set as "+active+", nothing to do");
+			} else {
+				photo.setActive(active);
+				session.update(photo);
+			}
+			
+		} else {
+			log.error(username+" | Failed to get photo with ID "+photo_id);
+			throw new InvalidParameterException(new RestError(3601, "Failed to get photo with ID "+photo_id));
+		}
+		
+	}
+	
+	
 	
 }
