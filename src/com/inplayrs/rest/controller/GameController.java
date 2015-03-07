@@ -198,10 +198,18 @@ public class GameController {
 	@ResponseStatus( HttpStatus.CREATED )
 	public void setPhotoActive(@RequestParam(value="photo_id", required=true) Integer photo_id,
 							   @RequestParam(value="active", required=true) Boolean active) {
-		// Return the Key for the image to be used as the URL and the unique key for storing on Amazon S3
 		gameService.setPhotoActive(photo_id, active);
 	}	
 	
 	
+	/*
+	 * POST game/photo/like
+	 */
+	@RequestMapping(value = "/photo/like", method = RequestMethod.POST, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.CREATED )
+	public void likePhoto(@RequestParam(value="photo_id", required=true) Integer photo_id,
+						  @RequestParam(value="like", required=true) Boolean like) {
+		gameService.likePhoto(photo_id, like);
+	}
 	
 }

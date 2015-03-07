@@ -32,7 +32,7 @@ public class PhotoLike {
 	private User user;
 	
 	@Column(name = "like")
-	private int like;
+	private boolean like;
 	
 	public PhotoLike() {}
 
@@ -60,14 +60,14 @@ public class PhotoLike {
 		this.user = user;
 	}
 
-	public int getLike() {
+	public boolean isLike() {
 		return like;
 	}
 
-	public void setLike(int like) {
+	public void setLike(boolean like) {
 		this.like = like;
 	}
-	
-	
+
+
 	
 }

@@ -17,6 +17,7 @@ import com.inplayrs.rest.ds.Period;
 import com.inplayrs.rest.ds.PeriodOption;
 import com.inplayrs.rest.ds.PeriodSelection;
 import com.inplayrs.rest.ds.Photo;
+import com.inplayrs.rest.ds.PhotoLike;
 import com.inplayrs.rest.ds.PoolCompLeaderboard;
 import com.inplayrs.rest.ds.PoolGameEntry;
 import com.inplayrs.rest.ds.PoolGameLeaderboard;
@@ -1054,6 +1055,61 @@ public class GameService {
 		
 	}
 	
+	
+	/*
+	 * POST game/photo/like
+	 */
+	public void likePhoto(Integer photo_id, Boolean like) {
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		log.info(username+" | POST game/photo/like photo_id="+photo_id+", like="+like);
+		
+		Session session = sessionFactory.getCurrentSession();
+		
+		// See if user has already liked / disliked this photo
+		StringBuffer queryString = new StringBuffer("SELECT 1 from PhotoLike pl where pl.user.username = :username ");
+		queryString.append("and pl.photo.photo_id = :photo_id");
+		
+		Query query = session.createQuery(queryString.toString());
+		query.setParameter("photo_id", photo_id);
+		query.setParameter("username", username);
+		
+		if (query.uniqueResult() != null) {
+			log.info(username+" | User has already voted on photo with ID "+photo_id);
+			throw new InvalidParameterException(new RestError(3700, "You have already voted on this photo!"));
+		}
+		
+		
+		// Get Photo object
+		Photo photo = (Photo) session.load(Photo.class, photo_id);
+		
+		if (photo != null) {
+			// Get user object
+			Query userQuery = session.createQuery("FROM User u WHERE u.username = :username");
+			userQuery.setParameter("username", username);
+			userQuery.setCacheable(true);
+			userQuery.setCacheRegion("user");
+			User user = (User) userQuery.uniqueResult();
+			
+			PhotoLike pl = new PhotoLike();
+			pl.setPhoto(photo);
+			pl.setUser(user);
+			pl.setLike(like);
+			session.save(pl);
+			
+			if (like) {
+				synchronized(this) {
+					// TODO - this should be moved to a stored proc / DB trigger as have race condition when running
+					// multiple instances of API
+					photo.setLikes(photo.getLikes()+1);
+					session.update(photo);
+				}
+			}
+			
+		} else {
+			log.error(username+" | Failed to get photo with ID "+photo_id);
+			throw new InvalidParameterException(new RestError(3701, "Failed to get photo with ID "+photo_id));
+		}
+	}
 	
 	
 }
