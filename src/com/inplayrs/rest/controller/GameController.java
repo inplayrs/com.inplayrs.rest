@@ -212,4 +212,14 @@ public class GameController {
 		gameService.likePhoto(photo_id, like);
 	}
 	
+	
+	/*
+	 * POST game/photo/flag
+	 */
+	@RequestMapping(value = "/photo/flag", method = RequestMethod.POST, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.CREATED )
+	public void flagPhoto(@RequestParam(value="photo_id", required=true) Integer photo_id) {
+		gameService.flagPhoto(photo_id);
+	}
+	
 }
