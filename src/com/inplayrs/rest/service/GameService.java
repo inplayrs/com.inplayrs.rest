@@ -34,6 +34,7 @@ import com.inplayrs.rest.responseds.GameLeaderboardResponse;
 import com.inplayrs.rest.responseds.GamePointsResponse;
 import com.inplayrs.rest.responseds.GameWinnersResponse;
 import com.inplayrs.rest.responseds.PhotoKeyResponse;
+import com.inplayrs.rest.responseds.PhotoLeaderboardResponse;
 import com.inplayrs.rest.responseds.PhotoResponse;
 import com.inplayrs.rest.util.IPUtil;
 
@@ -1163,5 +1164,32 @@ public class GameService {
 		}
 		
 	}
+	
+	
+	/*
+	 * GET game/photo/leaderboard
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PhotoLeaderboardResponse> getPhotoLeaderboard(int game_id)
+	{
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		log.info(username+" | GET game/photo/leaderboard game_id="+game_id);
+		
+		Session session = sessionFactory.getCurrentSession();	
+		
+		SQLQuery query = session.createSQLQuery("CALL ipdb.getPhotoLeaderboard(:game_id)");
+		query.setParameter("game_id", game_id);
+		query.addScalar("rank", org.hibernate.type.IntegerType.INSTANCE);
+		query.addScalar("username");
+		query.addScalar("fbID");
+		query.addScalar("photo_id");
+		query.addScalar("likes");
+		query.addScalar("url");
+		query.addScalar("caption");
+		query.setResultTransformer(Transformers.aliasToBean(PhotoLeaderboardResponse.class));
+		
+		return query.list();
+	}
+	
 	
 }

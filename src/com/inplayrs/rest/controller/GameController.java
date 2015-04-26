@@ -20,6 +20,7 @@ import com.inplayrs.rest.responseds.GamePointsResponse;
 import com.inplayrs.rest.responseds.GameWinnersResponse;
 import com.inplayrs.rest.responseds.PeriodResponse;
 import com.inplayrs.rest.responseds.PhotoKeyResponse;
+import com.inplayrs.rest.responseds.PhotoLeaderboardResponse;
 import com.inplayrs.rest.responseds.PhotoResponse;
 import com.inplayrs.rest.service.GameService;
 
@@ -221,5 +222,19 @@ public class GameController {
 	public void flagPhoto(@RequestParam(value="photo_id", required=true) Integer photo_id) {
 		gameService.flagPhoto(photo_id);
 	}
+	
+	
+	/*
+	 * GET game/photo/leaderboard
+	 */
+	@RequestMapping(value = "/photo/leaderboard", method = RequestMethod.GET, headers="Accept=application/json")
+	@ResponseStatus( HttpStatus.OK )
+    public @ResponseBody List<PhotoLeaderboardResponse> getPhotoLeaderboard(
+    	   @RequestParam(value="game_id", required=true) Integer game_id){
+		
+		// Get list of game photos
+		return gameService.getPhotoLeaderboard(game_id);
+    }
+	
 	
 }
