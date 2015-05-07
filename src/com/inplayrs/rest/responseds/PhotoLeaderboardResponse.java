@@ -25,6 +25,9 @@ public class PhotoLeaderboardResponse {
 	@JsonProperty
 	private String caption;
 	
+	@JsonProperty
+	private Integer winnings;
+	
 	
 	public PhotoLeaderboardResponse() {}
 
@@ -96,6 +99,16 @@ public class PhotoLeaderboardResponse {
 
 	public void setCaption(String caption) {
 		this.caption = caption;
+	}
+
+
+	public Integer getWinnings() {
+		return winnings;
+	}
+
+
+	public void setWinnings(Integer winnings) {
+		this.winnings = winnings;
 	}
 	
 	

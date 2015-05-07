@@ -1186,6 +1186,7 @@ public class GameService {
 		query.addScalar("likes");
 		query.addScalar("url");
 		query.addScalar("caption");
+		query.addScalar("winnings");
 		query.setResultTransformer(Transformers.aliasToBean(PhotoLeaderboardResponse.class));
 		
 		return query.list();
