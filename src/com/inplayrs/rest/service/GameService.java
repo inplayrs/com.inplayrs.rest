@@ -961,15 +961,40 @@ public class GameService {
 		
 		Session session = sessionFactory.getCurrentSession();
 		
-		StringBuffer queryString = new StringBuffer("SELECT p.photo_id as photo_id, p.user_id as user_id, p.url as url, p.caption as caption, p.likes as likes FROM Photo p ");
-		queryString.append("LEFT JOIN p.photoLikes pl LEFT JOIN pl.user user with user.username = :username ");
-		queryString.append("WHERE p.game.game_id = :game_id and pl.like_id IS NULL and p.active = true");
+		// Get user object
+		Query userQuery = session.createQuery("FROM User u WHERE u.username = :username");
+		userQuery.setParameter("username", username);
+		userQuery.setCacheable(true);
+		userQuery.setCacheRegion("user");
+		User usr = (User) userQuery.uniqueResult();
 		
-		Query query = session.createQuery(queryString.toString());
+		// Get all photos in this game that the requesting user has not liked yet
+		StringBuffer queryString = new StringBuffer("SELECT p.photo_id as photo_id, ");
+		queryString.append("p.user as user_id, "); 
+		queryString.append("p.url as url, "); 
+		queryString.append("p.caption as caption, "); 
+		queryString.append("p.likes as likes ");
+		queryString.append("FROM photo p "); 
+		queryString.append("LEFT JOIN "); 
+		queryString.append("(SELECT pl.photo as photo_id FROM photo_like pl WHERE pl.user = :user_id) liked_by_requestor ");
+		queryString.append("ON p.photo_id = liked_by_requestor.photo_id ");
+		queryString.append("LEFT JOIN game g ON g.game_id = p.game ");
+		queryString.append("WHERE g.game_id = :game_id ");
+		queryString.append("AND liked_by_requestor.photo_id IS NULL ");
+		queryString.append("LIMIT :maxPhotosReturned");
+
+		SQLQuery query = session.createSQLQuery(queryString.toString());
 		query.setParameter("game_id", game_id);
-		query.setParameter("username", username);
+		query.setParameter("user_id", usr.getUser_id());
+		query.setParameter("maxPhotosReturned", Threshold.MAX_PHOTOS_RETURNED);
+		
+		query.addScalar("photo_id");
+		query.addScalar("user_id");
+		query.addScalar("url");
+		query.addScalar("caption");
+		query.addScalar("likes");
+		
 		query.setResultTransformer(Transformers.aliasToBean(PhotoResponse.class));
-		query.setMaxResults(Threshold.MAX_PHOTOS_RETURNED);
 		
 		return query.list();
 	}
